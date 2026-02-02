@@ -316,6 +316,35 @@ function openSim(url, title) {
         modal.classList.add('hidden'); // Pencereyi gizler
         frame.src = ""; // Belleği temizlemek için içeriği boşaltır
     }
+
+    // Arama ve Filtreleme Fonksiyonu
+const searchInput = document.querySelector('input[placeholder="Simülasyon veya konu ara..."]');
+const topicSelect = document.querySelector('select');
+const cards = document.querySelectorAll('.sim-card');
+
+function filterCards() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedTopic = topicSelect.value;
+
+    cards.forEach(card => {
+        const cardName = card.getAttribute('data-name').toLowerCase();
+        const cardTopic = card.getAttribute('data-topic');
+        
+        // Arama terimi ve Dropdown seçimiyle eşleşme kontrolü
+        const matchesSearch = cardName.includes(searchTerm);
+        const matchesTopic = (selectedTopic === "Tüm Konular" || cardTopic === selectedTopic);
+
+        if (matchesSearch && matchesTopic) {
+            card.style.display = "block";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
+
+// Olay Dinleyicileri (Event Listeners)
+searchInput.addEventListener('input', filterCards);
+topicSelect.addEventListener('change', filterCards);
 </script>
 </body>
 </html>
