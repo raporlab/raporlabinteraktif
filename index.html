@@ -26,44 +26,62 @@
 </div>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-slate-800">
 
-    <aside class="w-full md:w-72 bg-white border-b md:border-r border-slate-200 flex flex-col shrink-0">
-        <div class="p-8">
-            <h1 class="text-2xl tracking-tight">
-                <span class="font-extrabold text-slate-900">Raporlab</span><span class="font-light text-slate-500 ml-1">İnteraktif</span>
-            </h1>
-        </div>
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0 h-full">
+    
+    <div class="p-8 flex justify-between items-center">
+        <h1 class="text-2xl tracking-tight">
+            <span class="font-extrabold text-slate-900">Raporlab</span><span class="font-light text-slate-500 ml-1">İnteraktif</span>
+        </h1>
+        <button onclick="toggleSidebar()" class="md:hidden text-2xl text-slate-400 focus:outline-none">✕</button>
+    </div>
 
-        <nav class="flex-1 px-4 space-y-2">
-            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-4">Dersler</div>
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-blue-600 bg-blue-50">
-                <span class="mr-3 text-xl">📐</span> Matematik
-            </a>
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
-                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧪</span> Fizik <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
-            </a>
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
-                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧬</span> Kimya <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
-            </a>
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
-                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌍</span> Coğrafya <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
-            </a>
-        </nav>
+    <nav class="flex-1 px-4 space-y-2">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-4">Dersler</div>
+        
+        <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-blue-600 bg-blue-50">
+            <span class="mr-3 text-xl">📐</span> Matematik
+        </a>
+        
+        <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
+            <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧪</span> Fizik 
+            <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
+        </a>
+        
+        <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
+            <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧬</span> Kimya 
+            <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
+        </a>
+        
+        <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
+            <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌍</span> Coğrafya 
+            <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
+        </a>
+    </nav>
 
-        <div class="p-6 border-t border-slate-100">
-            <div class="bg-slate-50 rounded-2xl p-4">
-                <p class="text-xs text-slate-500 leading-relaxed mb-3">Bu platform tamamen ücretsizdir. Gelişime destek olmak ister misiniz?</p>
-                <button class="w-full bg-slate-900 text-white text-sm py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition shadow-sm">Bağış Yap ☕</button>
-            </div>
+    <div class="p-6 border-t border-slate-100">
+        <div class="bg-slate-50 rounded-2xl p-4">
+            <p class="text-xs text-slate-500 leading-relaxed mb-3">Bu platform tamamen ücretsizdir. Gelişime destek olmak ister misiniz?</p>
+            <a href="SENIN_BAGIS_LINKIN" target="_blank" class="block w-full bg-slate-900 text-white text-center text-sm py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition shadow-sm">
+                Bağış Yap ☕
+            </a>
         </div>
-    </aside>
+    </div>
+</aside>
 
     <main class="flex-1 flex flex-col overflow-hidden">
         
-        <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-10 shrink-0">
-            <div class="relative w-full max-w-md">
-    <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 italic">🔍</span>
-    <input type="text" placeholder="Simülasyon veya konu ara..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition-all">
-        </header>
+<header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 md:px-10 shrink-0">
+    <div class="flex items-center">
+        <button onclick="toggleSidebar()" class="md:hidden mr-4 text-2xl text-slate-600 focus:outline-none">
+            ☰
+        </button>
+        
+        <div class="relative w-full max-w-md">
+            <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 italic">🔍</span>
+            <input type="text" placeholder="Simülasyon ara..." class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm outline-none">
+        </div>
+    </div>
+</header>
 
         <div class="flex-1 overflow-y-auto p-10">
             <div class="mb-8">
@@ -316,6 +334,12 @@ function openSim(url, title) {
         frame.src = ""; // Belleği temizlemek için içeriği boşaltır
     }
 
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('-translate-x-full');
+}
+
+    
 // Sadeleştirilmiş Arama Fonksiyonu
 const searchInput = document.querySelector('input[placeholder="Simülasyon veya konu ara..."]');
 const cards = document.querySelectorAll('.sim-card');
