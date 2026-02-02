@@ -157,7 +157,7 @@
                         </div>
                         <div class="shrink-0">
                             <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="bg-white text-slate-900 px-8 py-3 rounded-xl font-bold text-xs hover:bg-blue-50 transition-all shadow-lg hover:shadow-white/10 uppercase tracking-wide flex items-center gap-2">
-                                Destek Ol ☕
+                                Bağış Yap ☕
                             </a>
                         </div>
                     </div>
@@ -410,11 +410,7 @@
             }
         }
 
-        // ==========================================
-        // GERİ TUŞU AYARI (BACK BUTTON FIX) - BAŞLANGIÇ
-        // ==========================================
-
-        // 1. Simülasyonu Açma (Geçmişe kaydeder)
+        // MODAL KONTROLLERİ
         function openSim(url, title) {
             const modal = document.getElementById('simModal');
             const frame = document.getElementById('simFrame');
@@ -423,35 +419,16 @@
             frame.src = url; 
             titleEl.innerText = title; 
             modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-
-            // Tarayıcı geçmişine "modal açık" bilgisini ekle
-            history.pushState({modal: true}, null, ""); 
+            document.body.style.overflow = 'hidden'; // Kaydırmayı engelle
         }
 
-        // 2. Simülasyonu Kapatma (Geri gider)
         function closeSim() {
-            // X butonuna basınca tarayıcıda bir adım geri git
-            // Bu işlem otomatik olarak alttaki 'popstate' kodunu tetikler ve modalı kapatır
-            history.back();
-        }
-
-        // 3. Tarayıcı Geri Tuşunu Dinleme
-        window.addEventListener('popstate', function(event) {
             const modal = document.getElementById('simModal');
             const frame = document.getElementById('simFrame');
-            
-            // Eğer modal açıksa kapat
-            if (!modal.classList.contains('hidden')) {
-                modal.classList.add('hidden');
-                frame.src = ""; 
-                document.body.style.overflow = 'auto';
-            }
-        });
-
-        // ==========================================
-        // GERİ TUŞU AYARI - BİTİŞ
-        // ==========================================
+            modal.classList.add('hidden');
+            frame.src = ""; 
+            document.body.style.overflow = 'auto'; // Kaydırmayı aç
+        }
 
         // SIDEBAR KONTROLÜ
         function toggleSidebar() {
