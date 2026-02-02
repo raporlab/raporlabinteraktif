@@ -138,11 +138,159 @@
     </div>
 </div>
 
+<div class="group bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-purple-400 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300">
+    
+    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-purple-50 transition-colors">
+        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+            <circle cx="40" cy="30" r="10" fill="#e9d5ff" opacity="0.5" />
+            
+            <circle cx="100" cy="60" r="35" stroke="#a855f7" stroke-width="3" fill="none" />
+            <path d="M100 25 A35 35 0 0 1 135 60 L100 60 Z" fill="#a855f7" fill-opacity="0.7" />
+            
+            <line x1="85" y1="105" x2="115" y2="105" stroke="#d8b4fe" stroke-width="4" stroke-linecap="round" />
+            <circle cx="100" cy="95" r="3" fill="#a855f7" />
+            <circle cx="100" cy="115" r="3" fill="#a855f7" />
+        </svg>
+    </div>
+
+    <div class="px-3 pb-3">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="font-bold text-lg text-slate-800">Kesirler</h3>
+            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
+        </div>
+        <p class="text-sm text-slate-500 mb-5">Parça-bütün ilişkisini ve sadeleştirmeyi görsel modellerle deneyimleyin.</p>
+        
+        <button onclick="openSim('./kesirler.html', 'Kesirler Modeli')" 
+                class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-purple-600 group-hover:text-white transition-all shadow-sm">
+            Simülasyonu Başlat
+        </button>
+    </div>
+</div>
+
+
+
+                <div class="group bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-teal-400 hover:shadow-2xl hover:shadow-teal-500/10 transition-all duration-300">
+    
+    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-teal-50 transition-colors">
+        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+            <line x1="40" y1="100" x2="160" y2="100" stroke="#cbd5e1" stroke-width="2" /> <line x1="50" y1="20" x2="50" y2="110" stroke="#cbd5e1" stroke-width="2" /> <path d="M50 80 Q90 20 130 60 T170 30" stroke="#14b8a6" stroke-width="4" fill="none" stroke-linecap="round" />
+            
+            <circle cx="90" cy="42" r="4" fill="#5eead4" />
+            <circle cx="130" cy="60" r="4" fill="#5eead4" />
+        </svg>
+    </div>
+
+    <div class="px-3 pb-3">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="font-bold text-lg text-slate-800">Fonksiyonlar</h3>
+            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
+        </div>
+        <p class="text-sm text-slate-500 mb-5">Girdi-çıktı ilişkisini, grafik dönüşümlerini ve tanım kümesini interaktif keşfedin.</p>
+        
+        <button onclick="openSim('./fonksiyonlar.html', 'Fonksiyonlar Modeli')" 
+                class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-teal-600 group-hover:text-white transition-all shadow-sm">
+            Simülasyonu Başlat
+        </button>
+    </div>
+</div>
+
+
+
+                <div class="group bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-red-400 hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-300">
+    
+    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-red-50 transition-colors">
+        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+            <path d="M40 100 Q 100 100 160 20" stroke="#fca5a5" stroke-width="2" fill="none" stroke-dasharray="4" />
+            
+            <rect x="60" y="60" width="40" height="40" rx="8" fill="#ef4444" fill-opacity="0.9" />
+            <rect x="105" y="35" width="20" height="20" rx="4" fill="#f87171" />
+            
+            <path d="M70 80 L90 80 M110 45 L120 45" stroke="white" stroke-width="3" stroke-linecap="round" />
+        </svg>
+    </div>
+
+    <div class="px-3 pb-3">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="font-bold text-lg text-slate-800">Üslü Sayılar</h3>
+            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
+        </div>
+        <p class="text-sm text-slate-500 mb-5">Sayıların kendisiyle tekrarlı çarpımını ve kuvvet kavramını modellerle keşfedin.</p>
+        
+        <button onclick="openSim('./uslu-sayilar.html', 'Üslü Sayılar Modeli')" 
+                class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-red-600 group-hover:text-white transition-all shadow-sm">
+            Simülasyonu Başlat
+        </button>
+    </div>
+</div>
+
+
+                <div class="group bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300">
+    
+    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-indigo-50 transition-colors">
+        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+            <rect x="110" y="40" width="40" height="40" rx="4" fill="#c7d2fe" fill-opacity="0.3" />
+            <path d="M110 60 H150 M130 40 V80" stroke="#818cf8" stroke-width="1" stroke-dasharray="2" />
+            
+            <path d="M40 70 L55 90 L75 30 L150 30" stroke="#6366f1" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            
+            <circle cx="110" cy="55" r="6" fill="#4f46e5" />
+        </svg>
+    </div>
+
+    <div class="px-3 pb-3">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="font-bold text-lg text-slate-800">Köklü Sayılar</h3>
+            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
+        </div>
+        <p class="text-sm text-slate-500 mb-5">Kök dışına çıkarma, yaklaşık değer bulma ve kare alan ilişkisini interaktif keşfedin.</p>
+        
+        <button onclick="openSim('./koklu-sayilar.html', 'Köklü Sayılar Modeli')" 
+                class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+            Simülasyonu Başlat
+        </button>
+    </div>
+</div>
+
+
+                <div class="group bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-yellow-400 hover:shadow-2xl hover:shadow-yellow-500/10 transition-all duration-300">
+    
+    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-yellow-50 transition-colors">
+        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+            <circle cx="85" cy="60" r="25" stroke="#eab308" stroke-width="3" fill="none" />
+            <circle cx="115" cy="60" r="25" stroke="#eab308" stroke-width="3" fill="none" />
+            
+            <path d="M100 40 A25 25 0 0 1 115 60 A25 25 0 0 1 100 80 A25 25 0 0 1 85 60 A25 25 0 0 1 100 40" fill="#fde047" fill-opacity="0.6" />
+            
+            <text x="75" y="65" font-size="12" font-weight="bold" fill="#ca8a04">p</text>
+            <text x="115" y="65" font-size="12" font-weight="bold" fill="#ca8a04">q</text>
+            <path d="M145 50 L160 60 L145 70" stroke="#ca8a04" stroke-width="2" fill="none" />
+        </svg>
+    </div>
+
+    <div class="px-3 pb-3">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="font-bold text-lg text-slate-800">Mantık</h3>
+            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
+        </div>
+        <p class="text-sm text-slate-500 mb-5">Önermeler, doğruluk tabloları ve mantık kapılarını interaktif olarak deneyimleyin.</p>
+        
+        <button onclick="openSim('./mantik.html', 'Mantık Modeli')" 
+                class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-yellow-500 group-hover:text-white transition-all shadow-sm">
+            Simülasyonu Başlat
+        </button>
+    </div>
+</div>
 
 
 
 
 
+
+
+
+
+
+                
 
                 </div>
         </div>
