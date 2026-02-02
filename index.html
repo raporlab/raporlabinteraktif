@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab İnteraktif | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .sidebar-item:hover { background: rgba(59, 130, 246, 0.05); color: #2563eb; }
+        .card-gradient { background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); }
+    </style>
+</head>
+<div id="simModal" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col">
+    <div class="h-16 flex items-center justify-between px-6 bg-slate-900 text-white">
+        <h2 id="modalTitle" class="font-bold">Simülasyon Başlığı</h2>
+        <button onclick="closeSim()" class="bg-red-500 px-4 py-1 rounded-lg font-bold">Kapat ✕</button>
+    </div>
+    <iframe id="simFrame" src="" class="flex-1 w-full border-none bg-white"></iframe>
+</div>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col shrink-0">
+        <div class="p-8">
+            <h1 class="text-2xl tracking-tight">
+                <span class="font-extrabold text-slate-900">Raporlab</span><span class="font-light text-slate-500 ml-1">İnteraktif</span>
+            </h1>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2">
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-4">Dersler</div>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-blue-600 bg-blue-50">
+                <span class="mr-3 text-xl">📐</span> Matematik
+            </a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
+                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧪</span> Fizik <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
+            </a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
+                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧬</span> Kimya <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
+            </a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
+                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌍</span> Coğrafya <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
+            </a>
+        </nav>
+
+        <div class="p-6 border-t border-slate-100">
+            <div class="bg-slate-50 rounded-2xl p-4">
+                <p class="text-xs text-slate-500 leading-relaxed mb-3">Bu platform tamamen ücretsizdir. Gelişime destek olmak ister misiniz?</p>
+                <button class="w-full bg-slate-900 text-white text-sm py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition shadow-sm">Bağış Yap ☕</button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
+        
+        <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-10 shrink-0">
+            <div class="relative w-96">
+                <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 italic">🔍</span>
+                <input type="text" placeholder="Simülasyon veya konu ara..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition-all">
+            </div>
+            <div class="flex items-center space-x-4">
+                <select class="bg-transparent border-none text-sm font-semibold text-slate-600 outline-none cursor-pointer hover:text-blue-600 transition">
+                    <option>Tüm Konular</option>
+                    <option>Sayılar</option>
+                    <option>Fonksiyonlar</option>
+                    <option>Geometri</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-10">
+            <div class="mb-8">
+                <h2 class="text-3xl font-extrabold text-slate-900">Matematik Simülasyonları</h2>
+                <p class="text-slate-500 mt-1 font-medium">Öğrenmeyi kolaylaştıran 10 aktif interaktif model.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+                
+<div class="group bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+    
+    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-blue-50 transition-colors">
+        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+            <circle cx="160" cy="30" r="15" fill="#e2e8f0" opacity="0.5" />
+            <rect x="20" y="80" width="10" height="10" fill="#cbd5e1" />
+            
+            <rect x="40" y="40" width="40" height="40" rx="8" fill="#3b82f6" fill-opacity="0.8" />
+            <rect x="90" y="60" width="20" height="20" rx="4" fill="#60a5fa" />
+            <path d="M40 40 L110 40 M40 60 L110 60" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4" />
+            <circle cx="60" cy="60" r="5" fill="white" />
+            <circle cx="100" cy="70" r="3" fill="white" />
+        </svg>
+    </div>
+
+    <div class="px-3 pb-3">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="font-bold text-lg text-slate-800">Ebob - Ekok</h3>
+            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
+        </div>
+        <p class="text-sm text-slate-500 mb-5">Sayıların ortak bölenlerini ve katlarını görselleştirerek keşfedin.</p>
+        
+        <button onclick="openSim('sims/ebob-ekok/index.html', 'Ebob - Ekok Modeli')" 
+                class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+            Simülasyonu Başlat
+        </button>
+    </div>
+</div>
+
+                </div>
+        </div>
+    </main>
+<script>
+    function openSim(url, title) {
+        const modal = document.getElementById('simModal');
+        const frame = document.getElementById('simFrame');
+        const titleEl = document.getElementById('modalTitle');
+        
+        frame.src = url; // Simülasyonun yolunu ayarlar
+        titleEl.innerText = title; // Başlığı değiştirir
+        modal.classList.remove('hidden'); // Pencereyi gösterir
+    }
+
+    function closeSim() {
+        const modal = document.getElementById('simModal');
+        const frame = document.getElementById('simFrame');
+        
+        modal.classList.add('hidden'); // Pencereyi gizler
+        frame.src = ""; // Belleği temizlemek için içeriği boşaltır
+    }
+</script>
+</body>
+</html>
