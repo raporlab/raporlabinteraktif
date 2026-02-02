@@ -17,11 +17,16 @@
         <h2 id="modalTitle" class="font-bold">Simülasyon Başlığı</h2>
         <button onclick="closeSim()" class="bg-red-500 px-4 py-1 rounded-lg font-bold">Kapat ✕</button>
     </div>
+
+<div class="md:hidden bg-amber-100 text-amber-800 text-[10px] p-2 text-center font-bold">
+        ⚠️ En iyi deneyim için cihazınızı yatay çevirin veya bilgisayardan girin.
+    </div>
+    
     <iframe id="simFrame" src="" class="flex-1 w-full border-none bg-white"></iframe>
 </div>
-<body class="flex h-screen overflow-hidden text-slate-800">
+<body class="flex flex-col md:flex-row h-screen overflow-hidden text-slate-800">
 
-    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col shrink-0">
+    <aside class="w-full md:w-72 bg-white border-b md:border-r border-slate-200 flex flex-col shrink-0">
         <div class="p-8">
             <h1 class="text-2xl tracking-tight">
                 <span class="font-extrabold text-slate-900">Raporlab</span><span class="font-light text-slate-500 ml-1">İnteraktif</span>
@@ -55,9 +60,9 @@
     <main class="flex-1 flex flex-col overflow-hidden">
         
         <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-10 shrink-0">
-            <div class="relative w-96">
-                <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 italic">🔍</span>
-                <input type="text" placeholder="Simülasyon veya konu ara..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition-all">
+            <div class="relative w-full max-w-md">
+    <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 italic">🔍</span>
+    <input type="text" placeholder="Simülasyon veya konu ara..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition-all">
         </header>
 
         <div class="flex-1 overflow-y-auto p-10">
