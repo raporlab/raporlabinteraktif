@@ -99,10 +99,10 @@
         </div>
         <p class="text-sm text-slate-500 mb-5">Sayıların ortak bölenlerini ve katlarını görselleştirerek keşfedin.</p>
         
-        <button onclick="openSim('ebob-ekok.html')" 
-                class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-            Simülasyonu Başlat
-        </button>
+<button onclick="openSim('./ebob-ekok.html', 'Ebob - Ekok Modeli')" 
+        class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+    Simülasyonu Başlat
+</button>
     </div>
 </div>
 
@@ -110,15 +110,18 @@
         </div>
     </main>
 <script>
-    function openSim(url, title) {
-        const modal = document.getElementById('simModal');
-        const frame = document.getElementById('simFrame');
-        const titleEl = document.getElementById('modalTitle');
-        
-        frame.src = url; // Simülasyonun yolunu ayarlar
-        titleEl.innerText = title; // Başlığı değiştirir
-        modal.classList.remove('hidden'); // Pencereyi gösterir
-    }
+function openSim(url, title) {
+    const modal = document.getElementById('simModal');
+    const frame = document.getElementById('simFrame');
+    const titleEl = document.getElementById('modalTitle');
+    
+    // URL'nin başına depo adını veya ./ ekleyerek tam yolu garantiye alıyoruz
+    frame.src = url; 
+    titleEl.innerText = title; 
+    modal.classList.remove('hidden');
+    // Arka planın kaymasını engellemek için:
+    document.body.style.overflow = 'hidden';
+}
 
     function closeSim() {
         const modal = document.getElementById('simModal');
