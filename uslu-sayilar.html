@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Üslü Ağaç</title>
+    <style>
+        :root {
+            /* RAPORLAB TEMA (v3.4 - Doğa Teması) */
+            --bg-app: #f0fdf4;      /* Çok açık yeşil */
+            --bg-panel: #ffffff;    
+            --text-main: #064e3b;   /* Koyu Orman Yeşili */
+            --text-muted: #64748b;
+            
+            --brand-base: #854d0e;  /* Gövde Rengi (Kahve) */
+            --brand-exp: #16a34a;   /* Yaprak Rengi (Yeşil) */
+            
+            --border: #dcfce7;
+            --radius: 16px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 340px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.03);
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 4px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--brand-exp); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Sonuç Göstergesi */
+        .result-box {
+            background: #065f46; color: white;
+            padding: 20px; border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(6, 95, 70, 0.2);
+        }
+        .math-eq { font-family: var(--font-mono); font-size: 1.8rem; letter-spacing: 2px; }
+        .math-res { font-size: 2.5rem; font-weight: 800; color: #4ade80; line-height: 1; margin-top: 5px; }
+        .math-desc { font-size: 0.85rem; color: #a7f3d0; margin-top: 10px; border-top: 1px solid #047857; padding-top: 10px; }
+
+        .params { background: white; padding: 20px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        .slider-row { margin-bottom: 20px; }
+        .label-row { display: flex; justify-content: space-between; font-weight: 600; font-size: 1rem; margin-bottom: 10px; }
+
+        input[type="range"] { width: 100%; -webkit-appearance: none; background: #e2e8f0; height: 8px; border-radius: 4px; outline: none; }
+        
+        /* Kahverengi Slider (Taban) */
+        #inpBase::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 24px; height: 24px; 
+            background: var(--brand-base); border: 3px solid white; border-radius: 50%; 
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s;
+        }
+        
+        /* Yeşil Slider (Üs) */
+        #inpExp::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 24px; height: 24px; 
+            background: var(--brand-exp); border: 3px solid white; border-radius: 50%; 
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .info-panel { 
+            margin-top: auto; background: #ecfccb; 
+            border-left: 4px solid var(--brand-base); 
+            padding: 15px; border-radius: 8px; 
+            font-size: 0.9rem; line-height: 1.5; color: #3f6212;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background: linear-gradient(to top, #f0fdf4 0%, #ffffff 100%);
+            display: flex; justify-content: center; align-items: flex-end;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="result-box">
+        <div class="math-eq">
+            <span style="color:#fbbf24" id="dispBase">2</span>
+            <sup style="color:#fff" id="dispExp">3</sup>
+        </div>
+        <div class="math-res" id="dispRes">8</div>
+        <div class="math-desc">Tane Uç Dal (Yeşil Yaprak)</div>
+    </div>
+
+    <div class="params">
+        <h3>Ağaç Yapısı</h3>
+        
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--brand-base)">
+                <span>Taban (Dallanma Sayısı)</span>
+                <span id="lblBase">2</span>
+            </div>
+            <input type="range" id="inpBase" id="inpBase" min="1" max="5" value="2">
+        </div>
+
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--brand-exp)">
+                <span>Üs (Ağaç Yüksekliği)</span>
+                <span id="lblExp">3</span>
+            </div>
+            <input type="range" id="inpExp" min="0" max="7" value="3">
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        Ağacın her dalı ucundan 2 yeni dal çıkarıyor. Bu işlem 3 kez tekrarlanıyor.
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0,
+        height: 0,
+        
+        state: {
+            base: 2,
+            exp: 3,
+            maxDepth: 0, // Animasyon için anlık derinlik
+            animProgress: 0
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            const sBase = document.getElementById('inpBase');
+            const sExp = document.getElementById('inpExp');
+
+            sBase.addEventListener('input', (e) => this.update(e.target.value, this.state.exp));
+            sExp.addEventListener('input', (e) => this.update(this.state.base, e.target.value));
+
+            window.addEventListener('resize', () => this.resize());
+            
+            this.resize();
+            this.update(2, 3);
+            this.loop();
+        },
+
+        resize: function() {
+            const main = document.querySelector('main');
+            this.width = this.canvas.width = main.clientWidth;
+            this.height = this.canvas.height = main.clientHeight;
+        },
+
+        update: function(b, e) {
+            this.state.base = parseInt(b);
+            this.state.exp = parseInt(e);
+            
+            // UI Güncelleme
+            document.getElementById('lblBase').innerText = this.state.base;
+            document.getElementById('lblExp').innerText = this.state.exp;
+            document.getElementById('dispBase').innerText = this.state.base;
+            document.getElementById('dispExp').innerText = this.state.exp;
+            
+            const result = Math.pow(this.state.base, this.state.exp);
+            document.getElementById('dispRes').innerText = result;
+
+            // Açıklama Metni
+            const info = document.getElementById('infoText');
+            if(this.state.exp === 0) info.innerHTML = "<b>0. Kuvvet:</b> Sadece gövde (1 birim) var. Dallanma yok.";
+            else if(this.state.base === 1) info.innerHTML = "<b>Taban 1:</b> 1'in tüm kuvvetleri 1'dir. Ağaç dümdüz uzar, hiç çoğalmaz.";
+            else info.innerHTML = `Her dal ucundan <b>${this.state.base}</b> yeni dal çıkarıyor.<br>Bu işlem <b>${this.state.exp}</b> seviye boyunca devam ediyor.`;
+
+            // Animasyon Reset
+            this.state.animProgress = 0;
+        },
+
+        loop: function() {
+            // Animasyon hızı
+            if (this.state.animProgress < 1) {
+                this.state.animProgress += 0.02;
+                if(this.state.animProgress > 1) this.state.animProgress = 1;
+            }
+
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            
+            // Ağacı Çizmeye Başla (Alttan Ortadan)
+            // Başlangıç boyu: Exp arttıkça başlangıç boyunu kısalt ki ekrana sığsın
+            const startLen = this.height / 3.5; 
+            
+            this.ctx.save();
+            this.ctx.translate(this.width / 2, this.height); // Orijini alt ortaya al
+            
+            // Rekürsif Çizim
+            this.drawBranch(startLen, 0, this.state.exp);
+            
+            this.ctx.restore();
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawBranch: function(len, depth, maxDepth) {
+            const s = this.state;
+            
+            // Animasyon kontrolü: Bu seviye çizilmeli mi?
+            // animProgress 0-1 arası. maxDepth ile çarpıp hangi seviyeye kadar çizeceğimizi buluyoruz.
+            const currentVisDepth = s.animProgress * (s.exp + 1);
+            if (depth > currentVisDepth) return;
+
+            // Dalı Çiz
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, 0);
+            
+            // Eğer animasyon bu daldaysa uzama efekti ver
+            let drawLen = len;
+            if (depth > currentVisDepth - 1) {
+                drawLen = len * (currentVisDepth - depth);
+            }
+            
+            this.ctx.lineTo(0, -drawLen);
+            
+            // Renk ve Kalınlık Ayarı
+            // Gövde kalın ve kahverengi, uçlar ince ve yeşil
+            const thickness = map(depth, 0, s.exp, 12, 1); 
+            this.ctx.lineWidth = thickness;
+            
+            if (depth === s.exp) {
+                // En uç yapraklar
+                this.ctx.strokeStyle = '#22c55e'; // Parlak Yeşil
+                // Uçlara yaprak efekti (daire)
+                if(drawLen > len * 0.9) { // Sadece tam uzadığında yaprak koy
+                    this.ctx.fillStyle = '#4ade80';
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, -drawLen, 4, 0, Math.PI*2);
+                    this.ctx.fill();
+                    this.ctx.beginPath(); // Path'i resetle çizgi için
+                    this.ctx.moveTo(0,0); 
+                    this.ctx.lineTo(0, -drawLen);
+                }
+            } else {
+                // Gövde ve ara dallar
+                this.ctx.strokeStyle = `rgb(${133 - depth*20}, ${77 - depth*10}, 14)`; // Kahverengiden koyuya
+            }
+            
+            this.ctx.stroke();
+
+            // Yeni Dallar İçin Hazırlık
+            if (drawLen < len) return; // Henüz tam uzamadıysa dallanma
+
+            if (depth < s.exp) {
+                this.ctx.translate(0, -len); // Dalın ucuna git
+                
+                // Dallanma Açısı
+                // Taban arttıkça açıyı genişlet, ama çok abartma
+                // Base 2: -20, +20
+                // Base 3: -30, 0, +30
+                const spread = 70; // Toplam yayılma açısı (derece)
+                const startAngle = -spread / 2;
+                const stepAngle = s.base === 1 ? 0 : spread / (s.base - 1);
+
+                for(let i=0; i < s.base; i++) {
+                    let angle = 0;
+                    if(s.base === 1) angle = 0; // Taban 1 ise dümdüz
+                    else angle = startAngle + (i * stepAngle);
+                    
+                    this.ctx.save();
+                    this.ctx.rotate(angle * Math.PI / 180);
+                    this.ctx.scale(0.75, 0.75); // Her seviyede küçült
+                    
+                    this.drawBranch(len, depth + 1, maxDepth);
+                    
+                    this.ctx.restore();
+                }
+            }
+        }
+    };
+
+    // Yardımcı map fonksiyonu
+    function map(value, x1, y1, x2, y2) {
+        return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
+    }
+
+    window.onload = function() { app.init(); };
+</script>
+</body>
+</html>
+
