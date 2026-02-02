@@ -12,7 +12,8 @@
         .card-gradient { background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); }
     </style>
 </head>
-<div id="simModal" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col">
+<div id="simModal" class="hidden fixed inset-0 bg-black/90 z-[100] flex flex-col">
+    </div>
     <div class="h-16 flex items-center justify-between px-6 bg-slate-900 text-white">
         <h2 id="modalTitle" class="font-bold">Simülasyon Başlığı</h2>
         <button onclick="closeSim()" class="bg-red-500 px-4 py-1 rounded-lg font-bold">Kapat ✕</button>
@@ -318,21 +319,35 @@ function openSim(url, title) {
     const frame = document.getElementById('simFrame');
     const titleEl = document.getElementById('modalTitle');
     
-    // URL'nin başına depo adını veya ./ ekleyerek tam yolu garantiye alıyoruz
     frame.src = url; 
     titleEl.innerText = title; 
+    
+    // Modalı görünür yap
     modal.classList.remove('hidden');
-    // Arka planın kaymasını engellemek için:
+    
+    // Sidebar'ın (z-50) üzerine çıkması için 100 yapıyoruz
+    modal.style.zIndex = "100"; 
+    
+    // Arka planın kaymasını engelle
     document.body.style.overflow = 'hidden';
 }
 
-    function closeSim() {
-        const modal = document.getElementById('simModal');
-        const frame = document.getElementById('simFrame');
-        
-        modal.classList.add('hidden'); // Pencereyi gizler
-        frame.src = ""; // Belleği temizlemek için içeriği boşaltır
-    }
+function closeSim() {
+    const modal = document.getElementById('simModal');
+    const frame = document.getElementById('simFrame');
+    
+    // Pencereyi gizle
+    modal.classList.add('hidden'); 
+    
+    // Belleği ve içeriği temizle
+    frame.src = ""; 
+    
+    // Kapatıldığında katman önceliğini sıfırla
+    modal.style.zIndex = "-1";
+
+    // Sayfanın tekrar kaydırılabilir olmasını sağla (Kritik nokta)
+    document.body.style.overflow = 'auto'; 
+}
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
