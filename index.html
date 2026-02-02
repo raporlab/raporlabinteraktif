@@ -93,88 +93,68 @@
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-10 bg-[#f8fafc]">
             <div id="kesfet-content" class="block">
-<div id="kesfetSayfasi" class="space-y-8 pb-20">
+<div id="kesfetSayfasi" class="space-y-6 pb-20">
     <div class="w-full">
-        <h2 class="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Raporlab İnteraktif Eğitim Ekosistemi</h2>
-        <p class="text-base md:text-lg text-slate-600 leading-relaxed font-medium opacity-90 max-w-5xl">
-            Karmaşık teorileri somut deneyimlere dönüştüren, matematik ve fen bilimlerini sadece teorik olmaktan çıkarıp dokunulabilir kılan yeni nesil dijital laboratuvarınız. Öğrenme sürecini kişiselleştiren simülasyonlarımızla bilginin kalıcılığını artırıyoruz.
-        </p>
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Raporlab İnteraktif</h2>
+        <p class="text-sm text-slate-500 font-medium">Karmaşık teorileri somut deneyimlere dönüştüren dijital laboratuvar.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-7 bg-gradient-to-br from-blue-600 to-indigo-800 rounded-[2.5rem] p-8 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-blue-500/20 min-h-[380px] flex flex-col justify-center">
-            <div class="relative z-10 max-w-lg">
-                <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block backdrop-blur-md">Geleceğin Eğitim Teknolojisi</span>
-                <h3 class="text-3xl md:text-4xl font-extrabold mb-4 leading-snug">Sınırları Zorlayan<br>İnteraktif Deneyimler</h3>
-                <p class="text-blue-100 text-sm md:text-base leading-relaxed mb-6 opacity-95">
-                    Raporlab, öğrencilerin ve öğretmenlerin ders konularını görselleştirerek daha derinlemesine anlamasını sağlar. Değişkenleri gerçek zamanlı manipüle edin, hipotezler kurun ve sonuçları anında simüle ederek yaparak-yaşayarak öğrenme metodunu dijital dünyada keşfedin.
+        <div class="lg:col-span-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl flex flex-col justify-center min-h-[300px]">
+            <div class="relative z-10 max-w-sm">
+                <h3 class="text-3xl font-bold mb-3 leading-tight">Dokun, Dene ve Gerçekten Öğren</h3>
+                <p class="text-blue-100 text-sm leading-relaxed mb-6 opacity-90">
+                    Modelleri manipüle edin ve sonuçları gerçek zamanlı gözlemleyin. Deneyerek öğrenmenin en kısa yolu.
                 </p>
-                <button onclick="showPage('matematik')" class="bg-white text-blue-700 px-8 py-3 rounded-xl font-bold hover:scale-105 transition-transform shadow-lg text-sm">
-                    Simülasyon Kütüphanesine Git
+                <button onclick="showPage('matematik')" class="bg-white text-blue-700 px-6 py-2.5 rounded-xl font-bold hover:shadow-lg transition-all text-sm w-fit">
+                    Hemen Başla
                 </button>
             </div>
-            <div class="absolute -right-12 top-1/2 -translate-y-1/2 opacity-10 hidden xl:block">
-                <div class="w-64 h-64 border-8 border-white/10 rounded-full animate-[spin_40s_linear_infinite] flex items-center justify-center text-8xl">📐</div>
+            <div class="absolute right-10 top-1/2 -translate-y-1/2 w-48 h-48 bg-white/5 rounded-full border border-white/10 flex items-center justify-center text-6xl hidden md:flex">
+                🧪
             </div>
         </div>
         
-        <div class="lg:col-span-5 grid grid-cols-2 gap-4">
-            <div class="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-xl">🚀</div>
-                <div>
-                    <h4 class="text-sm font-bold text-slate-800 mb-1">Hızlı Erişim</h4>
-                    <p class="text-[11px] text-slate-500 leading-tight">En çok tercih edilen simülasyonlara anında ulaşım.</p>
-                </div>
+        <div class="lg:col-span-4 grid grid-cols-2 gap-4">
+            <div class="aspect-square bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm flex flex-col items-center justify-center text-center hover:border-blue-200 transition-colors">
+                <span class="text-2xl mb-2">🚀</span>
+                <h4 class="text-xs font-bold text-slate-800">Hızlı Erişim</h4>
+                <p class="text-[10px] text-slate-400 mt-1">Anında simülasyon</p>
             </div>
-            <div class="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-xl">📱</div>
-                <div>
-                    <h4 class="text-sm font-bold text-slate-800 mb-1">Tam Uyumluluk</h4>
-                    <p class="text-[11px] text-slate-500 leading-tight">Tablet ve telefonlarda kesintisiz eğitim deneyimi.</p>
-                </div>
+            <div class="aspect-square bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm flex flex-col items-center justify-center text-center hover:border-green-200 transition-colors">
+                <span class="text-2xl mb-2">📱</span>
+                <h4 class="text-xs font-bold text-slate-800">Mobil Uyum</h4>
+                <p class="text-[10px] text-slate-400 mt-1">Her cihazda aktif</p>
             </div>
-            <div class="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center text-xl">📚</div>
-                <div>
-                    <h4 class="text-sm font-bold text-slate-800 mb-1">Zengin İçerik</h4>
-                    <p class="text-[11px] text-slate-500 leading-tight">300+ hedef simülasyonla geniş ders kapsamı.</p>
-                </div>
+            <div class="aspect-square bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm flex flex-col items-center justify-center text-center hover:border-purple-200 transition-colors">
+                <span class="text-2xl mb-2">📚</span>
+                <h4 class="text-xs font-bold text-slate-800">Zengin Arşiv</h4>
+                <p class="text-[10px] text-slate-400 mt-1">Geniş içerik</p>
             </div>
-            <div class="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-xl">💎</div>
-                <div>
-                    <h4 class="text-sm font-bold text-slate-800 mb-1">Sürekli Özgür</h4>
-                    <p class="text-[11px] text-slate-500 leading-tight">Eğitimde fırsat eşitliği için tamamen ücretsiz.</p>
-                </div>
+            <div class="aspect-square bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm flex flex-col items-center justify-center text-center hover:border-orange-200 transition-colors">
+                <span class="text-2xl mb-2">💎</span>
+                <h4 class="text-xs font-bold text-slate-800">Ücretsiz</h4>
+                <p class="text-[10px] text-slate-400 mt-1">Eğitimde eşitlik</p>
             </div>
         </div>
     </div>
 
-    <div class="bg-slate-900 rounded-[3rem] p-10 md:p-14 text-white relative overflow-hidden">
-        <div class="max-w-6xl relative z-10">
-            <h3 class="text-2xl md:text-3xl font-bold mb-8 flex items-center">
-                <span class="w-8 h-1 bg-blue-500 mr-4 rounded-full"></span>
-                Eğitimde Eşitlik Manifestomuz
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div class="space-y-5 text-slate-400 text-sm md:text-base leading-relaxed">
-                    <p>Dünya genelinde dijital eğitim araçlarına erişim giderek zorlaşırken, biz bu vizyonu yerli imkanlarla ve her bir satırı tutkuyla yazılmış bir projeye dönüştürdük. Raporlab, bilginin bir ödeme duvarı arkasına saklanmasına karşı durur.</p>
-                    <p>Amacımız, en gelişmiş simülasyon teknolojilerini Türkiye'nin her köşesindeki öğrenciye ulaştırmaktır. <strong class="text-white">Raporlab İnteraktif</strong> projesi, kar amacı gütmeyen, sadece bilimin ışığında büyüyen bir topluluk hareketidir.</p>
-                </div>
-                <div class="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] backdrop-blur-sm shadow-inner">
-                    <p class="text-sm text-slate-300 mb-8 italic leading-relaxed">"Geleceği inşa etmek için gereken teknolojik araçlar, bir imtiyaz değil, her öğrencinin en temel hakkıdır. Gelişimimize katkıda bulunarak bu yolculuğun bir parçası olabilirsiniz."</p>
-                    <div class="flex flex-col sm:flex-row items-center gap-6">
-                        <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="w-full sm:w-auto bg-white text-slate-900 px-10 py-4 rounded-2xl font-bold hover:bg-blue-50 transition-all text-center text-sm shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                            Bir Kahve Ismarla ☕
-                        </a>
-                        <div class="text-[11px] text-slate-500 max-w-[180px] leading-tight text-center sm:text-left">
-                            Bağışlarınız doğrudan sunucu altyapısı ve yeni içeriklerin üretimine aktarılır.
-                        </div>
-                    </div>
-                </div>
+    <div class="bg-slate-900 rounded-[2.5rem] p-8 md:p-10 text-white relative overflow-hidden shadow-2xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10">
+            <div>
+                <h3 class="text-xl font-bold mb-4 border-l-4 border-blue-500 pl-4">Manifestomuz</h3>
+                <p class="text-sm text-slate-400 leading-relaxed italic">
+                    "Eğitimde fırsat eşitliği için yerli ve tamamen ücretsiz bir ekosistem inşa ediyoruz. Bilgi bir hak olmalı, ayrıcalık değil."
+                </p>
+            </div>
+            <div class="flex flex-col items-center md:items-end gap-4">
+                <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="bg-white text-slate-900 px-8 py-3 rounded-xl font-bold text-sm hover:scale-105 transition-transform">
+                    Bir Kahve Ismarla ☕
+                </a>
+                <p class="text-[10px] text-slate-500 text-center md:text-right">Bağışlarınız sunucu ve içerik maliyetleri içindir.</p>
             </div>
         </div>
-        <div class="absolute -right-24 -bottom-24 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]"></div>
+        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
     </div>
 </div>
     </div>
