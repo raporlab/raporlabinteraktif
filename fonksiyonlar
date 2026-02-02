@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Koordinat Sistemi (Temiz)</title>
+    <style>
+        :root {
+            /* RAPORLAB TEMA (v3.1 - Temiz Izgara) */
+            --bg-app: #f8fafc;      /* Daha aydınlık arka plan */
+            --bg-panel: #ffffff;    
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            
+            --brand-blue: #2563eb;  /* Fonksiyon Çizgisi (Vurgulu) */
+            --brand-orange: #f97316; /* Gezgin Nokta */
+            
+            /* --- REVİZE EDİLEN RENKLER --- */
+            --grid-line: #e2e8f0;   /* Izgara çizgileri: ÇOK AÇIK GRİ */
+            --axis-line: #64748b;   /* X-Y Eksenleri: Yumuşak Gri/Mavi */
+            
+            --border: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', 'Monaco', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 340px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.02);
+        }
+
+        .logo { 
+            font-size: 1.6rem; display: flex; align-items: baseline; gap: 4px; 
+            user-select: none; margin-bottom: 5px;
+        }
+        .logo .brand-bold { font-weight: 800; color: var(--brand-blue); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Denklem Göstergesi */
+        .math-display {
+            background: var(--text-main);
+            color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .math-display::before {
+            content: 'y = mx + n';
+            position: absolute;
+            top: 5px; left: 10px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            font-family: var(--font);
+        }
+
+        .params { background: var(--bg-app); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        
+        .slider-row { margin-bottom: 20px; }
+        .label-row { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.95rem; margin-bottom: 10px; }
+
+        input[type="range"] { width: 100%; -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 3px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 20px; height: 20px; 
+            background: white; border: 4px solid var(--brand-blue); border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        
+        /* Turuncu slider (Test Noktası için) */
+        input.tracer-slider::-webkit-slider-thumb { border-color: var(--brand-orange); }
+
+        .info-panel { 
+            margin-top: auto; background: #eff6ff; 
+            border-left: 4px solid var(--brand-blue); 
+            padding: 15px; border-radius: 8px; 
+            font-size: 0.9rem; line-height: 1.5; color: #1e3a8a;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background-color: var(--bg-app);
+            display: flex; justify-content: center; align-items: center;
+            cursor: crosshair;
+        }
+
+        canvas {
+            background: #ffffff;
+            border-radius: 4px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="math-display" id="eqDisplay">
+        y = 1x + 0
+    </div>
+
+    <div class="params">
+        <h3>Fonksiyon Ayarları</h3>
+        
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--brand-blue)">
+                <span>Eğim (m)</span>
+                <span id="lblM">1</span>
+            </div>
+            <input type="range" id="inpM" min="-5" max="5" step="0.5" value="1">
+        </div>
+
+        <div class="slider-row">
+            <div class="label-row" style="color:#0f172a">
+                <span>Kesen (n)</span>
+                <span id="lblN">0</span>
+            </div>
+            <input type="range" id="inpN" min="-5" max="5" step="1" value="0">
+        </div>
+    </div>
+
+    <div class="params" style="border-color: var(--brand-orange);">
+        <h3 style="color:var(--brand-orange)">Test Noktası (Gezgin)</h3>
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--brand-orange)">
+                <span>Giriş Değeri (x)</span>
+                <span id="lblX">2</span>
+            </div>
+            <input type="range" id="inpX" class="tracer-slider" min="-8" max="8" step="0.5" value="2">
+        </div>
+        <div style="text-align:center; font-weight:bold; color:var(--brand-orange); font-family:var(--font-mono)">
+            f(<span id="valInput">2</span>) = <span id="valOutput" style="font-size:1.2rem">2</span>
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        Yükleniyor...
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0,
+        height: 0,
+        
+        // Koordinat Sistemi Ayarları
+        scale: 40, 
+        offsetX: 0,
+        offsetY: 0,
+
+        state: {
+            m: 1,  
+            n: 0,  
+            x: 2   
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            const inpM = document.getElementById('inpM');
+            const inpN = document.getElementById('inpN');
+            const inpX = document.getElementById('inpX');
+
+            inpM.addEventListener('input', (e) => this.updateState('m', e.target.value));
+            inpN.addEventListener('input', (e) => this.updateState('n', e.target.value));
+            inpX.addEventListener('input', (e) => this.updateState('x', e.target.value));
+
+            window.addEventListener('resize', () => this.resize());
+            
+            this.resize();
+            this.updateUI(); 
+            this.loop();
+        },
+
+        resize: function() {
+            const main = document.querySelector('main');
+            this.width = this.canvas.width = main.clientWidth - 40;
+            this.height = this.canvas.height = main.clientHeight - 40;
+            
+            this.offsetX = this.width / 2;
+            this.offsetY = this.height / 2;
+        },
+
+        updateState: function(key, val) {
+            this.state[key] = parseFloat(val);
+            this.updateUI();
+        },
+
+        updateUI: function() {
+            const { m, n, x } = this.state;
+            const y = (m * x) + n;
+
+            document.getElementById('lblM').innerText = m;
+            document.getElementById('lblN').innerText = n;
+            document.getElementById('lblX').innerText = x;
+            
+            document.getElementById('valInput').innerText = x;
+            document.getElementById('valOutput').innerText = y;
+
+            // Matematiksel Denklem Yazımı
+            let mText = `${m}x`;
+            if (m === 0) mText = ""; 
+            else if (m === 1) mText = "x";
+            else if (m === -1) mText = "-x";
+
+            let nText = "";
+            if (n > 0) nText = `+ ${n}`;
+            else if (n < 0) nText = `- ${Math.abs(n)}`;
+            else if (m === 0) nText = "0";
+
+            if (m === 0 && n > 0) nText = `${n}`;
+
+            document.getElementById('eqDisplay').innerText = `y = ${mText} ${nText}`.trim();
+
+            const info = document.getElementById('infoText');
+            info.innerHTML = `<strong>Analiz:</strong><br>
+                Eğim (m) = <b>${m}</b>: Çizgi her 1 birim sağa gittiğinde, ${m} birim ${m>=0 ? 'yukarı' : 'aşağı'} gidiyor.<br><br>
+                Kesen (n) = <b>${n}</b>: Çizgi y eksenini ${n} noktasında kesiyor.`;
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            
+            this.drawGrid();
+            this.drawAxes();
+            this.drawFunction();
+            this.drawTracer();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        toCanvasX: function(gridX) { return this.offsetX + (gridX * this.scale); },
+        toCanvasY: function(gridY) { return this.offsetY - (gridY * this.scale); },
+
+        // --- REVİZE EDİLEN GRID ÇİZİMİ ---
+        drawGrid: function() {
+            const ctx = this.ctx;
+            ctx.strokeStyle = "var(--grid-line)"; // CSS'ten gelen yeni açık renk
+            ctx.lineWidth = 0.25; // ÇİZGİ KALINLIĞI İNCELTİLDİ (1 -> 0.5)
+            ctx.beginPath();
+
+            const maxGridX = Math.ceil(this.width / 2 / this.scale);
+            const maxGridY = Math.ceil(this.height / 2 / this.scale);
+
+            for(let i = -maxGridX; i <= maxGridX; i++) {
+                const x = this.toCanvasX(i);
+                ctx.moveTo(x, 0); ctx.lineTo(x, this.height);
+            }
+            for(let i = -maxGridY; i <= maxGridY; i++) {
+                const y = this.toCanvasY(i);
+                ctx.moveTo(0, y); ctx.lineTo(this.width, y);
+            }
+            ctx.stroke();
+        },
+
+        drawAxes: function() {
+            const ctx = this.ctx;
+            ctx.strokeStyle = "var(--axis-line)"; // Yeni yumuşak eksen rengi
+            ctx.lineWidth = 2; // Ana eksenler kalın kalıyor
+            ctx.beginPath();
+
+            ctx.moveTo(0, this.offsetY); ctx.lineTo(this.width, this.offsetY);
+            ctx.moveTo(this.offsetX, 0); ctx.lineTo(this.offsetX, this.height);
+            ctx.stroke();
+
+            ctx.fillStyle = "var(--text-muted)";
+            ctx.font = "10px sans-serif";
+            ctx.textAlign = "center";
+            
+            const maxGridX = Math.ceil(this.width / 2 / this.scale);
+            for(let i = -maxGridX; i <= maxGridX; i++) {
+                if(i === 0) continue;
+                ctx.fillText(i, this.toCanvasX(i), this.offsetY + 15);
+            }
+        },
+
+        drawFunction: function() {
+            const ctx = this.ctx;
+            const { m, n } = this.state;
+
+            const minX = -this.offsetX / this.scale;
+            const maxX = (this.width - this.offsetX) / this.scale;
+
+            const y1 = (m * minX) + n;
+            const y2 = (m * maxX) + n;
+
+            ctx.strokeStyle = "var(--brand-blue)";
+            ctx.lineWidth = 2; // Fonksiyon çizgisi kalın ve belirgin
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(this.toCanvasX(minX), this.toCanvasY(y1));
+            ctx.lineTo(this.toCanvasX(maxX), this.toCanvasY(y2));
+            ctx.stroke();
+        },
+
+        drawTracer: function() {
+            const ctx = this.ctx;
+            const { m, n, x } = this.state;
+            const y = (m * x) + n;
+
+            const cx = this.toCanvasX(x);
+            const cy = this.toCanvasY(y);
+
+            ctx.strokeStyle = "var(--brand-orange)";
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            
+            ctx.moveTo(cx, cy); ctx.lineTo(cx, this.offsetY);
+            ctx.moveTo(cx, cy); ctx.lineTo(this.offsetX, cy);
+            
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = "var(--brand-orange)";
+            ctx.beginPath();
+            ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = "var(--text-main)";
+            ctx.font = "bold 14px sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(`(${x}, ${y})`, cx + 12, cy - 12);
+        }
+    };
+
+    window.onload = function() { app.init(); };
+</script>
+</body>
+</html>
+
