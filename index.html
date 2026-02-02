@@ -392,6 +392,35 @@
             document.body.style.overflow = 'hidden'; // Kaydırmayı engelle
         }
 
+function showPage(pageId) {
+    // Tüm içerik kutularını bul ve gizle
+    const kesfet = document.getElementById('kesfet-content');
+    const matematik = document.getElementById('matematik-content');
+    
+    if (pageId === 'kesfet') {
+        kesfet.classList.remove('hidden');
+        kesfet.classList.add('block');
+        matematik.classList.add('hidden');
+        matematik.classList.remove('block');
+    } else if (pageId === 'matematik') {
+        matematik.classList.remove('hidden');
+        matematik.classList.add('block');
+        kesfet.classList.add('hidden');
+        kesfet.classList.remove('block');
+    }
+
+    // Mobilde menüden bir yere basınca menünün kapanması için
+    if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    }
+    
+    // Sayfayı en yukarı taşı (geçiş hissi için)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+        
         function closeSim() {
             const modal = document.getElementById('simModal');
             const frame = document.getElementById('simFrame');
