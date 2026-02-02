@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab İnteraktif - Matematik</title>
+    <style>
+        :root {
+            /* RAPORLAB TEMA DEĞİŞKENLERİ */
+            --bg-app: #f1f5f9;      /* Slate 100 */
+            --bg-panel: #ffffff;    
+            --text-main: #1e293b;   /* Slate 800 */
+            --text-muted: #64748b;  /* Slate 500 */
+            
+            --brand-blue: #2563eb;  /* Ana Mavi */
+            --brand-orange: #f97316;/* Ana Turuncu */
+            --brand-purple: #7c3aed;/* EBOB Moru */
+            
+            --success: #10b981;     /* Yeşil */
+            --error: #ef4444;       /* Kırmızı */
+            --border: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            
+            --font: 'Segoe UI', 'Inter', system-ui, sans-serif;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 340px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.02);
+        }
+
+        /* Logo Yapısı */
+        .logo { 
+            font-size: 1.6rem; 
+            display: flex; 
+            align-items: baseline; 
+            gap: 4px; 
+            user-select: none; 
+            margin-bottom: 5px;
+        }
+        .logo .brand-bold { font-weight: 800; color: var(--brand-blue); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Buton Grupları */
+        .btn-group { display: flex; gap: 8px; background: var(--bg-app); padding: 5px; border-radius: 12px; border: 1px solid var(--border); }
+        .btn { 
+            flex: 1; border: none; background: transparent; 
+            padding: 10px; border-radius: 8px; 
+            cursor: pointer; color: var(--text-muted); 
+            font-weight: 600; font-family: var(--font); font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn:hover { color: var(--brand-blue); background: rgba(255,255,255,0.5); }
+        .btn.active { background: var(--bg-panel); color: var(--brand-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        /* Kontrol Butonları (Play/Pause) */
+        .control-btns { display: flex; gap: 10px; margin-top: 5px; }
+        .ctrl-btn {
+            flex: 1; padding: 10px; border: 1px solid var(--border);
+            border-radius: 8px; background: var(--bg-panel); cursor: pointer;
+            font-weight: 600; color: var(--text-main); transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .ctrl-btn:hover { background: var(--bg-app); border-color: var(--brand-blue); }
+        .ctrl-btn.pause-active { color: var(--brand-orange); border-color: var(--brand-orange); }
+
+        /* Parametre Kutusu */
+        .params { background: var(--bg-app); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        
+        .slider-row { margin-bottom: 15px; }
+        .slider-row:last-child { margin-bottom: 0; }
+        .label-row { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; }
+        
+        /* Modern Slider */
+        input[type="range"] { 
+            width: 100%; -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 3px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 20px; height: 20px; 
+            background: white; border: 4px solid var(--brand-blue); border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* Bilgi Alanı */
+        .info-panel { 
+            margin-top: auto; 
+            background: #fffbeb; 
+            border-left: 4px solid var(--brand-orange); 
+            padding: 15px; 
+            border-radius: 8px; 
+            font-size: 0.9rem; 
+            line-height: 1.5; 
+            color: #78350f;
+        }
+
+        /* --- CANVAS ALANI --- */
+        main { 
+            flex: 1; position: relative; 
+            background-color: var(--bg-app);
+            /* Kareli Defter Deseni */
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" id="btnEbob" onclick="app.setMode('ebob')">EBOB (Bölen)</button>
+        <button class="btn active" id="btnEkok" onclick="app.setMode('ekok')">EKOK (Kat)</button>
+    </div>
+
+    <div class="control-btns">
+        <button class="ctrl-btn" id="btnPause" onclick="app.togglePause()">⏸ Durdur</button>
+        <button class="ctrl-btn" onclick="app.resetAnim()">↺ Başa Sar</button>
+    </div>
+
+    <div class="params">
+        <h3>Değerler</h3>
+        
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--brand-blue)">
+                <span>Sayı A (Mavi)</span>
+                <span id="lblA">6</span>
+            </div>
+            <input type="range" id="inpA" min="4" max="20" value="6">
+        </div>
+
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--brand-orange)">
+                <span>Sayı B (Turuncu)</span>
+                <span id="lblB">8</span>
+            </div>
+            <input type="range" id="inpB" min="4" max="20" value="8">
+        </div>
+    </div>
+
+    <div class="params" id="panelEbob" style="display:none;">
+        <h3>EBOB Test Aracı</h3>
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--brand-purple)">
+                <span>Bölücü Boyutu</span>
+                <span id="lblDiv">2</span>
+            </div>
+            <input type="range" id="inpDiv" min="1" max="12" value="2">
+        </div>
+    </div>
+
+    <div class="info-panel" id="descPanel">
+        Yükleniyor...
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0,
+        height: 0,
+        
+        // --- UYGULAMA DURUMU (STATE) ---
+        state: {
+            mode: 'ekok',      // Başlangıç Modu: EKOK
+            valA: 6,           // Başlangıç Sayı A
+            valB: 8,           // Başlangıç Sayı B
+            divider: 2,        // EBOB Bölücü
+            time: 0,           // Global Animasyon Zamanı
+            isPaused: false    // Durduruldu mu?
+        },
+
+        // Renk Paleti
+        colors: {
+            blue: '#2563eb',
+            orange: '#f97316',
+            purple: '#7c3aed',
+            green: '#10b981',
+            red: '#ef4444',
+            text: '#1e293b',
+            grid: '#94a3b8'
+        },
+
+        // --- BAŞLATMA ---
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Event Listeners (Sliderlar)
+            document.getElementById('inpA').addEventListener('input', (e) => this.updateVal('valA', e.target.value));
+            document.getElementById('inpB').addEventListener('input', (e) => this.updateVal('valB', e.target.value));
+            document.getElementById('inpDiv').addEventListener('input', (e) => this.updateVal('divider', e.target.value));
+            
+            window.addEventListener('resize', () => this.resize());
+            
+            // UI Başlangıç Ayarı
+            this.resize();
+            this.setMode(this.state.mode); // UI'ı state'e göre ayarla
+            this.loop();
+        },
+
+        resize: function() {
+            const main = document.querySelector('main');
+            this.width = this.canvas.width = main.clientWidth - 40;
+            this.height = this.canvas.height = main.clientHeight - 40;
+        },
+
+        updateVal: function(key, val) {
+            this.state[key] = parseInt(val);
+            // Label güncelle
+            if(key === 'valA') document.getElementById('lblA').innerText = val;
+            if(key === 'valB') document.getElementById('lblB').innerText = val;
+            if(key === 'divider') document.getElementById('lblDiv').innerText = val;
+            
+            // Sadece EKOK modundaysan veya sayı değiştiyse reset at, EBOB'da sadece divider değişirse reset atma (isteğe bağlı)
+            if(key !== 'divider' || this.state.mode === 'ebob') this.state.time = 0; 
+        },
+
+        // --- KONTROL FONKSİYONLARI ---
+        setMode: function(m) {
+            this.state.mode = m;
+            this.state.time = 0;
+            this.state.isPaused = false;
+            this.updatePlayButtonUI();
+
+            // Buton Stilleri
+            document.getElementById('btnEbob').className = m === 'ebob' ? 'btn active' : 'btn';
+            document.getElementById('btnEkok').className = m === 'ekok' ? 'btn active' : 'btn';
+
+            // Panel Görünürlüğü
+            document.getElementById('panelEbob').style.display = m === 'ebob' ? 'block' : 'none';
+        },
+
+        togglePause: function() {
+            this.state.isPaused = !this.state.isPaused;
+            this.updatePlayButtonUI();
+        },
+
+        updatePlayButtonUI: function() {
+            const btn = document.getElementById('btnPause');
+            if(this.state.isPaused) {
+                btn.innerHTML = "▶ Oynat";
+                btn.classList.add('pause-active');
+            } else {
+                btn.innerHTML = "⏸ Durdur";
+                btn.classList.remove('pause-active');
+            }
+        },
+
+        resetAnim: function() {
+            this.state.time = 0;
+            if(this.state.isPaused) this.togglePause(); // Durmuşsa başlat
+        },
+
+        // --- MATEMATİK MOTORU ---
+        gcd: (a, b) => !b ? a : app.gcd(b, a % b),
+        lcm: (a, b) => (a * b) / app.gcd(a, b),
+
+        // --- ANA DÖNGÜ (RENDER LOOP) ---
+        loop: function() {
+            // 1. Temizle
+            this.ctx.clearRect(0, 0, this.width, this.height);
+
+            // 2. Çiz
+            if (this.state.mode === 'ebob') this.drawEBOB();
+            else this.drawEKOK();
+
+            // 3. Zamanı İlerlet (Pause kontrolü)
+            if (!this.state.isPaused) {
+                this.state.time += 0.5;
+            }
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        // ==========================================
+        // EBOB ÇİZİM MANTIĞI (FAYANS DÖŞEME)
+        // ==========================================
+        drawEBOB: function() {
+            const s = this.state;
+            const ctx = this.ctx;
+            const scale = 25; // Zoom faktörü
+
+            const totalW = Math.max(s.valA, s.valB) * scale;
+            const startX = (this.width - totalW) / 2;
+            const centerY = this.height / 2;
+
+            // --- Üst Kutu (Sayı A) ---
+            this.drawBar(startX, centerY - 100, s.valA, s.divider, scale, this.colors.blue, "Sayı A");
+            
+            // --- Alt Kutu (Sayı B) ---
+            this.drawBar(startX, centerY + 50, s.valB, s.divider, scale, this.colors.orange, "Sayı B");
+
+            // --- Sonuç Analizi ---
+            const isCommon = (s.valA % s.divider === 0) && (s.valB % s.divider === 0);
+            const isGCD = isCommon && (s.divider === this.gcd(s.valA, s.valB));
+
+            // Metin
+            ctx.textAlign = "center";
+            ctx.font = "bold 24px " + getComputedStyle(document.body).fontFamily;
+            
+            if (isCommon) {
+                const pulse = 1 + Math.sin(s.time * 0.1) * 0.05; // Nefes alma efekti
+                ctx.save();
+                ctx.translate(this.width/2, this.height - 80);
+                ctx.scale(pulse, pulse);
+                ctx.fillStyle = this.colors.green;
+                
+                let msg = "✅ TAM BÖLÜNDÜ! (Ortak Bölen)";
+                if (isGCD) msg = "🏆 TEBRİKLER! EN BÜYÜK ORTAK BÖLEN (EBOB)";
+                
+                ctx.fillText(msg, 0, 0);
+                ctx.restore();
+            } else {
+                ctx.fillStyle = this.colors.text;
+                ctx.fillText(`Seçilen Parça: ${s.divider} birim. Uymadı, değiştirin...`, this.width/2, this.height - 80);
+            }
+
+            // Sol Panel Bilgi Güncellemesi
+            const desc = document.getElementById('descPanel');
+            desc.innerHTML = `<strong>EBOB Modu:</strong><br>
+                Amacımız: Hem Mavi (${s.valA}) hem Turuncu (${s.valB}) çubuğu artan parça kalmadan doldurmak.<br><br>
+                Şu anki bölücü: <b>${s.divider}</b><br>
+                Durum: ${isCommon ? "<span style='color:green'>Tam Bölündü!</span>" : "<span style='color:red'>Kalan Var!</span>"}`;
+        },
+
+        drawBar: function(x, y, total, div, scale, color, label) {
+            const ctx = this.ctx;
+            
+            // Etiket
+            ctx.fillStyle = color;
+            ctx.font = "bold 16px sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(`${label}: ${total}`, x, y - 10);
+
+            // Ana Çerçeve
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.2;
+            ctx.strokeRect(x, y, total * scale, 60);
+            ctx.globalAlpha = 1.0;
+
+            // Parçalar
+            const count = Math.floor(total / div);
+            const remainder = total % div;
+
+            for(let i=0; i<count; i++) {
+                const tx = x + (i * div * scale);
+                // Uyumluysa kendi rengi, değilse gri
+                ctx.fillStyle = (remainder === 0) ? color : '#cbd5e1'; 
+                
+                // Nefes alma animasyonu (Eğer uyumluysa)
+                if (remainder === 0) ctx.globalAlpha = 0.6 + (Math.sin(this.state.time * 0.1 + i)*0.2);
+                else ctx.globalAlpha = 0.8;
+
+                ctx.fillRect(tx + 2, y + 2, (div * scale) - 4, 56);
+                ctx.strokeStyle = "white";
+                ctx.strokeRect(tx + 2, y + 2, (div * scale) - 4, 56);
+            }
+
+            // Kalan Parça (Hata)
+            if (remainder > 0) {
+                const rx = x + (count * div * scale);
+                ctx.fillStyle = this.colors.red;
+                ctx.globalAlpha = 1;
+                ctx.fillRect(rx, y + 10, remainder * scale, 40);
+                
+                ctx.fillStyle = "white";
+                ctx.textAlign = "center";
+                ctx.fillText("?", rx + (remainder*scale)/2, y + 35);
+            }
+            ctx.globalAlpha = 1;
+        },
+
+        // ==========================================
+        // EKOK ÇİZİM MANTIĞI (YARIŞ PİSTİ & DİNAMİK TEXT)
+        // ==========================================
+        drawEKOK: function() {
+            const s = this.state;
+            const ctx = this.ctx;
+            const scale = 20;
+
+            const target = this.lcm(s.valA, s.valB);
+            
+            // Kamera Hareketi (Sonsuz loop döngüsü)
+            const cycle = (target * scale) + 400; // Hedefin biraz ötesine git
+            const speed = 2;
+            let currentPx = (s.time * speed) % (cycle * 1.5); // Başa sarma uzunluğu
+
+            // Kamera Merkezleme
+            let camX = currentPx - (this.width / 2) + 100;
+            if (camX < 0) camX = 0;
+
+            ctx.save();
+            ctx.translate(-camX, 0);
+
+            const startX = 100;
+            const trackY1 = this.height / 2 - 80;
+            const trackY2 = this.height / 2 + 80;
+
+            // Zemin Cetveli
+            ctx.beginPath();
+            ctx.strokeStyle = this.colors.grid;
+            ctx.moveTo(startX, this.height/2);
+            ctx.lineTo(startX + cycle + 1000, this.height/2);
+            ctx.stroke();
+
+            // EKOK Çizgisi (Hedef Bayrak)
+            const ekokX = startX + (target * scale);
+            ctx.strokeStyle = this.colors.green;
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(ekokX, trackY1 - 50);
+            ctx.lineTo(ekokX, trackY2 + 50);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // EKOK Etiketi
+            ctx.fillStyle = this.colors.green;
+            ctx.font = "bold 20px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`EKOK: ${target}`, ekokX, trackY1 - 60);
+
+            // Koşucuları Çiz
+            this.drawRunner(startX, trackY1, s.valA, scale, this.colors.blue, currentPx, "A");
+            this.drawRunner(startX, trackY2, s.valB, scale, this.colors.orange, currentPx, "B");
+
+            ctx.restore();
+
+            // --- DİNAMİK BİLGİ PANELİ (SİDEBAR) ---
+            const currentVal = Math.floor(currentPx / scale);
+            const stepA = Math.floor(currentVal / s.valA);
+            const stepB = Math.floor(currentVal / s.valB);
+
+            let statusMsg = "Yarış devam ediyor...";
+            if (currentVal >= target) statusMsg = "<b style='color:green'>Buluşma Noktası (EKOK) Geçildi!</b>";
+            else if (currentVal > 0) statusMsg = "Ortak kata doğru ilerleniyor...";
+
+            const desc = document.getElementById('descPanel');
+            desc.innerHTML = `<strong>EKOK Modu:</strong><br>
+                Sayılar katlanarak ilerliyor.<br><br>
+                Anlık Konum: <b>${currentVal}</b><br>
+                🔵 Mavi: ${stepA}. katında (${stepA} x ${s.valA})<br>
+                🟠 Turuncu: ${stepB}. katında (${stepB} x ${s.valB})<br><br>
+                ${statusMsg}`;
+        },
+
+        drawRunner: function(startX, y, step, scale, color, currentDist, name) {
+            const ctx = this.ctx;
+            const stepPx = step * scale;
+            const count = Math.floor(currentDist / stepPx);
+            
+            // İzler (Footprints)
+            for(let i=0; i<=count; i++) {
+                const dx = startX + (i * stepPx);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.4;
+                ctx.beginPath();
+                ctx.arc(dx, y, 6, 0, Math.PI*2);
+                ctx.fill();
+                
+                // Sayı etiketi
+                ctx.fillStyle = this.colors.text;
+                ctx.font = "12px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(i*step, dx, y + 25);
+            }
+
+            // Kafa (Head)
+            const headX = startX + currentDist;
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "rgba(0,0,0,0.2)";
+            ctx.beginPath();
+            ctx.arc(headX, y, 12, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // --- EKSTRA: Dinamik Metin (Kafanın Üstünde) ---
+            // Hangi katta olduğunu canlı yazar
+            const currentStep = Math.floor(currentDist / stepPx);
+            ctx.fillStyle = this.colors.text;
+            ctx.font = "bold 14px sans-serif";
+            ctx.fillText(`${currentStep}. Kat`, headX, y - 20);
+        }
+    };
+
+    // Yüklenince Başlat
+    window.onload = function() { app.init(); };
+</script>
+</body>
+</html>
+
