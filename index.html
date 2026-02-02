@@ -58,15 +58,6 @@
             <div class="relative w-96">
                 <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 italic">🔍</span>
                 <input type="text" placeholder="Simülasyon veya konu ara..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition-all">
-            </div>
-            <div class="flex items-center space-x-4">
-                <select class="bg-transparent border-none text-sm font-semibold text-slate-600 outline-none cursor-pointer hover:text-blue-600 transition">
-                    <option>Tüm Konular</option>
-                    <option>Sayılar</option>
-                    <option>Fonksiyonlar</option>
-                    <option>Geometri</option>
-                </select>
-            </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-10">
@@ -320,24 +311,18 @@ function openSim(url, title) {
         frame.src = ""; // Belleği temizlemek için içeriği boşaltır
     }
 
-    // Arama ve Filtreleme Fonksiyonu
+// Sadeleştirilmiş Arama Fonksiyonu
 const searchInput = document.querySelector('input[placeholder="Simülasyon veya konu ara..."]');
-const topicSelect = document.querySelector('select');
 const cards = document.querySelectorAll('.sim-card');
 
 function filterCards() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedTopic = topicSelect.value;
+    const searchTerm = searchInput.value.toLowerCase().trim();
 
     cards.forEach(card => {
         const cardName = card.getAttribute('data-name').toLowerCase();
-        const cardTopic = card.getAttribute('data-topic');
         
-        // Arama terimi ve Dropdown seçimiyle eşleşme kontrolü
-        const matchesSearch = cardName.includes(searchTerm);
-        const matchesTopic = (selectedTopic === "Tüm Konular" || cardTopic === selectedTopic);
-
-        if (matchesSearch && matchesTopic) {
+        // Sadece arama terimine göre kontrol et
+        if (cardName.includes(searchTerm)) {
             card.style.display = "block";
         } else {
             card.style.display = "none";
@@ -345,9 +330,8 @@ function filterCards() {
     });
 }
 
-// Olay Dinleyicileri (Event Listeners)
+// Olay Dinleyicisi
 searchInput.addEventListener('input', filterCards);
-topicSelect.addEventListener('change', filterCards);
 </script>
 </body>
 </html>
