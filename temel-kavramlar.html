@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Temel Kavramlar</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v3.9 - Analiz) */
+            --bg-app: #0f172a;      /* Koyu Uzay Teması */
+            --bg-panel: #1e293b;    
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            
+            /* Küme Renkleri */
+            --color-N: #f59e0b;     /* Doğal (Altın) */
+            --color-Z: #3b82f6;     /* Tam (Mavi) */
+            --color-Q: #a855f7;     /* Rasyonel (Mor) */
+            --color-Irr: #ef4444;   /* İrrasyonel (Kırmızı/Kaos) */
+            --color-R: #64748b;     /* Reel (Gri Çerçeve) */
+            
+            --border: #334155;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 360px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 30px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; /* Gap biraz azaltıldı */
+            z-index: 20;
+            box-shadow: 10px 0 40px rgba(0,0,0,0.5);
+            overflow-y: auto; /* Dikey scroll gerekirse açılsın */
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: #38bdf8; letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Analiz Ekranı */
+        .analysis-card {
+            background: #020617; border: 1px solid var(--border);
+            padding: 20px; border-radius: 16px;
+            text-align: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .number-big { 
+            font-family: var(--font-mono); font-size: 2.5rem; font-weight: 800; color: white;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2); margin-bottom: 10px;
+            word-break: break-all; /* Çok uzun sayılar taşmasın */
+        }
+        .tags-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+        .tag { 
+            font-size: 0.7rem; font-weight: bold; padding: 4px 8px; border-radius: 6px; 
+            text-transform: uppercase; background: #334155; color: #cbd5e1;
+            transition: 0.3s;
+        }
+        .tag.active { box-shadow: 0 0 10px currentColor; color: #000; }
+
+        /* Kontroller */
+        .params { background: rgba(255,255,255,0.03); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .params h3 { margin: 0 0 10px 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        /* Özel Sayı Seçici Butonlar Grid */
+        .num-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .num-btn {
+            background: #1e293b; border: 1px solid var(--border); color: var(--text-muted);
+            padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-mono);
+            transition: 0.2s; font-size: 0.9rem;
+        }
+        .num-btn:hover { border-color: #38bdf8; color: white; background: #334155; }
+        .num-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+
+        /* Yeni Özel Input Alanı */
+        .custom-input-group {
+            display: flex; gap: 8px; margin-bottom: 20px;
+            background: #0f172a; padding: 5px; border-radius: 10px; border: 1px solid var(--border);
+        }
+        .custom-input-group input {
+            flex: 1; /* Kalan boşluğu doldur */
+            background: transparent; border: none; color: white;
+            font-family: var(--font-mono); font-size: 1rem; padding: 8px;
+            outline: none; min-width: 0; /* Flexbox taşmasını önler */
+        }
+        .custom-input-group button {
+            background: #38bdf8; color: #0f172a; border: none;
+            padding: 0 15px; border-radius: 6px; font-weight: 700; font-size: 0.8rem;
+            cursor: pointer; transition: 0.2s; white-space: nowrap;
+        }
+        .custom-input-group button:hover { background: #7dd3fc; }
+
+        /* Mod Switcher */
+        .mode-switch { display: flex; background: #0f172a; padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+        .mode-btn { 
+            flex: 1; border: none; background: transparent; color: var(--text-muted); 
+            padding: 10px; cursor: pointer; font-weight: 600; border-radius: 8px; transition: 0.3s; font-size: 0.9rem;
+        }
+        .mode-btn:hover { color: white; }
+        .mode-btn.active { background: #334155; color: white; }
+
+        .info-panel { 
+            margin-top: auto; background: rgba(59, 130, 246, 0.1); 
+            border-left: 4px solid #3b82f6; 
+            padding: 15px; border-radius: 12px; 
+            font-size: 0.85rem; line-height: 1.5; color: #bfdbfe;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        .stars { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; opacity: 0.5; background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; }
+
+        canvas {
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.5);
+            box-shadow: 0 0 100px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="analysis-card">
+        <div class="number-big" id="dispNum">5</div>
+        <div class="tags-container" id="tagsBox">
+            </div>
+    </div>
+
+    <div class="params">
+        <h3>Hazır Sayılar</h3>
+        <div class="num-grid">
+            <button class="num-btn active" onclick="app.setNum(5)">5</button>
+            <button class="num-btn" onclick="app.setNum(-3)">-3</button>
+            <button class="num-btn" onclick="app.setNum(0)">0</button>
+            <button class="num-btn" onclick="app.setNum(0.5)">0.5</button>
+            <button class="num-btn" onclick="app.setNum(Math.PI, 'π')">π</button>
+            <button class="num-btn" onclick="app.setNum(Math.sqrt(2), '√2')">√2</button>
+            <button class="num-btn" onclick="app.setNum(-2.5)">-2.5</button>
+            <button class="num-btn" onclick="app.setNum(100)">100</button>
+        </div>
+
+        <h3>Veya Kendin Yaz</h3>
+        <div class="custom-input-group">
+            <input type="text" id="customIn" placeholder="Örn: 1453, -8, pi" onkeydown="if(event.key==='Enter') app.userSubmit()">
+            <button onclick="app.userSubmit()">ANALİZ ET</button>
+        </div>
+        
+        <h3>Görünüm Modu</h3>
+        <div class="mode-switch">
+            <button class="mode-btn active" onclick="app.setMode('SETS')">Kümeler</button>
+            <button class="mode-btn" onclick="app.setMode('PARITY')">Tek/Çift</button>
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        <b>Kümeler Modu:</b> Sayılar ait oldukları en içteki yörüngeye yerleşir. Doğal Sayılar (N) en merkezdedir.
+    </div>
+</aside>
+
+<main>
+    <div class="stars"></div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        
+        state: {
+            val: 5,
+            label: '5',
+            mode: 'SETS', // SETS, PARITY
+            props: {},
+            time: 0
+        },
+
+        // Renk Paleti
+        colors: {
+            N: '#f59e0b',
+            Z: '#3b82f6',
+            Q: '#a855f7',
+            Irr: '#ef4444',
+            R: '#64748b'
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            window.addEventListener('resize', () => this.resize());
+            this.resize();
+            this.setNum(5);
+            this.loop();
+        },
+
+        resize: function() {
+            const m = document.querySelector('main');
+            const size = Math.min(m.clientWidth, m.clientHeight) - 40;
+            this.canvas.width = size;
+            this.canvas.height = size;
+            this.width = size;
+            this.height = size;
+        },
+
+        // Kullanıcının girdiği değeri işleme
+        userSubmit: function() {
+            const raw = document.getElementById('customIn').value.trim();
+            if (!raw) return;
+
+            let val = parseFloat(raw);
+            let label = raw;
+
+            // Özel kelimeleri tanı
+            if (raw.toLowerCase() === 'pi' || raw.toLowerCase() === 'π') {
+                val = Math.PI;
+                label = 'π';
+            }
+            else if (raw.toLowerCase() === 'e') {
+                val = Math.E;
+                label = 'e';
+            }
+            
+            if (!isNaN(val)) {
+                this.setNum(val, label);
+            } else {
+                alert("Lütfen geçerli bir sayı girin.");
+            }
+        },
+
+        setNum: function(val, label = null) {
+            this.state.val = val;
+            this.state.label = label ? label : val.toString();
+            this.state.time = 0; // Animasyon reset
+            
+            // Analiz
+            // JS'de floating point hatası olabilir (örn 0.999999), basitlik için tolerans
+            const isInt = Number.isInteger(val) || Math.abs(val - Math.round(val)) < 1e-10;
+            const isPos = val > 0;
+            const isNeg = val < 0;
+            const isZero = val === 0;
+            
+            // İrrasyonel kontrolü (Basit simülasyon)
+            const isIrr = this.state.label.includes('π') || this.state.label.includes('√') || this.state.label === 'e';
+            const isRat = !isIrr;
+            
+            const isNat = isInt && val >= 0;
+
+            this.state.props = { isInt, isPos, isNeg, isZero, isIrr, isRat, isNat };
+
+            // UI Güncelle
+            const disp = document.getElementById('dispNum');
+            disp.innerText = this.state.label;
+            // Eğer sayı çok uzunsa fontu küçült
+            if(this.state.label.length > 5) disp.style.fontSize = "1.8rem";
+            else disp.style.fontSize = "2.5rem";
+            
+            // Etiketleri Oluştur
+            const tagsBox = document.getElementById('tagsBox');
+            tagsBox.innerHTML = '';
+            
+            const createTag = (text, color, active) => {
+                const sp = document.createElement('span');
+                sp.className = `tag ${active ? 'active' : ''}`;
+                if(active) sp.style.backgroundColor = color;
+                sp.innerText = text;
+                tagsBox.appendChild(sp);
+            };
+
+            createTag('ℝ', this.colors.R, true);
+            createTag("Q'", this.colors.Irr, isIrr);
+            createTag('Q', this.colors.Q, isRat);
+            createTag('Z', this.colors.Z, isInt);
+            createTag('N', this.colors.N, isNat);
+            
+            // Buton aktiflik (Varsa grid butonunu yak)
+            document.querySelectorAll('.num-btn').forEach(b => {
+                b.classList.remove('active');
+                if(b.innerText === this.state.label) b.classList.add('active');
+            });
+        },
+
+        setMode: function(m) {
+            this.state.mode = m;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const info = document.getElementById('infoText');
+            if(m === 'SETS') info.innerHTML = "<b>Kümeler Modu:</b><br>İç içe geçmiş halkalar. Sarı (N) en özel kümedir.";
+            else info.innerHTML = "<b>Tek/Çift Modu:</b><br>Sayıyı çiftler halinde diziyoruz. Artan parça kalırsa TEK, tam bölünürse ÇİFT.";
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.state.time += 0.02;
+
+            if (this.state.mode === 'SETS') this.drawSets();
+            else this.drawParity();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawSets: function() {
+            const ctx = this.ctx;
+            const cx = this.width / 2;
+            const cy = this.height / 2;
+            const maxR = this.width / 2 - 20;
+
+            // --- Venn Halkaları ---
+            // Reel
+            ctx.strokeStyle = this.colors.R; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(cx, cy, maxR, 0, Math.PI*2); ctx.stroke();
+            this.drawLabel(cx, cy - maxR + 20, "ℝ", this.colors.R);
+
+            // Rasyonel (Q)
+            const rQ = maxR * 0.75;
+            ctx.strokeStyle = this.colors.Q; 
+            ctx.fillStyle = "rgba(168, 85, 247, 0.05)";
+            ctx.beginPath(); ctx.arc(cx, cy, rQ, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            this.drawLabel(cx, cy - rQ + 20, "Q", this.colors.Q);
+            
+            // Tam (Z)
+            const rZ = maxR * 0.5;
+            ctx.strokeStyle = this.colors.Z; 
+            ctx.fillStyle = "rgba(59, 130, 246, 0.1)";
+            ctx.beginPath(); ctx.arc(cx, cy, rZ, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            this.drawLabel(cx, cy - rZ + 20, "Z", this.colors.Z);
+
+            // Doğal (N)
+            const rN = maxR * 0.25;
+            ctx.strokeStyle = this.colors.N; 
+            ctx.fillStyle = "rgba(245, 158, 11, 0.15)";
+            ctx.beginPath(); ctx.arc(cx, cy, rN, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            this.drawLabel(cx, cy - rN + 15, "N", this.colors.N);
+
+            // Q' Etiketi
+            this.drawLabel(cx + maxR * 0.8, cy, "Q'", this.colors.Irr);
+
+            // --- Sayı Hareketi ---
+            let targetR = 0;
+            let orbitColor = 'white';
+            const props = this.state.props;
+
+            if (props.isIrr) { targetR = maxR * 0.85; orbitColor = this.colors.Irr; } 
+            else if (props.isNat) { targetR = rN * 0.5; orbitColor = this.colors.N; } 
+            else if (props.isInt) { targetR = rZ * 0.75; orbitColor = this.colors.Z; } 
+            else { targetR = rQ * 0.75; orbitColor = this.colors.Q; }
+
+            const angle = this.state.time;
+            const px = cx + Math.cos(angle) * targetR;
+            const py = cy + Math.sin(angle) * targetR;
+
+            ctx.shadowBlur = 20; ctx.shadowColor = orbitColor;
+            ctx.fillStyle = orbitColor;
+            ctx.beginPath(); ctx.arc(px, py, 15, 0, Math.PI*2); ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif"; 
+            ctx.textAlign="center"; ctx.textBaseline="middle";
+            ctx.fillText(this.state.label, px, py);
+
+            ctx.strokeStyle = orbitColor; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
+            ctx.beginPath(); ctx.arc(cx, cy, targetR, 0, Math.PI*2); ctx.stroke();
+            ctx.globalAlpha = 1;
+        },
+
+drawParity: function() {
+            const ctx = this.ctx;
+            const cx = this.width / 2;
+            const cy = this.height / 2;
+            
+            // Tam sayı kontrolü
+            if (!this.state.props.isInt) {
+                ctx.fillStyle = "#ef4444"; ctx.font = "bold 18px Segoe UI"; ctx.textAlign="center";
+                ctx.fillText("Tek/Çift analizi için", cx, cy - 15);
+                ctx.fillText("TAM SAYI giriniz.", cx, cy + 15);
+                return;
+            }
+
+            const realNum = Math.abs(Math.round(this.state.val)); // Gerçek sayı
+            const maxDots = 36; // LİMİT: Ekrana en fazla kaç top çizilsin?
+            
+            // Eğer gerçek sayı limitten büyükse, sadece limiti kadarını çiz
+            const displayNum = Math.min(realNum, maxDots);
+            const isCapped = realNum > maxDots; // Limit aşıldı mı?
+
+            const isEven = realNum % 2 === 0;
+            const gap = 30;     // Satır boşluğu
+            const dotSize = 10; // Nokta boyutu
+            
+            // Yüksekliği sadece ÇİZİLEN toplara göre hesapla (Böylece hep ortalı durur)
+            const rows = Math.ceil(displayNum / 2);
+            const totalH = rows * gap;
+            let startY = cy - totalH / 2;
+
+            // 0 Durumu
+            if (realNum === 0) {
+                ctx.fillStyle = "#94a3b8"; ctx.font = "bold 24px sans-serif"; ctx.textAlign="center";
+                ctx.fillText("0 (ÇİFT SAYI)", cx, cy);
+                return;
+            }
+            
+            // --- ÇİZİM DÖNGÜSÜ ---
+            for(let i=0; i < displayNum; i++) {
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                
+                // Simetri ve Sütun Ayarı
+                // Sol sütun (-15), Sağ sütun (+15)
+                const x = cx + (col === 0 ? -15 : 15);
+                const y = startY + (row * gap);
+
+                // Animasyon (Gecikmeli giriş)
+                const delay = i * 0.05;
+                let scale = 0;
+                if(this.state.time > delay) {
+                    scale = Math.min(1, (this.state.time - delay) * 3);
+                    scale = scale + Math.sin(scale * Math.PI) * 0.1;
+                }
+
+                ctx.fillStyle = this.colors.Z;
+                ctx.beginPath(); ctx.arc(x, y, dotSize * scale, 0, Math.PI*2); ctx.fill();
+            }
+
+            // --- SONUÇ METİNLERİ ---
+            // Animasyon bittikten sonra göster
+            if(this.state.time > displayNum * 0.05 + 0.3) {
+                
+                // Eğer liste kesildiyse altına "..." koy
+                if (isCapped) {
+                    ctx.fillStyle = "#64748b";
+                    ctx.font = "bold 24px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText("...", cx, startY + totalH + 10);
+                    
+                    ctx.font = "12px sans-serif";
+                    ctx.fillText(`(Toplam ${realNum} parça)`, cx, startY + totalH + 30);
+                }
+
+                // TEK / ÇİFT Yazısı (Biraz daha aşağıya)
+                const textY = startY + totalH + (isCapped ? 70 : 40);
+                
+                ctx.fillStyle = isEven ? this.colors.N : this.colors.Irr;
+                ctx.font = "bold 30px Segoe UI"; ctx.textAlign = "center";
+                ctx.shadowBlur = 20; ctx.shadowColor = ctx.fillStyle;
+                
+                const text = isEven ? "ÇİFT" : "TEK";
+                ctx.fillText(text, cx, textY);
+                ctx.shadowBlur = 0;
+
+                // Eğer TEK sayıysa ve hepsi ekrana sığmışsa "Artan Parça"yı işaretle
+                // (Limit aşıldıysa artan parçayı göstermek kafa karıştırabilir, o yüzden gizliyoruz)
+                if(!isEven && !isCapped) {
+                    const lastRow = Math.floor((realNum-1)/2);
+                    const lx = cx - 15; 
+                    const ly = startY + (lastRow * gap);
+                    
+                    ctx.strokeStyle = this.colors.Irr; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.arc(lx, ly, dotSize + 5, 0, Math.PI*2); ctx.stroke();
+                }
+            }
+        },
+
+        drawLabel: function(x, y, text, color) {
+            this.ctx.fillStyle = color;
+            this.ctx.font = "bold 16px monospace";
+            this.ctx.textAlign = "center";
+            this.ctx.fillText(text, x, y);
+        }
+    };
+    app.init();
+</script>
+</body>
+</html>
