@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - İntegral</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v5.0 - Integral) */
+            --bg-app: #f8fafc;      
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --color-curve: #2563eb; /* Fonksiyon (Mavi) */
+            --color-area: #3b82f6;  /* Alan (Açık Mavi Dolgu) */
+            --color-rect: #0ea5e9;  /* Riemann Dikdörtgenleri */
+            --color-limit: #ef4444; /* Sınır Çizgileri (a ve b) */
+            --color-grid: #e2e8f0;
+            
+            --border: #e2e8f0;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 380px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-curve); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Sonuç Kartı */
+        .result-card {
+            background: #1e293b; color: white;
+            padding: 20px; border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .math-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #334155;
+        }
+        .math-row:last-child { margin: 0; padding: 0; border: none; }
+        .math-label { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .math-val { font-family: var(--font-mono); font-size: 1.2rem; font-weight: bold; }
+        .val-approx { color: #38bdf8; }
+        .val-exact { color: #4ade80; }
+        .val-error { color: #f87171; font-size: 0.9rem; }
+
+        /* Kontroller */
+        .params { background: white; padding: 15px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .params h3 { margin: 0 0 10px 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .slider-label { min-width: 60px; font-weight: 600; font-size: 0.9rem; }
+        
+        input[type="range"] { 
+            flex: 1; -webkit-appearance: none; background: #e2e8f0; height: 6px; border-radius: 3px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 18px; height: 18px; 
+            background: white; border: 4px solid var(--color-curve); border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .slider-val { width: 30px; text-align: right; font-family: var(--font-mono); font-weight: bold; font-size: 0.9rem; }
+
+        /* Fonksiyon Seçici */
+        .func-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .func-btn {
+            background: #f1f5f9; border: 1px solid var(--border); color: var(--text-muted);
+            padding: 10px; border-radius: 8px; cursor: pointer; font-family: var(--font-mono); font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        .func-btn:hover { border-color: var(--color-curve); color: var(--color-curve); background: white; }
+        .func-btn.active { background: var(--color-curve); color: white; border-color: var(--color-curve); }
+
+        .info-panel { 
+            margin-top: auto; background: #eff6ff; 
+            border-left: 4px solid var(--color-curve); 
+            padding: 15px; border-radius: 12px; 
+            font-size: 0.85rem; line-height: 1.5; color: #1e3a8a;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background: var(--bg-app);
+            background-image: radial-gradient(var(--color-grid) 1px, transparent 1px);
+            background-size: 30px 30px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        #mainCanvas {
+            border-radius: 24px;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+            border: 1px solid white;
+        }
+        
+        /* 3D Minyatür */
+        #mini3D {
+            position: absolute; bottom: 30px; right: 30px;
+            width: 200px; height: 150px;
+            border-radius: 16px;
+            background: linear-gradient(to bottom right, #ffffff, #f1f5f9);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1), inset 0 0 0 1px white;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="result-card">
+        <div class="math-row">
+            <span class="math-label">Yaklaşık Alan (Riemann)</span>
+            <span class="math-val val-approx" id="valRiemann">0.00</span>
+        </div>
+        <div class="math-row">
+            <span class="math-label">Gerçek İntegral</span>
+            <span class="math-val val-exact" id="valExact">0.00</span>
+        </div>
+        <div class="math-row">
+            <span class="math-label">Hata Payı</span>
+            <span class="math-val val-error" id="valError">%0.00</span>
+        </div>
+    </div>
+
+    <div class="params">
+        <h3>Fonksiyon Seçimi</h3>
+        <div class="func-grid">
+            <button class="func-btn active" onclick="app.setFunc(0)">0.1x²</button>
+            <button class="func-btn" onclick="app.setFunc(1)">sin(x)+2</button>
+            <button class="func-btn" onclick="app.setFunc(2)">-0.1x³+x+2</button>
+            <button class="func-btn" onclick="app.setFunc(3)">√x</button>
+        </div>
+
+        <h3>Sınırlar ve Hassasiyet</h3>
+        <div class="slider-row">
+            <span class="slider-label">Başla (a)</span>
+            <input type="range" id="slA" min="-8" max="8" step="0.5" value="0">
+            <span class="slider-val" id="lblA">0</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">Bitir (b)</span>
+            <input type="range" id="slB" min="-8" max="8" step="0.5" value="4">
+            <span class="slider-val" id="lblB">4</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">Dilim (n)</span>
+            <input type="range" id="slN" min="2" max="50" step="1" value="4">
+            <span class="slider-val" id="lblN">4</span>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <b>Riemann Toplamı:</b> Eğrinin altındaki alanı dikdörtgenlerle hesaplıyoruz. <br>
+        Dilim sayısını (n) artırdıkça hata azalır ve gerçek alana yaklaşırız.
+    </div>
+</aside>
+
+<main>
+    <canvas id="mainCanvas"></canvas>
+    <canvas id="mini3D" width="200" height="150"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('mainCanvas'),
+        ctx: null,
+        canvas3D: document.getElementById('mini3D'),
+        ctx3D: null,
+        width: 0, height: 0,
+        
+        state: {
+            funcId: 0,
+            a: 0,
+            b: 4,
+            n: 4, // Dilim sayısı
+            scale: 30, 
+            offsetX: 0, offsetY: 0,
+            time: 0,
+            riemannSum: 0,
+            exactSum: 0
+        },
+
+        // Fonksiyonlar ve Antiturevleri (Gerçek hesap için)
+        funcs: [
+            { // 0: 0.1x^2
+                f: (x) => 0.1 * x * x,
+                F: (x) => (0.1 * x * x * x) / 3, 
+                label: "0.1x²"
+            },
+            { // 1: sin(x) + 2
+                f: (x) => Math.sin(x) + 2,
+                F: (x) => -Math.cos(x) + 2 * x,
+                label: "sin(x)+2"
+            },
+            { // 2: -0.1x^3 + x + 2
+                f: (x) => -0.1*Math.pow(x,3) + x + 2,
+                F: (x) => -0.1*(Math.pow(x,4)/4) + (x*x)/2 + 2*x,
+                label: "Polinom"
+            },
+            { // 3: sqrt(x) (Sadece pozitif)
+                f: (x) => x < 0 ? 0 : Math.sqrt(x),
+                F: (x) => x < 0 ? 0 : (2/3) * Math.pow(x, 1.5),
+                label: "√x"
+            }
+        ],
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            this.ctx3D = this.canvas3D.getContext('2d');
+            
+            // Slider Events
+            const slA = document.getElementById('slA');
+            const slB = document.getElementById('slB');
+            const slN = document.getElementById('slN');
+
+            const updateParams = () => {
+                this.state.a = parseFloat(slA.value);
+                this.state.b = parseFloat(slB.value);
+                this.state.n = parseInt(slN.value);
+                
+                // b her zaman a'dan büyük olsun kontrolü
+                if(this.state.b < this.state.a) { this.state.b = this.state.a; slB.value = this.state.a; }
+                
+                document.getElementById('lblA').innerText = this.state.a;
+                document.getElementById('lblB').innerText = this.state.b;
+                document.getElementById('lblN').innerText = this.state.n;
+                
+                this.calculate();
+            };
+
+            slA.addEventListener('input', updateParams);
+            slB.addEventListener('input', updateParams);
+            slN.addEventListener('input', updateParams);
+
+            window.addEventListener('resize', () => this.resize());
+            this.resize();
+            this.calculate();
+            this.loop();
+        },
+
+        resize: function() {
+            const m = document.querySelector('main');
+            this.width = this.canvas.width = m.clientWidth - 40;
+            this.height = this.canvas.height = m.clientHeight - 40;
+            this.state.offsetX = this.width / 2;
+            this.state.offsetY = this.height / 2 + 100; // Biraz aşağı alalım grafikleri
+        },
+
+        setFunc: function(id) {
+            this.state.funcId = id;
+            document.querySelectorAll('.func-btn').forEach((b, i) => {
+                b.className = i === id ? 'func-btn active' : 'func-btn';
+            });
+            this.calculate();
+        },
+
+        calculate: function() {
+            const { a, b, n, funcId } = this.state;
+            const func = this.funcs[funcId];
+            
+            // 1. Riemann Toplamı (Sağ Uç Toplamı - Right Endpoint)
+            const dx = (b - a) / n;
+            let sum = 0;
+            for(let i = 1; i <= n; i++) {
+                const x = a + i * dx;
+                const h = func.f(x);
+                sum += h * dx;
+            }
+            this.state.riemannSum = sum;
+
+            // 2. Gerçek İntegral (Fundamental Theorem of Calculus)
+            const exact = func.F(b) - func.F(a);
+            this.state.exactSum = exact;
+
+            // UI Güncelle
+            document.getElementById('valRiemann').innerText = sum.toFixed(4);
+            document.getElementById('valExact').innerText = exact.toFixed(4);
+            
+            const err = Math.abs((sum - exact)); // Mutlak Hata
+            // Yüzde hata bazen payda 0 ise sonsuz olur, basit fark yazalım
+            document.getElementById('valError').innerText = "Fark: " + err.toFixed(4);
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.state.time += 0.01;
+
+            this.drawGrid();
+            this.drawAxes();
+            this.drawRectangles(); // Riemann Dikdörtgenleri
+            this.drawCurve();
+            
+            // 3D Dönel Cisim
+            this.drawRevolution();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        toCanvasX: function(x) { return this.state.offsetX + (x * this.state.scale); },
+        toCanvasY: function(y) { return this.state.offsetY - (y * this.state.scale); },
+
+        drawGrid: function() {
+            const ctx = this.ctx;
+            ctx.strokeStyle = "rgba(51, 65, 85, 0.2)"; // Çok silik grid
+            ctx.lineWidth = 0.5; // İncecik
+            ctx.beginPath();
+            
+            const maxGridX = Math.ceil(this.width / 2 / this.state.scale);
+            const maxGridY = Math.ceil(this.height / 2 / this.state.scale) + 5;
+
+            for(let i = -maxGridX; i <= maxGridX; i++) {
+                const x = this.toCanvasX(i);
+                ctx.moveTo(x, 0); ctx.lineTo(x, this.height);
+            }
+            for(let i = -10; i <= maxGridY; i++) {
+                const y = this.toCanvasY(i);
+                ctx.moveTo(0, y); ctx.lineTo(this.width, y);
+            }
+            ctx.stroke();
+        },
+
+        drawAxes: function() {
+            const ctx = this.ctx;
+            ctx.strokeStyle = "#64748b";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            // X ve Y
+            ctx.moveTo(0, this.state.offsetY); ctx.lineTo(this.width, this.state.offsetY);
+            ctx.moveTo(this.state.offsetX, 0); ctx.lineTo(this.state.offsetX, this.height);
+            ctx.stroke();
+
+            // Sayılar
+            ctx.fillStyle = "#64748b"; ctx.font = "10px sans-serif"; ctx.textAlign="center";
+            for(let i=-10; i<=10; i+=2) {
+                if(i===0) continue;
+                ctx.fillText(i, this.toCanvasX(i), this.state.offsetY + 15);
+            }
+        },
+
+        drawCurve: function() {
+            const ctx = this.ctx;
+            const func = this.funcs[this.state.funcId];
+            
+            ctx.strokeStyle = "#2563eb";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            let first = true;
+            for(let px = 0; px <= this.width; px+=2) {
+                const x = (px - this.state.offsetX) / this.state.scale;
+                const y = func.f(x);
+                const py = this.toCanvasY(y);
+                
+                if(py < -50 || py > this.height+50) { first=true; continue; }
+                
+                if(first) { ctx.moveTo(px, py); first=false; }
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+        },
+
+        drawRectangles: function() {
+            const ctx = this.ctx;
+            const { a, b, n, funcId } = this.state;
+            const func = this.funcs[funcId];
+            const dx = (b - a) / n; // Dikdörtgen genişliği
+
+            // İntegral Alanı (Gölge)
+            // Sadece a ve b arasını hafif boyayalım (Gerçek alanı göstermek için)
+            ctx.fillStyle = "rgba(59, 130, 246, 0.1)";
+            ctx.beginPath();
+            ctx.moveTo(this.toCanvasX(a), this.toCanvasY(0));
+            for(let px = this.toCanvasX(a); px <= this.toCanvasX(b); px+=2) {
+                const x = (px - this.state.offsetX) / this.state.scale;
+                const y = func.f(x);
+                ctx.lineTo(px, this.toCanvasY(y));
+            }
+            ctx.lineTo(this.toCanvasX(b), this.toCanvasY(0));
+            ctx.fill();
+
+            // Riemann Dikdörtgenleri
+            ctx.fillStyle = "rgba(14, 165, 233, 0.4)"; // Yarı saydam mavi
+            ctx.strokeStyle = "rgba(14, 165, 233, 1)"; // Kenarlık
+            ctx.lineWidth = 1;
+
+            for(let i = 0; i < n; i++) {
+                // Sol köşe (Left Endpoint) kullanırsak i, Sağ köşe için i+1
+                // Basitlik için Sağ köşeyi referans alalım yüksekliği çizmek için
+                const xLeft = a + i * dx;
+                const xRight = a + (i+1) * dx;
+                
+                // Sağ uç kuralına göre yükseklik
+                const heightX = xRight; 
+                const heightY = func.f(heightX);
+
+                const px = this.toCanvasX(xLeft);
+                const py = this.toCanvasY(heightY);
+                const pw = this.toCanvasX(xRight) - px; // Genişlik piksel
+                const ph = this.toCanvasY(0) - py; // Yükseklik piksel (Canvas Y ters olduğu için)
+
+                ctx.fillRect(px, py, pw, ph);
+                ctx.strokeRect(px, py, pw, ph);
+            }
+
+            // a ve b Sınır Çizgileri
+            ctx.strokeStyle = "#ef4444";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            // a çizgisi
+            ctx.beginPath();
+            ctx.moveTo(this.toCanvasX(a), this.toCanvasY(0));
+            ctx.lineTo(this.toCanvasX(a), this.toCanvasY(func.f(a)));
+            ctx.stroke();
+
+            // b çizgisi
+            ctx.beginPath();
+            ctx.moveTo(this.toCanvasX(b), this.toCanvasY(0));
+            ctx.lineTo(this.toCanvasX(b), this.toCanvasY(func.f(b)));
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+        },
+
+        // --- 3D DÖNEL CİSİM ---
+        drawRevolution: function() {
+            const ctx = this.ctx3D;
+            const w = this.canvas3D.width;
+            const h = this.canvas3D.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const cx = w / 2;
+            const cy = h / 2;
+            const scale = 8; // Minyatür ölçek
+
+            // Dönüş açısı
+            const angle = this.state.time * 0.5;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+
+            // İzometrik Projeksiyon
+            const project = (x, y, z) => {
+                const x1 = x * cos - z * sin;
+                const z1 = x * sin + z * cos;
+                const y1 = y; // Y ekseni dönmesin, şekil yatay dursun
+                
+                // Ekrana yansıtma (X ekseni yatay, Y dikey, Z derinlik)
+                // Şekli "yatırmamız" lazım ki silindir gibi görünsün.
+                // Matematiksel X -> 3D X
+                // Matematiksel Y -> 3D Y (Yarıçap)
+                // Dönme -> 3D Z
+                
+                return [cx + x1 * scale, cy + y1 * scale];
+            };
+
+            const { a, b, n, funcId } = this.state;
+            const func = this.funcs[funcId];
+            const dx = (b - a) / Math.min(n, 20); // 3D kasmaması için max 20 dilim
+
+            // Eksen Çizgisi
+            ctx.strokeStyle = "#94a3b8";
+            ctx.beginPath(); 
+            ctx.moveTo(0, cy); ctx.lineTo(w, cy); 
+            ctx.stroke();
+
+            // Diskleri Çiz (Wireframe)
+            for(let i = 0; i <= Math.min(n, 20); i++) {
+                const xVal = a + i * dx;
+                const radius = func.f(xVal);
+                
+                if (Math.abs(radius) < 0.1) continue;
+
+                // Her dilim için bir elips çizelim (Perspektifli daire)
+                // X konumu ekranda yatayda ilerler
+                // Yarıçap dikeyde
+                
+                // Basit 3D hilesi: X eksenine göre dizilmiş elipsler
+                const screenX = cx + (xVal * scale * 2.5); // X ekseninde yay
+                const screenR = Math.abs(radius * scale * 2.5);
+                
+                // Elips genişliği dönüşe göre değişsin (Dönme efekti)
+                const ellipseW = Math.abs(Math.sin(this.state.time)) * 0.5 + 0.5;
+
+                ctx.strokeStyle = "rgba(59, 130, 246, 0.5)";
+                ctx.lineWidth = 1;
+                
+                ctx.beginPath();
+                ctx.ellipse(screenX, cy, screenR * ellipseW, screenR, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Başlık
+            ctx.fillStyle = "#64748b"; ctx.font = "10px sans-serif"; ctx.textAlign="center";
+            ctx.fillText("X Ekseninde Dönel Cisim", cx, h - 5);
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
