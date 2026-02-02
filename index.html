@@ -93,68 +93,65 @@
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-10 bg-[#f8fafc]">
             <div id="kesfet-content" class="block">
-<div id="kesfetSayfasi" class="space-y-6 pb-20">
-    <div class="w-full">
+<div id="kesfetSayfasi" class="space-y-6 pb-20 max-w-[1400px]">
+    <div class="flex flex-col">
         <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Raporlab İnteraktif</h2>
-        <p class="text-sm text-slate-500 font-medium">Karmaşık teorileri somut deneyimlere dönüştüren dijital laboratuvar.</p>
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Dijital Öğrenme Laboratuvarı</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl flex flex-col justify-center min-h-[300px]">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <div class="lg:col-span-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-lg flex items-center min-h-[280px]">
             <div class="relative z-10 max-w-sm">
-                <h3 class="text-3xl font-bold mb-3 leading-tight">Dokun, Dene ve Gerçekten Öğren</h3>
-                <p class="text-blue-100 text-sm leading-relaxed mb-6 opacity-90">
-                    Modelleri manipüle edin ve sonuçları gerçek zamanlı gözlemleyin. Deneyerek öğrenmenin en kısa yolu.
+                <h3 class="text-3xl font-bold mb-3 leading-tight">Dokun, Dene ve Öğren</h3>
+                <p class="text-blue-100 text-sm leading-relaxed mb-6 opacity-80">
+                    Modelleri manipüle edin ve sonuçları anında gözlemleyin.
                 </p>
-                <button onclick="showPage('matematik')" class="bg-white text-blue-700 px-6 py-2.5 rounded-xl font-bold hover:shadow-lg transition-all text-sm w-fit">
-                    Hemen Başla
+                <button onclick="showPage('matematik')" class="bg-white text-blue-700 px-6 py-2 rounded-xl font-bold hover:shadow-xl transition-all text-xs">
+                    Simülasyonlara Git
                 </button>
             </div>
-            <div class="absolute right-10 top-1/2 -translate-y-1/2 w-48 h-48 bg-white/5 rounded-full border border-white/10 flex items-center justify-center text-6xl hidden md:flex">
-                🧪
-            </div>
+            <div class="absolute right-12 text-7xl opacity-10 hidden md:block">🧬</div>
         </div>
         
         <div class="lg:col-span-4 grid grid-cols-2 gap-4">
-            <div class="aspect-square bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm flex flex-col items-center justify-center text-center hover:border-blue-200 transition-colors">
-                <span class="text-2xl mb-2">🚀</span>
-                <h4 class="text-xs font-bold text-slate-800">Hızlı Erişim</h4>
-                <p class="text-[10px] text-slate-400 mt-1">Anında simülasyon</p>
+            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center hover:border-blue-300 transition-all group">
+                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🚀</span>
+                <span class="text-[11px] font-bold text-slate-700">Hızlı Erişim</span>
             </div>
-            <div class="aspect-square bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm flex flex-col items-center justify-center text-center hover:border-green-200 transition-colors">
-                <span class="text-2xl mb-2">📱</span>
-                <h4 class="text-xs font-bold text-slate-800">Mobil Uyum</h4>
-                <p class="text-[10px] text-slate-400 mt-1">Her cihazda aktif</p>
+            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center hover:border-green-300 transition-all group">
+                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📱</span>
+                <span class="text-[11px] font-bold text-slate-700">Mobil Uyum</span>
             </div>
-            <div class="aspect-square bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm flex flex-col items-center justify-center text-center hover:border-purple-200 transition-colors">
-                <span class="text-2xl mb-2">📚</span>
-                <h4 class="text-xs font-bold text-slate-800">Zengin Arşiv</h4>
-                <p class="text-[10px] text-slate-400 mt-1">Geniş içerik</p>
+            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center hover:border-purple-300 transition-all group">
+                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📚</span>
+                <span class="text-[11px] font-bold text-slate-700">300+ İçerik</span>
             </div>
-            <div class="aspect-square bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm flex flex-col items-center justify-center text-center hover:border-orange-200 transition-colors">
-                <span class="text-2xl mb-2">💎</span>
-                <h4 class="text-xs font-bold text-slate-800">Ücretsiz</h4>
-                <p class="text-[10px] text-slate-400 mt-1">Eğitimde eşitlik</p>
+            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center hover:border-orange-300 transition-all group">
+                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🆓</span>
+                <span class="text-[11px] font-bold text-slate-700">Ücretsiz</span>
             </div>
         </div>
     </div>
 
-    <div class="bg-slate-900 rounded-[2.5rem] p-8 md:p-10 text-white relative overflow-hidden shadow-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10">
-            <div>
-                <h3 class="text-xl font-bold mb-4 border-l-4 border-blue-500 pl-4">Manifestomuz</h3>
-                <p class="text-sm text-slate-400 leading-relaxed italic">
-                    "Eğitimde fırsat eşitliği için yerli ve tamamen ücretsiz bir ekosistem inşa ediyoruz. Bilgi bir hak olmalı, ayrıcalık değil."
+    <div class="bg-slate-900 rounded-[2rem] p-6 text-white relative overflow-hidden">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div class="max-w-md">
+                <h4 class="text-sm font-bold text-blue-400 mb-1 uppercase tracking-tighter">Vizyonumuz</h4>
+                <p class="text-xs text-slate-400 leading-relaxed italic">
+                    Eğitimde fırsat eşitliği için yerli ve ücretsiz içerikler üretiyoruz. Bilgi paylaştıkça çoğalır.
                 </p>
             </div>
-            <div class="flex flex-col items-center md:items-end gap-4">
-                <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="bg-white text-slate-900 px-8 py-3 rounded-xl font-bold text-sm hover:scale-105 transition-transform">
-                    Bir Kahve Ismarla ☕
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-[10px] text-slate-500 italic leading-tight">Gelişimimize destek<br>olmak ister misiniz?</p>
+                </div>
+                <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="bg-white text-slate-900 px-6 py-2 rounded-lg font-bold text-xs hover:bg-blue-50 transition-colors shadow-lg">
+                    Bağış Yap ☕
                 </a>
-                <p class="text-[10px] text-slate-500 text-center md:text-right">Bağışlarınız sunucu ve içerik maliyetleri içindir.</p>
             </div>
         </div>
-        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute right-0 bottom-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl"></div>
     </div>
 </div>
     </div>
