@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -39,15 +40,9 @@
 
         <nav class="flex-1 px-4 space-y-2 overflow-y-auto hide-scrollbar">
             <div class="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-4">Dersler</div>
-<button onclick="showPage('kesfet')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-bold text-slate-700 hover:bg-blue-50 group">
-    <span class="mr-3 text-xl transition-transform group-hover:scale-110">🧭</span> Keşfet
-</button>
-
-<button onclick="showPage('matematik')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 hover:bg-blue-50">
-    <span class="mr-3 text-xl">📐</span> Matematik
-</button>
-
-<div class="mx-4 border-t border-slate-100 my-4"></div>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-blue-600 bg-blue-50">
+                <span class="mr-3 text-xl">📐</span> Matematik
+            </a>
             <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
                 <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧪</span> Fizik 
                 <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
@@ -92,73 +87,6 @@
             </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-10 bg-[#f8fafc]">
-            <div id="kesfet-content" class="block">
-<div id="kesfetSayfasi" class="space-y-6 pb-20 max-w-[1400px]">
-    <div class="flex flex-col">
-        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Raporlab İnteraktif</h2>
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Dijital Öğrenme Laboratuvarı</p>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        
-        <div class="lg:col-span-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-lg flex items-center min-h-[280px]">
-            <div class="relative z-10 max-w-sm">
-                <h3 class="text-3xl font-bold mb-3 leading-tight">Dokun, Dene ve Öğren</h3>
-                <p class="text-blue-100 text-sm leading-relaxed mb-6 opacity-80">
-                    Modelleri manipüle edin ve sonuçları anında gözlemleyin.
-                </p>
-                <button onclick="showPage('matematik')" class="bg-white text-blue-700 px-6 py-2 rounded-xl font-bold hover:shadow-xl transition-all text-xs">
-                    Simülasyonlara Git
-                </button>
-            </div>
-            <div class="absolute right-12 text-7xl opacity-10 hidden md:block">🧬</div>
-        </div>
-        
-        <div class="lg:col-span-4 grid grid-cols-2 gap-4">
-            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center hover:border-blue-300 transition-all group">
-                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🚀</span>
-                <span class="text-[11px] font-bold text-slate-700">Hızlı Erişim</span>
-            </div>
-            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center hover:border-green-300 transition-all group">
-                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📱</span>
-                <span class="text-[11px] font-bold text-slate-700">Mobil Uyum</span>
-            </div>
-            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center hover:border-purple-300 transition-all group">
-                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📚</span>
-                <span class="text-[11px] font-bold text-slate-700">300+ İçerik</span>
-            </div>
-            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center hover:border-orange-300 transition-all group">
-                <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🆓</span>
-                <span class="text-[11px] font-bold text-slate-700">Ücretsiz</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-slate-900 rounded-[2rem] p-6 text-white relative overflow-hidden">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-            <div class="max-w-md">
-                <h4 class="text-sm font-bold text-blue-400 mb-1 uppercase tracking-tighter">Vizyonumuz</h4>
-                <p class="text-xs text-slate-400 leading-relaxed italic">
-                    Eğitimde fırsat eşitliği için yerli ve ücretsiz içerikler üretiyoruz. Bilgi paylaştıkça çoğalır.
-                </p>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right hidden sm:block">
-                    <p class="text-[10px] text-slate-500 italic leading-tight">Gelişimimize destek<br>olmak ister misiniz?</p>
-                </div>
-                <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="bg-white text-slate-900 px-6 py-2 rounded-lg font-bold text-xs hover:bg-blue-50 transition-colors shadow-lg">
-                    Bağış Yap ☕
-                </a>
-            </div>
-        </div>
-        <div class="absolute right-0 bottom-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl"></div>
-    </div>
-</div>
-    </div>
-</div>
-    </div>
-
-<div id="matematik-content" class="hidden">
             <div class="mb-8">
                 <h2 class="text-3xl font-extrabold text-slate-900">Matematik Simülasyonları</h2>
                 <p class="text-slate-500 mt-1 font-medium">Öğrenmeyi kolaylaştıran interaktif modeller.</p>
@@ -374,7 +302,6 @@
                 </div>
             </div>
         </div>
-            </div>
     </main>
 
     <script>
@@ -390,35 +317,6 @@
             document.body.style.overflow = 'hidden'; // Kaydırmayı engelle
         }
 
-function showPage(pageId) {
-    // Tüm içerik kutularını bul ve gizle
-    const kesfet = document.getElementById('kesfet-content');
-    const matematik = document.getElementById('matematik-content');
-    
-    if (pageId === 'kesfet') {
-        kesfet.classList.remove('hidden');
-        kesfet.classList.add('block');
-        matematik.classList.add('hidden');
-        matematik.classList.remove('block');
-    } else if (pageId === 'matematik') {
-        matematik.classList.remove('hidden');
-        matematik.classList.add('block');
-        kesfet.classList.add('hidden');
-        kesfet.classList.remove('block');
-    }
-
-    // Mobilde menüden bir yere basınca menünün kapanması için
-    if (window.innerWidth < 768) {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
-    }
-    
-    // Sayfayı en yukarı taşı (geçiş hissi için)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-        
         function closeSim() {
             const modal = document.getElementById('simModal');
             const frame = document.getElementById('simFrame');
