@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Mantık Devresi</title>
+    <style>
+        :root {
+            /* RAPORLAB TEMA (v3.6 - Circuit) */
+            --bg-app: #f1f5f9;
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --color-on: #facc15;    /* Elektrik VAR (1) - Sarı/Neon */
+            --color-off: #94a3b8;   /* Elektrik YOK (0) - Gri */
+            --brand-blue: #2563eb;  
+            
+            --border: #e2e8f0;
+            --radius: 16px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 360px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 4px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--brand-blue); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Bağlaç Seçici */
+        .gate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .gate-btn {
+            background: var(--bg-app); border: 1px solid var(--border);
+            padding: 12px; border-radius: 8px; cursor: pointer;
+            font-weight: 600; color: var(--text-muted); transition: all 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .gate-btn:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
+        .gate-btn.active { background: var(--brand-blue); color: white; border-color: var(--brand-blue); box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+        .gate-sym { font-size: 1.2rem; font-weight: bold; }
+
+        /* Doğruluk Tablosu */
+        .truth-table {
+            width: 100%; border-collapse: collapse; font-family: var(--font-mono);
+            font-size: 0.9rem; margin-top: 10px;
+            border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
+        }
+        .truth-table th { background: #e2e8f0; padding: 8px; text-align: center; color: var(--text-main); }
+        .truth-table td { border-top: 1px solid var(--border); padding: 8px; text-align: center; color: var(--text-muted); }
+        .truth-table tr.active-row { background: #fef08a; font-weight: bold; color: #854d0e; }
+        .truth-table tr.active-row td { color: #854d0e; }
+
+        /* Giriş Kontrolleri */
+        .switch-container {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+        }
+        .switch-label { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .switch-val { font-family: var(--font-mono); font-weight: bold; color: var(--text-muted); }
+        
+        /* Toggle Switch */
+        .toggle { position: relative; width: 50px; height: 26px; cursor: pointer; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--color-on); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .info-panel { 
+            margin-top: auto; background: #eff6ff; 
+            border-left: 4px solid var(--brand-blue); 
+            padding: 15px; border-radius: 8px; 
+            font-size: 0.9rem; line-height: 1.5; color: #1e3a8a;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background-color: #1e293b; /* Koyu devre kartı rengi */
+            /* Devre Kartı Deseni */
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas {
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div>
+        <h3 style="font-size:0.8rem; text-transform:uppercase; color:#64748b; margin-bottom:10px;">Bağlaç Seçimi</h3>
+        <div class="gate-grid">
+            <button class="gate-btn active" onclick="app.setGate('AND')">
+                <span class="gate-sym">∧</span>
+                <span>VE (AND)</span>
+            </button>
+            <button class="gate-btn" onclick="app.setGate('OR')">
+                <span class="gate-sym">∨</span>
+                <span>VEYA (OR)</span>
+            </button>
+            <button class="gate-btn" onclick="app.setGate('IMP')">
+                <span class="gate-sym">⇒</span>
+                <span>İSE (IMP)</span>
+            </button>
+            <button class="gate-btn" onclick="app.setGate('IFF')">
+                <span class="gate-sym">⇔</span>
+                <span>ANCAK (IFF)</span>
+            </button>
+            <button class="gate-btn" onclick="app.setGate('XOR')">
+                <span class="gate-sym">⊻</span>
+                <span>YA DA (XOR)</span>
+            </button>
+            <button class="gate-btn" onclick="app.setGate('NAND')">
+                <span class="gate-sym">|</span>
+                <span>VE DEĞİL</span>
+            </button>
+        </div>
+    </div>
+
+    <div>
+        <h3 style="font-size:0.8rem; text-transform:uppercase; color:#64748b; margin-bottom:10px;">Giriş Değerleri</h3>
+        <div class="switch-container">
+            <div class="switch-label">
+                <span style="color:var(--brand-blue)">p</span>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="inpP" onchange="app.updateState()">
+                <span class="slider"></span>
+            </label>
+            <div class="switch-val" id="valP">0</div>
+        </div>
+        <div class="switch-container" style="margin-top:10px;">
+            <div class="switch-label">
+                <span style="color:var(--brand-blue)">q</span>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="inpQ" onchange="app.updateState()">
+                <span class="slider"></span>
+            </label>
+            <div class="switch-val" id="valQ">0</div>
+        </div>
+    </div>
+
+    <div>
+        <h3 style="font-size:0.8rem; text-transform:uppercase; color:#64748b; margin-bottom:5px;">Doğruluk Tablosu</h3>
+        <table class="truth-table" id="truthTable">
+            </table>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        Devreyi tamamlamak için anahtarları açıp kapatın.
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0,
+        height: 0,
+        
+        state: {
+            gate: 'AND',
+            p: 0,
+            q: 0,
+            res: 0,
+            animOffset: 0 // Kablodaki akış animasyonu için
+        },
+
+        // Mantık Kuralları
+        logic: {
+            'AND': (a, b) => a && b,
+            'OR': (a, b) => a || b,
+            'IMP': (a, b) => (!a) || b, // İse (p' veya q)
+            'IFF': (a, b) => a === b,   // Ancak ve Ancak
+            'XOR': (a, b) => a !== b,   // Ya da
+            'NAND': (a, b) => !(a && b)
+        },
+        
+        // Semboller
+        symbols: {
+            'AND': '∧', 'OR': '∨', 'IMP': '⇒', 'IFF': '⇔', 'XOR': '⊻', 'NAND': '⊼'
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            window.addEventListener('resize', () => this.resize());
+            this.resize();
+            this.setGate('AND'); // Başlangıç
+            this.loop();
+        },
+
+        resize: function() {
+            const main = document.querySelector('main');
+            this.width = this.canvas.width = main.clientWidth - 40;
+            this.height = this.canvas.height = main.clientHeight - 40;
+        },
+
+        setGate: function(type) {
+            this.state.gate = type;
+            
+            // Buton UI Güncelle
+            document.querySelectorAll('.gate-btn').forEach(b => b.classList.remove('active'));
+            // Basit eşleştirme (Tıklanan butonu bulmak için event kullanılabilirdi ama basit tutuyoruz)
+            const btns = document.querySelectorAll('.gate-btn');
+            const types = ['AND', 'OR', 'IMP', 'IFF', 'XOR', 'NAND'];
+            const idx = types.indexOf(type);
+            if(idx > -1) btns[idx].classList.add('active');
+
+            this.updateTableHTML();
+            this.updateState();
+        },
+
+        updateState: function() {
+            const p = document.getElementById('inpP').checked ? 1 : 0;
+            const q = document.getElementById('inpQ').checked ? 1 : 0;
+            
+            this.state.p = p;
+            this.state.q = q;
+            this.state.res = this.logic[this.state.gate](p, q) ? 1 : 0;
+
+            // UI Text Güncelle
+            document.getElementById('valP').innerText = p;
+            document.getElementById('valQ').innerText = q;
+            document.getElementById('valP').style.color = p ? '#f59e0b' : '#94a3b8';
+            document.getElementById('valQ').style.color = q ? '#f59e0b' : '#94a3b8';
+
+            // Tabloyu Boya
+            this.highlightTableRow();
+            
+            // Açıklama
+            this.updateInfoText();
+        },
+
+        updateTableHTML: function() {
+            const table = document.getElementById('truthTable');
+            const sym = this.symbols[this.state.gate];
+            
+            let html = `<thead><tr><th>p</th><th>q</th><th>p ${sym} q</th></tr></thead><tbody>`;
+            
+            // 4 Durum (00, 01, 10, 11)
+            const cases = [[0,0], [0,1], [1,0], [1,1]];
+            
+            cases.forEach((c, i) => {
+                const res = this.logic[this.state.gate](c[0], c[1]) ? 1 : 0;
+                html += `<tr id="row-${i}"><td>${c[0]}</td><td>${c[1]}</td><td>${res}</td></tr>`;
+            });
+            
+            html += `</tbody>`;
+            table.innerHTML = html;
+        },
+
+        highlightTableRow: function() {
+            // Hangi satır? (Binary mantığı: p*2 + q)
+            const rowIdx = (this.state.p * 2) + this.state.q;
+            
+            document.querySelectorAll('#truthTable tr').forEach(r => r.classList.remove('active-row'));
+            const row = document.getElementById(`row-${rowIdx}`);
+            if(row) row.classList.add('active-row');
+        },
+
+        updateInfoText: function() {
+            const info = document.getElementById('infoText');
+            const { gate, p, q, res } = this.state;
+            
+            let msg = "";
+            if (gate === 'AND') {
+                if(res) msg = "VE Bağlacı: Her iki anahtar da kapalı (1) olduğu için lamba yanıyor.";
+                else msg = "VE Bağlacı: Lambanın yanması için İKİSİNİN de 1 olması gerekir.";
+            } else if (gate === 'OR') {
+                if(res) msg = "VEYA Bağlacı: En az bir anahtar 1 olduğu için lamba yanıyor.";
+                else msg = "VEYA Bağlacı: Sadece ikisi de 0 olduğunda lamba söner.";
+            } else if (gate === 'IMP') {
+                if(!res) msg = "İSE Bağlacı: 1 ⇒ 0 durumu 'Yanlış' olan tek durumdur.";
+                else msg = "İSE Bağlacı: 1 ⇒ 0 dışındaki tüm durumlar Doğrudur (1).";
+            } else {
+                msg = `Sonuç: ${res}. Tablodaki duruma dikkat edin.`;
+            }
+            info.innerText = msg;
+        },
+
+        // --- ÇİZİM ---
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.state.animOffset -= 1; // Akış hızı
+            
+            this.drawCircuit();
+            
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawCircuit: function() {
+            const ctx = this.ctx;
+            const { p, q, res } = this.state;
+            const centerX = this.width / 2;
+            const centerY = this.height / 2;
+
+            // Koordinatlar
+            const pX = 100, pY = centerY - 80;
+            const qX = 100, qY = centerY + 80;
+            const gateX = centerX, gateY = centerY;
+            const outX = this.width - 100, outY = centerY;
+
+            // 1. Giriş Kabloları (Input Wires)
+            this.drawWire(pX, pY, gateX - 60, pY - 20, p); // P'den kapıya
+            this.drawWire(qX, qY, gateX - 60, qY + 20, q); // Q'dan kapıya
+            
+            // Kapı giriş noktaları bağlantısı (Gate spesifik çizim yapılabilir ama basit tutuyoruz)
+            this.drawWire(gateX - 60, pY - 20, gateX - 40, centerY - 20, p);
+            this.drawWire(gateX - 60, qY + 20, gateX - 40, centerY + 20, q);
+
+            // 2. Çıkış Kablosu (Output Wire)
+            this.drawWire(gateX + 40, centerY, outX, outY, res);
+
+            // 3. Giriş Kutuları (Switch Görünümü)
+            this.drawInputBox(pX, pY, "p", p);
+            this.drawInputBox(qX, qY, "q", q);
+
+            // 4. Mantık Kapısı (Gate)
+            this.drawGateShape(gateX, gateY, this.state.gate);
+
+            // 5. Çıkış Lambası
+            this.drawLamp(outX, outY, res);
+        },
+
+        drawWire: function(x1, y1, x2, y2, isActive) {
+            const ctx = this.ctx;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            
+            // Bezier curve ile yumuşak kablo
+            const cp1x = x1 + (x2 - x1) / 2;
+            const cp2x = x1 + (x2 - x1) / 2;
+            ctx.bezierCurveTo(cp1x, y1, cp2x, y2, x2, y2);
+            
+            // Kablo Dışı (Gölge/Kalınlık)
+            ctx.strokeStyle = isActive ? '#4d4d4d' : '#334155';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            
+            // Kablo İçi (Neon/Akış)
+            ctx.strokeStyle = isActive ? '#facc15' : '#475569';
+            ctx.lineWidth = 4;
+            
+            // Kesikli çizgi animasyonu (Elektrik akışı)
+            if (isActive) {
+                ctx.setLineDash([10, 10]);
+                ctx.lineDashOffset = this.state.animOffset;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#facc15';
+            } else {
+                ctx.setLineDash([]);
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.stroke();
+            
+            // Reset
+            ctx.setLineDash([]);
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        },
+
+        drawInputBox: function(x, y, label, val) {
+            const ctx = this.ctx;
+            
+            // Kutu
+            ctx.fillStyle = val ? '#1e293b' : '#0f172a';
+            ctx.strokeStyle = val ? '#facc15' : '#64748b';
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            ctx.roundRect(x - 30, y - 30, 60, 60, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // Yazı
+            ctx.fillStyle = val ? '#facc15' : '#94a3b8';
+            ctx.font = "bold 24px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(label, x, y - 5);
+            
+            // Değer (0 veya 1)
+            ctx.font = "bold 14px monospace";
+            ctx.fillText(val, x, y + 20);
+        },
+
+        drawGateShape: function(x, y, type) {
+            const ctx = this.ctx;
+            
+            // Kapı Gövdesi
+            ctx.fillStyle = '#1e40af'; // Koyu Mavi
+            ctx.strokeStyle = '#60a5fa'; // Açık Mavi Çerçeve
+            ctx.lineWidth = 3;
+            
+            ctx.beginPath();
+            // Basit dikdörtgenimsi şekil yerine sembolik çizim
+            // Kolaylık için yuvarlatılmış kare ve üzerine sembol
+            ctx.roundRect(x - 40, y - 40, 80, 80, 15);
+            ctx.fill();
+            ctx.stroke();
+
+            // Sembol
+            ctx.fillStyle = 'white';
+            ctx.font = "bold 40px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(this.symbols[type], x, y);
+            
+            // İsim
+            ctx.font = "12px sans-serif";
+            ctx.fillStyle = "#bfdbfe";
+            ctx.fillText(type, x, y + 50);
+        },
+
+        drawLamp: function(x, y, isOn) {
+            const ctx = this.ctx;
+            
+            // Dış Hare (Glow)
+            if (isOn) {
+                const gradient = ctx.createRadialGradient(x, y, 10, x, y, 60);
+                gradient.addColorStop(0, "rgba(250, 204, 21, 0.8)");
+                gradient.addColorStop(1, "rgba(250, 204, 21, 0)");
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, 60, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            // Lamba Gövdesi
+            ctx.fillStyle = isOn ? '#fef08a' : '#334155';
+            ctx.strokeStyle = isOn ? '#facc15' : '#475569';
+            ctx.lineWidth = 3;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 25, 0, Math.PI*2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Lamba İçi (Flaman gibi)
+            if(isOn) {
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(x - 8, y - 8, 6, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+    };
+
+    window.onload = function() { app.init(); };
+</script>
+</body>
+</html>
+
