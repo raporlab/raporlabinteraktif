@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Cebir İnşaat</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v3.7) */
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            /* Cebir Karoları Renk Paleti */
+            --color-x2: #3b82f6;   /* x² - Mavi */
+            --color-x: #10b981;    /* x - Yeşil */
+            --color-1: #f59e0b;    /* 1 - Sarı/Turuncu */
+            --color-error: #ef4444;
+            
+            --border: #e2e8f0;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 360px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 30px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+            z-index: 20;
+            box-shadow: 10px 0 40px rgba(0,0,0,0.03);
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-x2); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Denklem Ekranı */
+        .math-display {
+            background: #1e293b; color: white;
+            padding: 25px; border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.2);
+            position: relative; overflow: hidden;
+        }
+        .eq-input { 
+            font-family: var(--font-mono); font-size: 1.4rem; color: #cbd5e1; margin-bottom: 10px; 
+        }
+        .eq-result { 
+            font-family: var(--font-mono); font-size: 1.8rem; font-weight: 800; color: #4ade80; 
+            min-height: 40px; display: flex; align-items: center; justify-content: center;
+        }
+        .status-badge {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;
+            margin-top: 10px; padding: 4px 10px; border-radius: 4px; display: inline-block;
+        }
+
+        /* Kontroller */
+        .params { background: white; padding: 20px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        .slider-group { margin-bottom: 20px; }
+        .label-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem; margin-bottom: 10px; }
+
+        input[type="range"] { 
+            width: 100%; -webkit-appearance: none; background: #e2e8f0; height: 8px; border-radius: 4px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 24px; height: 24px; 
+            background: white; border-width: 4px; border-style: solid; border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        /* Bilgi Alanı */
+        .info-panel { 
+            margin-top: auto; background: #eff6ff; 
+            border-left: 4px solid var(--color-x2); 
+            padding: 20px; border-radius: 12px; 
+            font-size: 0.9rem; line-height: 1.6; color: #1e3a8a;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background-color: var(--bg-app);
+            /* Grid Deseni */
+            background-image: 
+                linear-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+            background-size: 40px 40px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas {
+            border-radius: 24px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.1);
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">Cebir Pro</span>
+    </div>
+
+    <div class="math-display">
+        <div class="eq-input" id="dispEq">x² + 5x + 6</div>
+        <div class="eq-result" id="dispFactor">(x+2)(x+3)</div>
+        <div class="status-badge" id="dispStatus" style="background:#064e3b; color:#6ee7b7">DİKDÖRTGEN TAMAMLANDI</div>
+    </div>
+
+    <div class="params">
+        <h3>Parametreler</h3>
+        
+        <div class="slider-group">
+            <div class="label-row" style="color:var(--color-x)">
+                <span>x Katsayısı (b)</span>
+                <span id="lblB">5</span>
+            </div>
+            <input type="range" id="inpB" min="2" max="10" value="5" 
+                   style="color:var(--color-x)"> </div>
+
+        <div class="slider-group">
+            <div class="label-row" style="color:var(--color-1)">
+                <span>Sabit Sayı (c)</span>
+                <span id="lblC">6</span>
+            </div>
+            <input type="range" id="inpC" min="1" max="16" value="6">
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        <b>Alan Modeli:</b> Cebirsel ifadeyi parçalara ayırıyoruz. Eğer bu parçalarla kusursuz bir dikdörtgen yapabilirsek, kenar uzunlukları bize çarpanları verir.
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        
+        // State
+        b: 5,
+        c: 6,
+        factors: [2, 3], // Başlangıç çarpanları (x+2)(x+3)
+        time: 0, // Animasyon zamanı
+        isValid: true,
+
+        // Görsel Ayarlar
+        TILE_SIZE: 40, // 1 birim kare boyutu (px)
+        X_LENGTH: 120, // x uzunluğu (px)
+        
+        colors: {
+            x2: '#3b82f6',
+            x: '#10b981',
+            one: '#f59e0b',
+            error: '#ef4444'
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Slider Renklendirme
+            document.querySelector('#inpB').style.setProperty('--brand', this.colors.x);
+            document.querySelector('#inpC').style.setProperty('--brand', this.colors.one);
+
+            // Event Listeners
+            const inpB = document.getElementById('inpB');
+            const inpC = document.getElementById('inpC');
+
+            inpB.addEventListener('input', (e) => this.update(e.target.value, this.c));
+            inpC.addEventListener('input', (e) => this.update(this.b, e.target.value));
+
+            window.addEventListener('resize', () => this.resize());
+            
+            this.resize();
+            this.update(5, 6);
+            this.loop();
+        },
+
+        resize: function() {
+            const main = document.querySelector('main');
+            this.width = this.canvas.width = main.clientWidth - 60;
+            this.height = this.canvas.height = main.clientHeight - 60;
+        },
+
+        update: function(valB, valC) {
+            this.b = parseInt(valB);
+            this.c = parseInt(valC);
+            this.time = 0; // Animasyonu resetle
+
+            // Çarpan Bulma Algoritması
+            // c = m * n ve b = m + n olacak m,n arıyoruz.
+            this.factors = this.solveFactors(this.b, this.c);
+            this.isValid = (this.factors !== null);
+
+            // UI Güncelleme
+            document.getElementById('lblB').innerText = this.b;
+            document.getElementById('lblC').innerText = this.c;
+            document.getElementById('dispEq').innerText = `x² + ${this.b}x + ${this.c}`;
+
+            const resDiv = document.getElementById('dispFactor');
+            const statusDiv = document.getElementById('dispStatus');
+
+            if (this.isValid) {
+                resDiv.innerText = `(x + ${this.factors[0]})(x + ${this.factors[1]})`;
+                resDiv.style.color = "#4ade80";
+                statusDiv.innerText = "DİKDÖRTGEN TAMAMLANDI";
+                statusDiv.style.background = "#064e3b";
+                statusDiv.style.color = "#6ee7b7";
+            } else {
+                resDiv.innerText = "Çarpanlarına Ayrılmıyor";
+                resDiv.style.color = "#ef4444";
+                statusDiv.innerText = "PARÇALAR UYUŞMUYOR";
+                statusDiv.style.background = "#450a0a";
+                statusDiv.style.color = "#fca5a5";
+            }
+        },
+
+        solveFactors: function(b, c) {
+            // Basit tam sayı çarpan arama
+            for (let i = 1; i <= Math.sqrt(c) + 1; i++) {
+                if (c % i === 0) {
+                    let j = c / i;
+                    if (i + j === b) return [i, j].sort(); // Küçükten büyüğe
+                }
+            }
+            return null;
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.time += 0.04; // Animasyon hızı
+            
+            this.drawScene();
+            
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawScene: function() {
+            const ctx = this.ctx;
+            const { b, c, factors, isValid, time, X_LENGTH, TILE_SIZE } = this;
+            
+            // Eğer geçerli değilse, rastgele bir yığın veya "kırık" görüntü çizilebilir.
+            // Şimdilik sadece parçaları dağınık çizelim.
+            if (!isValid) {
+                this.drawScattered(b, c);
+                return;
+            }
+
+            const [m, n] = factors; // x+m (dikey), x+n (yatay)
+            
+            // Toplam Boyutlar
+            const totalW = X_LENGTH + (n * TILE_SIZE);
+            const totalH = X_LENGTH + (m * TILE_SIZE);
+            
+            const startX = (this.width - totalW) / 2;
+            const startY = (this.height - totalH) / 2;
+
+            // --- ANIMASYON FAZLARI ---
+            // Faz 1: x² (Büyük Mavi Kare)
+            if (time > 0) {
+                this.drawTile(startX, startY, X_LENGTH, X_LENGTH, this.colors.x2, "x²", Math.min(1, time * 2));
+            }
+
+            // Faz 2: Dikey x blokları (m tane) - Sol Alt taraf mı yoksa Yan taraf mı?
+            // Standart gösterim: Sağ taraf ve Alt taraf.
+            // x² sol üstte.
+            
+            // Dikey x'ler (Sağda, n tane)
+            for (let i = 0; i < n; i++) {
+                // Her biri sırayla gelsin
+                const delay = 0.5 + (i * 0.1);
+                if (time > delay) {
+                    const alpha = Math.min(1, (time - delay) * 2);
+                    this.drawTile(
+                        startX + X_LENGTH + (i * TILE_SIZE), 
+                        startY, 
+                        TILE_SIZE, 
+                        X_LENGTH, 
+                        this.colors.x, 
+                        "x", 
+                        alpha
+                    );
+                }
+            }
+
+            // Yatay x'ler (Altta, m tane)
+            for (let i = 0; i < m; i++) {
+                const delay = 1.0 + (i * 0.1);
+                if (time > delay) {
+                    const alpha = Math.min(1, (time - delay) * 2);
+                    this.drawTile(
+                        startX, 
+                        startY + X_LENGTH + (i * TILE_SIZE), 
+                        X_LENGTH, 
+                        TILE_SIZE, 
+                        this.colors.x, 
+                        "x", 
+                        alpha
+                    );
+                }
+            }
+
+            // Faz 3: Birimler (1'ler) - Köşedeki boşluk
+            for (let i = 0; i < n; i++) { // Sütunlar
+                for (let j = 0; j < m; j++) { // Satırlar
+                    const delay = 1.5 + ((i + j) * 0.05);
+                    if (time > delay) {
+                        const alpha = Math.min(1, (time - delay) * 2);
+                        this.drawTile(
+                            startX + X_LENGTH + (i * TILE_SIZE),
+                            startY + X_LENGTH + (j * TILE_SIZE),
+                            TILE_SIZE,
+                            TILE_SIZE,
+                            this.colors.one,
+                            "1",
+                            alpha
+                        );
+                    }
+                }
+            }
+
+            // Faz 4: Kenar Ölçüleri (Parantezler)
+            if (time > 2.5) {
+                const alpha = Math.min(1, (time - 2.5));
+                ctx.globalAlpha = alpha;
+                
+                // Üst Kenar (x + n)
+                this.drawDimension(startX, startY - 20, X_LENGTH, n * TILE_SIZE, `x + ${n}`, 'horizontal');
+                
+                // Sol Kenar (x + m)
+                this.drawDimension(startX - 20, startY, X_LENGTH, m * TILE_SIZE, `x + ${m}`, 'vertical');
+                
+                ctx.globalAlpha = 1;
+            }
+        },
+
+        drawScattered: function(b, c) {
+            const ctx = this.ctx;
+            ctx.fillStyle = this.colors.error;
+            ctx.font = "bold 24px Segoe UI";
+            ctx.textAlign = "center";
+            ctx.fillText("Parçalar Birleşemiyor!", this.width/2, this.height/2 - 50);
+            
+            // Rastgele dağılmış hissi veren ikonik çizim
+            // Basitlik için sadece bir yığın çizelim
+            const startX = this.width/2 - 60;
+            const startY = this.height/2;
+            
+            this.drawTile(startX, startY, this.X_LENGTH, this.X_LENGTH, "#cbd5e1", "x²", 1);
+            // Kırık parça efekti
+            ctx.fillStyle = "#ef4444";
+            ctx.fillText("?", startX + this.X_LENGTH + 40, startY + 60);
+        },
+
+        drawTile: function(x, y, w, h, color, text, alpha) {
+            const ctx = this.ctx;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            
+            // Animasyon: Hafif büyüme efekti (Pop-in)
+            // Eğer alpha < 1 ise biraz küçükten büyüsün
+            let scale = 1;
+            if (alpha < 1) scale = 0.8 + (alpha * 0.2);
+            
+            // Scale işlemi için merkeze translate et
+            const cx = x + w/2;
+            const cy = y + h/2;
+            ctx.translate(cx, cy);
+            ctx.scale(scale, scale);
+            ctx.translate(-cx, -cy);
+
+            // Dolgu
+            ctx.fillStyle = color;
+            // Hafif gölge
+            ctx.shadowColor = "rgba(0,0,0,0.15)";
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 5;
+            
+            ctx.beginPath();
+            ctx.roundRect(x + 2, y + 2, w - 4, h - 4, 6); // Yuvarlak köşe
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Kenar
+            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Yazı
+            if (w > 20 && h > 20) {
+                ctx.fillStyle = "white";
+                ctx.font = "bold 16px Segoe UI";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(text, x + w/2, y + h/2);
+            }
+            
+            ctx.restore();
+        },
+
+        drawDimension: function(x, y, len1, len2, text, type) {
+            const ctx = this.ctx;
+            ctx.fillStyle = "#334155";
+            ctx.font = "bold 20px Segoe UI";
+            
+            if (type === 'horizontal') {
+                // Çizgi
+                ctx.beginPath();
+                ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2;
+                ctx.moveTo(x, y); ctx.lineTo(x + len1 + len2, y);
+                // Çentikler
+                ctx.moveTo(x, y-5); ctx.lineTo(x, y+5); // Baş
+                ctx.moveTo(x + len1, y-3); ctx.lineTo(x + len1, y+3); // Ayrım
+                ctx.moveTo(x + len1 + len2, y-5); ctx.lineTo(x + len1 + len2, y+5); // Son
+                ctx.stroke();
+                
+                // Yazı
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                ctx.fillText(text, x + (len1 + len2)/2, y - 10);
+                
+            } else {
+                // Dikey
+                ctx.beginPath();
+                ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2;
+                ctx.moveTo(x, y); ctx.lineTo(x, y + len1 + len2);
+                // Çentikler
+                ctx.moveTo(x-5, y); ctx.lineTo(x+5, y); 
+                ctx.moveTo(x-3, y + len1); ctx.lineTo(x+3, y + len1);
+                ctx.moveTo(x-5, y + len1 + len2); ctx.lineTo(x+5, y + len1 + len2);
+                ctx.stroke();
+                
+                // Yazı (Döndürülmüş)
+                ctx.save();
+                ctx.translate(x - 15, y + (len1 + len2)/2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                ctx.fillText(text, 0, 0);
+                ctx.restore();
+            }
+        }
+    };
+
+    window.onload = function() { app.init(); };
+</script>
+</body>
+</html>
