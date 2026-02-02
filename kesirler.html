@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Kesirler ve Pastalar</title>
+    <style>
+        :root {
+            /* RAPORLAB TEMA (v3.0) */
+            --bg-app: #f1f5f9;
+            --bg-panel: #ffffff;    
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            
+            --brand-blue: #2563eb;  /* Pay (Seçilen) */
+            --brand-gray: #cbd5e1;  /* Payda (Boş) */
+            --brand-orange: #f97316; /* Vurgular */
+            
+            --border: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --font: 'Segoe UI', 'Inter', sans-serif;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 340px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.02);
+        }
+
+        .logo { 
+            font-size: 1.6rem; display: flex; align-items: baseline; gap: 4px; 
+            user-select: none; margin-bottom: 5px;
+        }
+        .logo .brand-bold { font-weight: 800; color: var(--brand-blue); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        .params { background: var(--bg-app); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        
+        .slider-row { margin-bottom: 20px; }
+        .label-row { display: flex; justify-content: space-between; font-weight: 600; font-size: 1rem; margin-bottom: 10px; }
+
+        input[type="range"] { width: 100%; -webkit-appearance: none; background: #cbd5e1; height: 8px; border-radius: 4px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 24px; height: 24px; 
+            background: white; border: 4px solid var(--brand-blue); border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        /* Büyük Kesir Göstergesi */
+        .fraction-display {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 3rem; font-weight: 800; color: var(--text-main);
+            margin: 10px 0;
+            background: var(--bg-app); border-radius: 12px; padding: 10px;
+        }
+        .frac-num { color: var(--brand-blue); border-bottom: 4px solid var(--text-main); padding: 0 10px; }
+        .frac-den { color: var(--text-muted); padding-top: 5px; }
+
+        .info-panel { 
+            margin-top: auto; background: #eff6ff; 
+            border-left: 4px solid var(--brand-blue); 
+            padding: 15px; border-radius: 8px; 
+            font-size: 0.9rem; line-height: 1.5; color: #1e3a8a;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background-color: var(--bg-app);
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="fraction-display">
+        <span class="frac-num" id="bigNum">3</span>
+        <span class="frac-den" id="bigDen">8</span>
+    </div>
+
+    <div class="params">
+        <h3>Ayarlar</h3>
+        
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--brand-blue)">
+                <span>Pay (Seçilen)</span>
+                <span id="lblNum">3</span>
+            </div>
+            <input type="range" id="inpNum" min="0" max="8" value="3">
+        </div>
+
+        <div class="slider-row">
+            <div class="label-row" style="color:var(--text-muted)">
+                <span>Payda (Toplam)</span>
+                <span id="lblDen">8</span>
+            </div>
+            <input type="range" id="inpDen" min="1" max="20" value="8">
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        Yükleniyor...
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0,
+        height: 0,
+        
+        state: {
+            num: 3, // Pay
+            den: 8, // Payda
+            time: 0 // Animasyon için
+        },
+        
+        colors: {
+            fill: '#2563eb',    // Dolu dilim (Mavi)
+            empty: '#e2e8f0',   // Boş dilim (Gri)
+            stroke: '#ffffff',  // Dilim arası çizgiler
+            textLight: '#ffffff',
+            textDark: '#64748b'
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Slider Eventleri
+            const sNum = document.getElementById('inpNum');
+            const sDen = document.getElementById('inpDen');
+
+            sNum.addEventListener('input', (e) => {
+                let val = parseInt(e.target.value);
+                // Pay, paydayı geçemez (Basit kesir kuralı)
+                if(val > this.state.den) {
+                    val = this.state.den;
+                    sNum.value = val;
+                }
+                this.updateState(val, this.state.den);
+            });
+
+            sDen.addEventListener('input', (e) => {
+                let val = parseInt(e.target.value);
+                this.updateState(this.state.num, val);
+                
+                // Payda değişirse, Pay slider'ın max değerini güncelle
+                sNum.max = val;
+                if(this.state.num > val) {
+                    this.state.num = val;
+                    sNum.value = val;
+                }
+                document.getElementById('lblNum').innerText = this.state.num;
+            });
+
+            window.addEventListener('resize', () => this.resize());
+            
+            this.resize();
+            this.updateState(3, 8); // Başlangıç
+            this.loop();
+        },
+
+        resize: function() {
+            const main = document.querySelector('main');
+            this.width = this.canvas.width = main.clientWidth - 40;
+            this.height = this.canvas.height = main.clientHeight - 40;
+        },
+
+        updateState: function(n, d) {
+            this.state.num = n;
+            this.state.den = d;
+            
+            // UI Güncelle
+            document.getElementById('lblNum').innerText = n;
+            document.getElementById('lblDen').innerText = d;
+            document.getElementById('bigNum').innerText = n;
+            document.getElementById('bigDen').innerText = d;
+            
+            // Sol panel metni
+            const info = document.getElementById('infoText');
+            info.innerHTML = `<strong>Durum Raporu:</strong><br>
+                Bir bütün pastayı <b>${d}</b> eş parçaya böldük.<br>
+                Bu parçalardan <b>${n}</b> tanesini seçtik.<br>
+                ${n === d ? "<br><span style='color:green; font-weight:bold'>TAM (BÜTÜN) PASTA!</span>" : ""}
+                ${n === 0 ? "<br><span style='color:red; font-weight:bold'>HİÇBİR ŞEY SEÇİLMEDİ!</span>" : ""}`;
+
+            // Reset animasyon (hafifçe)
+            // this.state.time = 0; // İstersen her değişimde animasyonu sıfırlayabilirsin
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.state.time += 0.05;
+
+            // 1. Pasta Grafiği (Pie Chart)
+            this.drawPieChart(this.width / 2, this.height / 2 - 60, 180);
+
+            // 2. Çubuk Grafiği (Bar Chart) - Aşağıda
+            this.drawBarChart(this.width / 2, this.height - 80, 400, 50);
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawPieChart: function(cx, cy, radius) {
+            const ctx = this.ctx;
+            const s = this.state;
+            
+            // Dilim açısı
+            const sliceAngle = (Math.PI * 2) / s.den;
+            
+            // Gölge
+            ctx.shadowColor = "rgba(0,0,0,0.1)";
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetY = 10;
+            
+            // Bütün Daire (Arka plan)
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.colors.empty;
+            ctx.fill();
+            ctx.shadowBlur = 0; // Reset
+            ctx.shadowOffsetY = 0;
+
+            // Seçili Dilimler (Animasyonlu)
+            for(let i=0; i<s.num; i++) {
+                const startAngle = (i * sliceAngle) - (Math.PI / 2); // -90 derece (saat 12 yönü)
+                const endAngle = startAngle + sliceAngle;
+                
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, radius, startAngle, endAngle);
+                ctx.closePath();
+                
+                ctx.fillStyle = this.colors.fill;
+                // Animasyon: Hafif nefes alma
+                if(i === s.num - 1) { // Son parça biraz parlasın
+                     ctx.globalAlpha = 0.9 + Math.sin(s.time * 5) * 0.1;
+                }
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+                
+                // Kenarlık
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = this.colors.stroke;
+                ctx.stroke();
+            }
+            
+            // Çizgiler (Tüm dilimler için)
+            ctx.beginPath();
+            for(let i=0; i<s.den; i++) {
+                const angle = (i * sliceAngle) - (Math.PI / 2);
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+            }
+            ctx.strokeStyle = this.colors.stroke;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Metin Etiketleri (Sadece yeterince büyükse)
+            if(s.den <= 12) {
+                for(let i=0; i<s.den; i++) {
+                    const midAngle = ((i * sliceAngle) + ((i+1) * sliceAngle)) / 2 - (Math.PI / 2);
+                    // Merkeze uzaklık (radius'un %70'i)
+                    const tx = cx + Math.cos(midAngle) * (radius * 0.7);
+                    const ty = cy + Math.sin(midAngle) * (radius * 0.7);
+                    
+                    ctx.fillStyle = (i < s.num) ? this.colors.textLight : this.colors.textDark;
+                    ctx.font = "bold 14px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(`1/${s.den}`, tx, ty);
+                }
+            }
+        },
+
+        drawBarChart: function(cx, cy, w, h) {
+            const ctx = this.ctx;
+            const s = this.state;
+            const startX = cx - (w/2);
+            
+            // Arka plan (Boş bar)
+            ctx.fillStyle = this.colors.empty;
+            ctx.beginPath();
+            ctx.roundRect(startX, cy, w, h, 8);
+            ctx.fill();
+            
+            // Dolu Kısım
+            if (s.num > 0) {
+                const step = w / s.den;
+                const fillW = step * s.num;
+                
+                ctx.fillStyle = this.colors.fill;
+                ctx.beginPath();
+                // Sadece sol köşeleri yuvarla, eğer tam doluysa hepsini yuvarla
+                const radii = (s.num === s.den) ? 8 : [8, 0, 0, 8]; 
+                ctx.roundRect(startX, cy, fillW, h, radii);
+                ctx.fill();
+                
+                // Dilim Çizgileri
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for(let i=1; i<s.num; i++) {
+                    ctx.moveTo(startX + (i * step), cy);
+                    ctx.lineTo(startX + (i * step), cy + h);
+                }
+                ctx.stroke();
+            }
+
+            // Dış Çerçeve
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(startX, cy, w, h, 8);
+            ctx.stroke();
+            
+            // Altına Metin
+            ctx.fillStyle = this.colors.textDark;
+            ctx.font = "14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("Model Görünümü", cx, cy + h + 25);
+        }
+    };
+
+    window.onload = function() { app.init(); };
+</script>
+</body>
+</html>
+
