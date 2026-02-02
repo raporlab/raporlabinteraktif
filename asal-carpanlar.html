@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Asal Çarpanlar Ağacı</title>
+    <style>
+        :root {
+            /* RAPORLAB TEMA (v3.0) */
+            --bg-app: #f1f5f9;
+            --bg-panel: #ffffff;    
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            
+            --brand-blue: #2563eb;
+            --brand-orange: #f97316;
+            --success: #10b981; /* Asal Sayı Rengi */
+            --comp: #f43f5e;    /* Bileşik Sayı Rengi */
+            
+            --border: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --font: 'Segoe UI', 'Inter', sans-serif;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 340px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.02);
+        }
+
+        .logo { 
+            font-size: 1.6rem; display: flex; align-items: baseline; gap: 4px; 
+            user-select: none; margin-bottom: 5px;
+        }
+        .logo .brand-bold { font-weight: 800; color: var(--brand-blue); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        .params { background: var(--bg-app); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        
+        .slider-row { margin-bottom: 5px; }
+        .label-row { display: flex; justify-content: space-between; font-weight: 600; font-size: 1.1rem; margin-bottom: 10px; color: var(--brand-blue); }
+
+        input[type="range"] { width: 100%; -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 3px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 22px; height: 22px; 
+            background: white; border: 4px solid var(--brand-blue); border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* Kontrol Butonları */
+        .btn-row { display: flex; gap: 10px; }
+        .btn {
+            flex: 1; padding: 12px; border: 1px solid var(--border);
+            border-radius: 12px; background: var(--bg-panel); cursor: pointer;
+            font-weight: 600; color: var(--text-main); transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: var(--font);
+        }
+        .btn:hover { background: var(--bg-app); border-color: var(--brand-blue); color: var(--brand-blue); }
+        .btn.primary { background: var(--brand-blue); color: white; border: none; }
+        .btn.primary:hover { background: #1d4ed8; }
+
+        .info-panel { 
+            margin-top: auto; background: #ecfdf5; 
+            border-left: 4px solid var(--success); 
+            padding: 15px; border-radius: 8px; 
+            font-size: 0.9rem; line-height: 1.5; color: #064e3b;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background-color: var(--bg-app);
+            background-image: 
+                linear-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(203, 213, 225, 0.4) 1px, transparent 1px); 
+            background-size: 40px 40px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="params">
+        <h3>Hedef Sayı</h3>
+        <div class="slider-row">
+            <div class="label-row">
+                <span>Sayı:</span>
+                <span id="lblNum">36</span>
+            </div>
+            <input type="range" id="inpNum" min="2" max="99" value="36">
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:10px;">
+            Sayıyı değiştirdiğinde ağaç otomatik olarak yeniden oluşur.
+        </p>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn primary" onclick="app.replay()">
+            <span>▶</span> Tekrar Oynat
+        </button>
+    </div>
+
+    <div class="info-panel" id="infoBox">
+        Yükleniyor...
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0,
+        height: 0,
+        
+        // Simülasyon Verileri
+        targetNumber: 36,
+        treeData: [], // Düğümleri tutan dizi
+        time: 0,      // Animasyon zamanı
+        
+        // Görsel Ayarlar
+        nodeRadius: 22,
+        levelHeight: 80,
+        
+        colors: {
+            blue: '#2563eb',
+            prime: '#10b981',   // Yeşil (Asal)
+            comp: '#f43f5e',    // Kırmızı/Pembe (Bileşik)
+            line: '#94a3b8',
+            text: '#ffffff',
+            textDark: '#1e293b'
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Event Listeners
+            const slider = document.getElementById('inpNum');
+            slider.addEventListener('input', (e) => {
+                this.targetNumber = parseInt(e.target.value);
+                document.getElementById('lblNum').innerText = this.targetNumber;
+                this.generateTree();
+            });
+
+            window.addEventListener('resize', () => this.resize());
+            
+            this.resize();
+            this.generateTree(); // İlk başlatma
+            this.loop();
+        },
+
+        resize: function() {
+            const main = document.querySelector('main');
+            this.width = this.canvas.width = main.clientWidth - 40;
+            this.height = this.canvas.height = main.clientHeight - 40;
+            // Resize olunca ağacı yeniden ortalamak gerekebilir ama şimdilik kalsın
+        },
+
+        replay: function() {
+            this.time = 0;
+        },
+
+        // --- AĞAÇ OLUŞTURMA MANTIĞI ---
+        generateTree: function() {
+            this.time = 0; // Animasyonu sıfırla
+            this.treeData = [];
+            
+            // Rekürsif fonksiyon ile ağacı hesapla
+            // x: yatay pozisyon, y: dikey seviye, w: bu düğüme ayrılan genişlik
+            const calculateNodes = (val, x, y, width, parentIndex, depth) => {
+                const nodeIndex = this.treeData.length;
+                const isPrime = this.checkPrime(val);
+                
+                // Düğüm nesnesi
+                this.treeData.push({
+                    val: val,
+                    x: x,
+                    y: y,
+                    r: this.nodeRadius,
+                    isPrime: isPrime,
+                    parentIndex: parentIndex,
+                    depth: depth,
+                    spawnTime: depth * 20 // Animasyon gecikmesi (derinliğe göre)
+                });
+
+                if (!isPrime) {
+                    // En küçük asal böleni bul
+                    let factor1 = this.getSmallestFactor(val);
+                    let factor2 = val / factor1;
+                    
+                    // Çocukların pozisyonları
+                    // Genişliği ikiye bölüp çocukları yerleştiriyoruz
+                    const offset = width / 4; 
+                    
+                    calculateNodes(factor1, x - offset, y + this.levelHeight, width / 2, nodeIndex, depth + 1);
+                    calculateNodes(factor2, x + offset, y + this.levelHeight, width / 2, nodeIndex, depth + 1);
+                }
+            };
+
+            // Başlangıç: Kök Düğüm (En tepede ortada)
+            // Başlangıç genişliğini (width) büyük tutuyoruz ki dallar çakışmasın
+            calculateNodes(this.targetNumber, this.width / 2, 80, this.width * 0.8, -1, 0);
+            
+            this.updateInfoPanel();
+        },
+
+        checkPrime: function(n) {
+            if (n < 2) return false;
+            for (let i = 2; i <= Math.sqrt(n); i++) {
+                if (n % i === 0) return false;
+            }
+            return true;
+        },
+
+        getSmallestFactor: function(n) {
+            for (let i = 2; i <= Math.sqrt(n); i++) {
+                if (n % i === 0) return i;
+            }
+            return n;
+        },
+
+        // --- ÇİZİM DÖNGÜSÜ ---
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.time += 0.5;
+
+            // Önce bağlantı çizgilerini çiz (Düğümlerin arkasında kalsın diye)
+            this.drawConnections();
+            
+            // Sonra düğümleri çiz
+            this.drawNodes();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawConnections: function() {
+            const ctx = this.ctx;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = this.colors.line;
+
+            this.treeData.forEach(node => {
+                if (node.parentIndex !== -1) {
+                    const parent = this.treeData[node.parentIndex];
+                    
+                    // Animasyon Kontrolü: Çizgi, çocuk doğduğunda çizilsin
+                    if (this.time > node.spawnTime) {
+                        // Çizgi uzama efekti
+                        const progress = Math.min(1, (this.time - node.spawnTime) / 10);
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(parent.x, parent.y + node.r); // Ebeveynin altından başla
+                        
+                        // Hedef nokta
+                        const targetX = parent.x + (node.x - parent.x) * progress;
+                        const targetY = (parent.y + node.r) + (node.y - node.r - (parent.y + node.r)) * progress;
+                        
+                        ctx.lineTo(targetX, targetY);
+                        ctx.stroke();
+                    }
+                }
+            });
+        },
+
+        drawNodes: function() {
+            const ctx = this.ctx;
+
+            this.treeData.forEach(node => {
+                if (this.time > node.spawnTime) {
+                    // Animasyon: Pop-up efekti (Büyüyerek gelme)
+                    let scale = Math.min(1, (this.time - node.spawnTime) / 10);
+                    // Elastic effect
+                    const elastic = 1 + Math.sin(scale * Math.PI) * 0.2; 
+                    if(scale < 1) scale = scale * elastic; 
+                    else scale = 1; // Sabitle
+
+                    const currentR = node.r * scale;
+
+                    // Düğüm Çizimi
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, currentR, 0, Math.PI * 2);
+                    
+                    // Renk Mantığı: Asal ise Yeşil, Değilse Pembe
+                    // Ancak işlem bitince (yaprak düğümse) renk değişsin
+                    if (node.isPrime) {
+                        ctx.fillStyle = this.colors.prime;
+                        // Asal sayılarda hafif parlama (Glow)
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = this.colors.prime;
+                    } else {
+                        ctx.fillStyle = this.colors.comp;
+                        ctx.shadowBlur = 0;
+                    }
+                    
+                    ctx.fill();
+                    ctx.shadowBlur = 0; // Reset
+                    
+                    // Kenarlık
+                    ctx.strokeStyle = "white";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Sayı Yazısı
+                    ctx.fillStyle = this.colors.text;
+                    ctx.font = `bold ${16 * scale}px Segoe UI`;
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(node.val, node.x, node.y);
+                }
+            });
+        },
+        
+        updateInfoPanel: function() {
+            const box = document.getElementById('infoBox');
+            // Tüm asal çarpanları bulmak için yapraklara bak
+            // Yaprak düğümler (isPrime olanlar) bizim çarpanlarımızdır
+            // Ama sadece en son seviyedeki asallar değil, tüm asallar toplanmalı
+            // Algoritmamızda yapraklar zaten asallardır.
+            
+            const primes = [];
+            // Bu basit ağaç yapısında sadece yapraklar (çocuğu olmayanlar) sonuç kümesidir
+            // Ancak görselde ara düğümler de asal olabilir (örn: 2). 
+            // Bizim çizim mantığında asallar bir daha bölünmez. O yüzden isPrime=true olan her düğüm bir çarpandır.
+            
+            this.treeData.forEach(n => {
+                if(n.isPrime) primes.push(n.val);
+            });
+            
+            primes.sort((a,b) => a-b);
+            const resultStr = primes.join(" x ");
+
+            box.innerHTML = `
+                <strong>Analiz Raporu:</strong><br>
+                Sayımız: <b>${this.targetNumber}</b><br>
+                <br>
+                Bu sayı, dalların ucundaki <span style="color:${this.colors.prime}; font-weight:bold">yeşil</span> asal sayıların çarpımıdır:<br>
+                <div style="font-size:1.2rem; margin-top:5px; font-weight:bold; color:${this.colors.textDark}">
+                    ${resultStr} = ${this.targetNumber}
+                </div>
+            `;
+        }
+    };
+
+    window.onload = function() { app.init(); };
+</script>
+</body>
+</html>
+
