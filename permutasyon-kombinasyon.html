@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - P & C</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v3.8) */
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --color-perm: #3b82f6;   /* Permütasyon - Mavi */
+            --color-comb: #ec4899;   /* Kombinasyon - Pembe */
+            --color-item: #8b5cf6;   /* Nesne Rengi */
+            
+            --border: #e2e8f0;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 360px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 30px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+            z-index: 20;
+            box-shadow: 10px 0 40px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-perm); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Mod Switcher */
+        .mode-switch {
+            display: flex; background: #f1f5f9; padding: 5px; border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .mode-btn {
+            flex: 1; border: none; background: transparent; padding: 12px;
+            font-weight: 700; color: var(--text-muted); cursor: pointer; border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .mode-btn.active-p { background: white; color: var(--color-perm); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2); }
+        .mode-btn.active-c { background: white; color: var(--color-comb); box-shadow: 0 4px 10px rgba(236, 72, 153, 0.2); }
+
+        /* Matematik Ekranı */
+        .math-display {
+            background: #1e293b; color: white;
+            padding: 20px; border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.2);
+        }
+        .formula-row { font-family: var(--font-mono); font-size: 1.1rem; color: #cbd5e1; margin-bottom: 5px; }
+        .result-row { font-size: 2.2rem; font-weight: 800; color: #4ade80; }
+        .result-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-top: 5px; }
+
+        /* Kontroller */
+        .params { background: white; padding: 20px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .slider-group { margin-bottom: 20px; }
+        .label-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem; margin-bottom: 10px; }
+
+        input[type="range"] { 
+            width: 100%; -webkit-appearance: none; background: #e2e8f0; height: 8px; border-radius: 4px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 24px; height: 24px; 
+            background: white; border-width: 4px; border-style: solid; border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        /* Aksiyon Butonu */
+        .action-btn {
+            background: var(--color-perm); color: white; border: none;
+            padding: 15px; border-radius: 12px; font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
+        .action-btn:active { transform: scale(0.98); }
+        .action-btn:hover { filter: brightness(1.1); }
+
+        .info-panel { 
+            margin-top: auto; background: #eff6ff; 
+            border-left: 4px solid var(--color-perm); 
+            padding: 20px; border-radius: 12px; 
+            font-size: 0.9rem; line-height: 1.6; color: #1e3a8a;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background-color: var(--bg-app);
+            /* Grid */
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas {
+            border-radius: 24px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.1);
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">Olasılık</span>
+    </div>
+
+    <div class="mode-switch">
+        <button class="mode-btn active-p" id="btnP" onclick="app.setMode('P')">PERMÜTASYON</button>
+        <button class="mode-btn" id="btnC" onclick="app.setMode('C')">KOMBİNASYON</button>
+    </div>
+
+    <div class="math-display">
+        <div class="formula-row" id="dispFormula">P(5, 3)</div>
+        <div class="result-row" id="dispResult">60</div>
+        <div class="result-label">Farklı Olasılık</div>
+    </div>
+
+    <div class="params">
+        <div class="slider-group">
+            <div class="label-row" style="color:var(--text-main)">
+                <span>Toplam Eleman (n)</span>
+                <span id="lblN">5</span>
+            </div>
+            <input type="range" id="inpN" min="2" max="8" value="5">
+        </div>
+
+        <div class="slider-group">
+            <div class="label-row" style="color:var(--text-muted)">
+                <span>Seçilen (r)</span>
+                <span id="lblR">3</span>
+            </div>
+            <input type="range" id="inpR" min="1" max="5" value="3">
+        </div>
+    </div>
+
+    <button class="action-btn" onclick="app.animateSample()">
+        <span>🎲 Rastgele Örnek Seç</span>
+    </button>
+
+    <div class="info-panel" id="infoText">
+        <b>Permütasyon (Sıralama):</b> Sıra önemlidir. Örneğin; "1-2-3" şifresi ile "3-2-1" şifresi farklıdır. Toplar farklı yuvalara girer.
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        
+        state: {
+            mode: 'P', // 'P' or 'C'
+            n: 5,
+            r: 3,
+            items: [], // Havuzdaki toplar
+            slots: [], // Seçilen yuvalar
+            activeSample: [], // Animasyondaki toplar
+            isAnimating: false
+        },
+
+        // Görsel Ayarlar
+        colors: ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'],
+        
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            const inpN = document.getElementById('inpN');
+            const inpR = document.getElementById('inpR');
+
+            inpN.addEventListener('input', (e) => {
+                let n = parseInt(e.target.value);
+                // r, n'den büyük olamaz
+                if(this.state.r > n) { this.state.r = n; inpR.value = n; }
+                inpR.max = n;
+                this.update(n, this.state.r);
+            });
+
+            inpR.addEventListener('input', (e) => {
+                this.update(this.state.n, parseInt(e.target.value));
+            });
+
+            window.addEventListener('resize', () => this.resize());
+            
+            // Slider Renk Ayarı
+            inpN.style.setProperty('--brand', '#64748b');
+            inpR.style.setProperty('--brand', '#64748b');
+
+            this.resize();
+            this.update(5, 3);
+            this.loop();
+        },
+
+        resize: function() {
+            const m = document.querySelector('main');
+            this.width = this.canvas.width = m.clientWidth - 60;
+            this.height = this.canvas.height = m.clientHeight - 60;
+            this.initItems();
+        },
+
+        setMode: function(m) {
+            this.state.mode = m;
+            
+            // Buton UI
+            document.getElementById('btnP').className = m === 'P' ? 'mode-btn active-p' : 'mode-btn';
+            document.getElementById('btnC').className = m === 'C' ? 'mode-btn active-c' : 'mode-btn';
+            
+            // Renk Teması
+            const color = m === 'P' ? '#3b82f6' : '#ec4899';
+            document.querySelector('.logo .brand-bold').style.color = color;
+            document.querySelector('.action-btn').style.backgroundColor = color;
+            document.querySelector('.info-panel').style.borderLeftColor = color;
+            document.querySelector('.info-panel').style.background = m === 'P' ? '#eff6ff' : '#fdf2f8';
+
+            // Bilgi Metni
+            const info = document.getElementById('infoText');
+            if (m === 'P') {
+                info.innerHTML = `<b>Permütasyon (Sıralama):</b> Sıra önemlidir.<br>Kırmızı-Mavi ile Mavi-Kırmızı farklı dizilimlerdir. Toplar numaralı ayrı koltuklara oturur.`;
+            } else {
+                info.innerHTML = `<b>Kombinasyon (Seçme):</b> Sıra önemsizdir.<br>Kırmızı ve Mavi'yi seçmek ile Mavi ve Kırmızı'yı seçmek aynı şeydir. Toplar tek bir havuza düşer.`;
+            }
+
+            this.update(this.state.n, this.state.r);
+        },
+
+        update: function(n, r) {
+            this.state.n = n;
+            this.state.r = r;
+            
+            // UI
+            document.getElementById('lblN').innerText = n;
+            document.getElementById('lblR').innerText = r;
+
+            // Hesaplama
+            const fact = (num) => num <= 1 ? 1 : num * fact(num - 1);
+            let result = 0;
+            let formula = "";
+
+            if (this.state.mode === 'P') {
+                result = fact(n) / fact(n - r);
+                formula = `P(${n}, ${r}) = ${n}! / (${n}-${r})!`;
+            } else {
+                result = fact(n) / (fact(r) * fact(n - r));
+                formula = `C(${n}, ${r}) = ${n}! / (${r}! . ${n-r}!)`;
+            }
+
+            document.getElementById('dispResult').innerText = result.toLocaleString();
+            document.getElementById('dispFormula').innerText = formula;
+
+            this.initItems();
+        },
+
+        initItems: function() {
+            // N adet topu yukarı diz
+            this.state.items = [];
+            const gap = 50;
+            const startX = (this.width - (this.state.n * gap)) / 2 + gap/2;
+            
+            for(let i=0; i<this.state.n; i++) {
+                this.state.items.push({
+                    id: i,
+                    x: startX + (i * gap),
+                    y: 80,
+                    color: this.colors[i % this.colors.length],
+                    letter: String.fromCharCode(65 + i), // A, B, C...
+                    isTaken: false
+                });
+            }
+            this.state.activeSample = [];
+        },
+
+        animateSample: function() {
+            if(this.state.isAnimating) return;
+            this.state.isAnimating = true;
+            this.state.activeSample = [];
+            
+            // Reset items
+            this.state.items.forEach(i => i.isTaken = false);
+
+            // Rastgele r tane seç
+            const indices = [];
+            while(indices.length < this.state.r) {
+                let r = Math.floor(Math.random() * this.state.n);
+                if(indices.indexOf(r) === -1) indices.push(r);
+            }
+
+            // Animasyon objelerini oluştur
+            indices.forEach((idx, i) => {
+                const source = this.state.items[idx];
+                source.isTaken = true; // Kaynaktan eksilt (görsel olarak soluklaştır)
+
+                // Hedef Konumu Hesapla
+                let targetX, targetY;
+                
+                if (this.state.mode === 'P') {
+                    // Permütasyon: Ayrı kutulara git
+                    const slotGap = 80;
+                    const slotStartX = (this.width - (this.state.r * slotGap)) / 2 + slotGap/2;
+                    targetX = slotStartX + (i * slotGap);
+                    targetY = this.height - 100;
+                } else {
+                    // Kombinasyon: Tek bir havuza git (Rastgele dağıl)
+                    targetX = (this.width / 2) + (Math.random() * 100 - 50);
+                    targetY = this.height - 100 + (Math.random() * 40 - 20);
+                }
+
+                this.state.activeSample.push({
+                    ...source, // Renk ve harf kopyala
+                    currentX: source.x,
+                    currentY: source.y,
+                    targetX: targetX,
+                    targetY: targetY,
+                    delay: i * 200, // Sırayla düşsünler
+                    progress: 0
+                });
+            });
+
+            // Animasyon kilidini aç
+            setTimeout(() => { this.state.isAnimating = false; }, 2000);
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            
+            this.drawSourceArea();
+            this.drawTargetArea();
+            this.drawActiveItems();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawSourceArea: function() {
+            const ctx = this.ctx;
+            
+            // Raf Çizgisi
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 4; ctx.lineCap = "round";
+            const startX = this.state.items[0].x - 40;
+            const endX = this.state.items[this.state.items.length-1].x + 40;
+            ctx.beginPath(); ctx.moveTo(startX, 110); ctx.lineTo(endX, 110); ctx.stroke();
+            
+            // Toplar
+            this.state.items.forEach(item => {
+                ctx.globalAlpha = item.isTaken ? 0.2 : 1.0; // Seçilenler silikleşsin
+                this.drawBall(item.x, item.y, item.color, item.letter);
+            });
+            ctx.globalAlpha = 1.0;
+        },
+
+        drawTargetArea: function() {
+            const ctx = this.ctx;
+            const { r, mode } = this.state;
+
+            if (mode === 'P') {
+                // Numaralı Kutular
+                const slotGap = 80;
+                const startX = (this.width - (r * slotGap)) / 2 + slotGap/2;
+                
+                for(let i=0; i<r; i++) {
+                    const x = startX + (i * slotGap);
+                    const y = this.height - 100;
+                    
+                    // Kutu Altlığı
+                    ctx.fillStyle = "rgba(59, 130, 246, 0.1)";
+                    ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(x - 30, y - 30, 60, 60, 10);
+                    ctx.fill(); ctx.stroke();
+
+                    // Sıra Numarası
+                    ctx.fillStyle = "#94a3b8"; ctx.font = "bold 12px sans-serif"; ctx.textAlign="center";
+                    ctx.fillText(`${i+1}. Sıra`, x, y + 50);
+                }
+            } else {
+                // Tek Büyük Havuz
+                const cx = this.width / 2;
+                const cy = this.height - 100;
+                
+                ctx.fillStyle = "rgba(236, 72, 153, 0.1)";
+                ctx.strokeStyle = "rgba(236, 72, 153, 0.4)";
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, 120, 60, 0, 0, Math.PI*2);
+                ctx.fill(); ctx.stroke();
+
+                ctx.fillStyle = "#94a3b8"; ctx.font = "bold 14px sans-serif"; ctx.textAlign="center";
+                ctx.fillText("Seçim Havuzu (Sıra Yok)", cx, cy + 80);
+            }
+        },
+
+        drawActiveItems: function() {
+            const now = Date.now();
+            
+            this.state.activeSample.forEach(p => {
+                // Basit Easing
+                if (p.progress < 1) {
+                    p.progress += 0.03; 
+                    const ease = 1 - Math.pow(1 - p.progress, 3); // Ease Out Cubic
+                    
+                    p.currentX = p.x + (p.targetX - p.x) * ease;
+                    p.currentY = p.y + (p.targetY - p.y) * ease;
+                }
+
+                this.drawBall(p.currentX, p.currentY, p.color, p.letter);
+            });
+        },
+
+        drawBall: function(x, y, color, label) {
+            const ctx = this.ctx;
+            
+            // Gölge
+            ctx.fillStyle = "rgba(0,0,0,0.15)";
+            ctx.beginPath(); ctx.ellipse(x, y + 22, 15, 5, 0, 0, Math.PI*2); ctx.fill();
+
+            // Top
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI*2); ctx.fill();
+
+            // Parlama (Highlight)
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.beginPath(); ctx.arc(x - 6, y - 6, 8, 0, Math.PI*2); ctx.fill();
+
+            // Harf
+            ctx.fillStyle = "white";
+            ctx.font = "bold 16px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(label, x, y + 1);
+        }
+    };
+    app.init();
+</script>
+</body>
+</html>
