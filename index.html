@@ -410,7 +410,11 @@
             }
         }
 
-        // MODAL KONTROLLERİ
+        // ==========================================
+        // GERİ TUŞU AYARI (BACK BUTTON FIX) - BAŞLANGIÇ
+        // ==========================================
+
+        // 1. Simülasyonu Açma (Geçmişe kaydeder)
         function openSim(url, title) {
             const modal = document.getElementById('simModal');
             const frame = document.getElementById('simFrame');
@@ -419,16 +423,35 @@
             frame.src = url; 
             titleEl.innerText = title; 
             modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Kaydırmayı engelle
+            document.body.style.overflow = 'hidden';
+
+            // Tarayıcı geçmişine "modal açık" bilgisini ekle
+            history.pushState({modal: true}, null, ""); 
         }
 
+        // 2. Simülasyonu Kapatma (Geri gider)
         function closeSim() {
+            // X butonuna basınca tarayıcıda bir adım geri git
+            // Bu işlem otomatik olarak alttaki 'popstate' kodunu tetikler ve modalı kapatır
+            history.back();
+        }
+
+        // 3. Tarayıcı Geri Tuşunu Dinleme
+        window.addEventListener('popstate', function(event) {
             const modal = document.getElementById('simModal');
             const frame = document.getElementById('simFrame');
-            modal.classList.add('hidden');
-            frame.src = ""; 
-            document.body.style.overflow = 'auto'; // Kaydırmayı aç
-        }
+            
+            // Eğer modal açıksa kapat
+            if (!modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+                frame.src = ""; 
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // ==========================================
+        // GERİ TUŞU AYARI - BİTİŞ
+        // ==========================================
 
         // SIDEBAR KONTROLÜ
         function toggleSidebar() {
