@@ -1,1 +1,374 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Köklü Sayılar</title>
+    <style>
+        :root {
+            /* RAPORLAB TEMA (v3.5 - Geometri) */
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --color-area: #f43f5e;   /* Alan Rengi (Kırmızımsı) */
+            --color-side: #3b82f6;   /* Kenar Rengi (Mavi) */
+            --color-perfect: #10b981; /* Tam Kare Rengi (Yeşil) */
+            
+            --border: #e2e8f0;
+            --radius: 16px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
 
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 350px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.03);
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 4px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-side); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Matematik Göstergesi */
+        .math-box {
+            background: #1e293b; color: white;
+            padding: 25px; border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative; overflow: hidden;
+        }
+        
+        /* Karekök Sembolü */
+        .root-container { 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 2.5rem; font-family: var(--font-mono); 
+        }
+        .symbol { font-size: 3rem; margin-right: 5px; color: #94a3b8; }
+        .radicand { color: var(--color-area); font-weight: bold; border-top: 2px solid #94a3b8; padding-top: 5px; margin-top: 8px; }
+        .equals { margin: 0 15px; color: #64748b; }
+        .result { color: var(--color-side); font-weight: 800; }
+
+        .tag-perfect {
+            position: absolute; top: 10px; right: 10px;
+            background: var(--color-perfect); color: white;
+            font-size: 0.7rem; font-weight: bold; padding: 4px 8px; border-radius: 6px;
+            text-transform: uppercase; display: none;
+        }
+
+        .params { background: white; padding: 20px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        input[type="range"] { 
+            width: 100%; -webkit-appearance: none; background: #cbd5e1; height: 10px; border-radius: 5px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 28px; height: 28px; 
+            background: var(--color-area); border: 4px solid white; border-radius: 50%; 
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        .info-panel { 
+            margin-top: auto; background: #eff6ff; 
+            border-left: 4px solid var(--color-side); 
+            padding: 15px; border-radius: 8px; 
+            font-size: 0.9rem; line-height: 1.5; color: #1e3a8a;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background-color: var(--bg-app);
+            /* Noktalı Kağıt Deseni */
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 30px 30px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(5px);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="math-box">
+        <div class="tag-perfect" id="tagPerfect">Tam Kare!</div>
+        <div class="root-container">
+            <span class="symbol">√</span>
+            <span class="radicand" id="dispInput">16</span>
+            <span class="equals">≈</span>
+            <span class="result" id="dispOutput">4.00</span>
+        </div>
+        <div style="margin-top:15px; font-size:0.9rem; color:#cbd5e1;">
+            Karenin Kenar Uzunluğu
+        </div>
+    </div>
+
+    <div class="params">
+        <h3>Alan (Kök İçindeki Sayı)</h3>
+        <div style="text-align:center; font-size:2rem; font-weight:800; color:var(--color-area); margin-bottom:10px;">
+            <span id="lblArea">16</span> <span style="font-size:1rem; color:#94a3b8">br²</span>
+        </div>
+        <input type="range" id="inpArea" min="1" max="100" value="16" step="1">
+        
+        <div style="display:flex; gap:5px; margin-top:15px; justify-content:center;">
+             <button onclick="app.setVal(9)" style="padding:5px 10px; cursor:pointer; border:1px solid #ddd; border-radius:6px;">9</button>
+             <button onclick="app.setVal(25)" style="padding:5px 10px; cursor:pointer; border:1px solid #ddd; border-radius:6px;">25</button>
+             <button onclick="app.setVal(50)" style="padding:5px 10px; cursor:pointer; border:1px solid #ddd; border-radius:6px;">50</button>
+             <button onclick="app.setVal(81)" style="padding:5px 10px; cursor:pointer; border:1px solid #ddd; border-radius:6px;">81</button>
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        Karekök, bir alanı kareye dönüştürdüğümüzde oluşan <b>kenarı</b> bulmaktır.
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0,
+        height: 0,
+        
+        state: {
+            area: 16,
+            side: 4,
+            isPerfect: true
+        },
+
+        // Görsel Ayarlar
+        gridSize: 30, // 1 birim = 30px
+        
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            const slider = document.getElementById('inpArea');
+            slider.addEventListener('input', (e) => this.update(e.target.value));
+
+            window.addEventListener('resize', () => this.resize());
+            
+            this.resize();
+            this.update(16);
+            this.loop();
+        },
+
+        resize: function() {
+            const main = document.querySelector('main');
+            this.width = this.canvas.width = main.clientWidth - 40;
+            this.height = this.canvas.height = main.clientHeight - 40;
+        },
+
+        setVal: function(val) {
+            document.getElementById('inpArea').value = val;
+            this.update(val);
+        },
+
+        update: function(val) {
+            this.state.area = parseInt(val);
+            this.state.side = Math.sqrt(this.state.area);
+            this.state.isPerfect = Number.isInteger(this.state.side);
+
+            // UI Güncelleme
+            document.getElementById('lblArea').innerText = this.state.area;
+            document.getElementById('dispInput').innerText = this.state.area;
+            
+            // Sonuç gösterimi (Tam sayıysa virgül at, değilse 3 basamak göster)
+            const resStr = this.state.isPerfect ? this.state.side : this.state.side.toFixed(3);
+            document.getElementById('dispOutput').innerText = resStr;
+
+            // Tam Kare Etiketi
+            const tag = document.getElementById('tagPerfect');
+            tag.style.display = this.state.isPerfect ? 'block' : 'none';
+            tag.style.backgroundColor = this.state.isPerfect ? '#10b981' : 'transparent';
+
+            // Eşittir işareti
+            document.querySelector('.equals').innerText = this.state.isPerfect ? '=' : '≈';
+
+            // Bilgi Metni
+            const info = document.getElementById('infoText');
+            if(this.state.isPerfect) {
+                info.innerHTML = `<b>Mükemmel!</b><br>${this.state.area} birim kareden kusursuz bir kare oluşturabiliyoruz. Kenar uzunluğu tam sayı (${this.state.side}) çıkıyor.`;
+                info.style.borderLeftColor = "#10b981";
+                info.style.background = "#ecfdf5";
+            } else {
+                const floor = Math.floor(this.state.side);
+                const next = floor + 1;
+                info.innerHTML = `<b>Tam Kare Değil.</b><br>${this.state.area} sayısı, ${floor} ile ${next} arasında bir kenar uzunluğu oluşturur.<br>Kenar: ${resStr}`;
+                info.style.borderLeftColor = "#f43f5e";
+                info.style.background = "#fff1f2";
+            }
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.drawScene();
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawScene: function() {
+            const ctx = this.ctx;
+            const { area, side, isPerfect } = this.state;
+            
+            // Dinamik Zoom: Kare büyüdükçe küçültelim ki ekrana sığsın
+            // Max kenar 10 (sqrt 100). 
+            let zoom = 1;
+            if (this.height < 500) zoom = 0.8;
+            
+            // Merkezleme
+            const pixelSide = side * this.gridSize * zoom;
+            const startX = (this.width - pixelSide) / 2;
+            const startY = (this.height - pixelSide) / 2;
+
+            // --- 1. ANA KARE (Alan) ---
+            ctx.fillStyle = isPerfect ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)'; // Yeşil veya Kırmızımsı
+            ctx.strokeStyle = isPerfect ? '#10b981' : '#f43f5e';
+            
+            ctx.beginPath();
+            ctx.rect(startX, startY, pixelSide, pixelSide);
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // --- 2. İÇ IZGARA (Grid) ---
+            // Sadece tam sayı olan kısımları çizelim
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.beginPath();
+            
+            // Dikey çizgiler
+            for(let i=1; i < side; i++) {
+                ctx.moveTo(startX + (i * this.gridSize * zoom), startY);
+                ctx.lineTo(startX + (i * this.gridSize * zoom), startY + pixelSide);
+            }
+            // Yatay çizgiler
+            for(let i=1; i < side; i++) {
+                ctx.moveTo(startX, startY + (i * this.gridSize * zoom));
+                ctx.lineTo(startX + pixelSide, startY + (i * this.gridSize * zoom));
+            }
+            ctx.stroke();
+
+            // --- 3. KENAR CETVELLERİ (Ölçüler) ---
+            this.drawRuler(startX, startY - 20, pixelSide, side, 'horizontal'); // Üst Cetvel
+            this.drawRuler(startX - 20, startY, pixelSide, side, 'vertical');   // Sol Cetvel
+
+            // --- 4. GÖRSEL DETAYLAR ---
+            // Eğer tam kare değilse, "artan" kısmı göstermek için
+            // En büyük tam kareyi içine kesikli çizgiyle çizelim
+            if (!isPerfect) {
+                const floorSide = Math.floor(side);
+                const floorPixel = floorSide * this.gridSize * zoom;
+                
+                ctx.strokeStyle = '#64748b';
+                ctx.setLineDash([5, 5]);
+                ctx.lineWidth = 2;
+                ctx.strokeRect(startX, startY, floorPixel, floorPixel);
+                ctx.setLineDash([]);
+                
+                // İçine yaz
+                if(side > 1.5) {
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = "12px sans-serif";
+                    ctx.fillText(`${floorSide}x${floorSide}`, startX + 10, startY + 20);
+                }
+            }
+
+            // Ortaya Toplam Alanı Yaz
+            ctx.fillStyle = isPerfect ? '#065f46' : '#881337';
+            ctx.font = "bold 40px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(area, startX + pixelSide/2, startY + pixelSide/2);
+            
+            ctx.font = "14px sans-serif";
+            ctx.fillStyle = "rgba(0,0,0,0.5)";
+            ctx.fillText("Birim Kare", startX + pixelSide/2, startY + pixelSide/2 + 25);
+        },
+
+        drawRuler: function(x, y, len, val, type) {
+            const ctx = this.ctx;
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = "bold 16px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            ctx.beginPath();
+            if (type === 'horizontal') {
+                // Çizgi
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + len, y);
+                // Uçlar
+                ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5);
+                ctx.moveTo(x + len, y - 5); ctx.lineTo(x + len, y + 5);
+                // Yazı
+                ctx.stroke();
+                
+                // Arkaplan kutucuk (yazı okunurluğu için)
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(x + len/2 - 20, y - 10, 40, 20);
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillText(this.state.isPerfect ? val : val.toFixed(2), x + len/2, y);
+            } else {
+                // Dikey Cetvel
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y + len);
+                // Uçlar
+                ctx.moveTo(x - 5, y); ctx.lineTo(x + 5, y);
+                ctx.moveTo(x - 5, y + len); ctx.lineTo(x + 5, y + len);
+                // Yazı
+                ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(x, y + len/2);
+                ctx.rotate(-Math.PI / 2);
+                
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(-20, -10, 40, 20);
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillText(this.state.isPerfect ? val : val.toFixed(2), 0, 0);
+                ctx.restore();
+            }
+        }
+    };
+
+    window.onload = function() { app.init(); };
+</script>
+</body>
+</html>
