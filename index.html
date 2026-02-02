@@ -39,13 +39,13 @@
         </div>
 
         <nav class="flex-1 px-4 space-y-2 overflow-y-auto hide-scrollbar">
-<button onclick="showPage('kesfet')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-2">
-    <span class="mr-3 text-xl">🧭</span> Keşfet
-</button>
+            <button id="btn-kesfet" onclick="showPage('kesfet')" class="nav-btn w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-2">
+                <span class="mr-3 text-xl">🧭</span> Keşfet
+            </button>
             <div class="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-4">Dersler</div>
-<button onclick="showPage('matematik')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-blue-600 bg-blue-50">
-    <span class="mr-3 text-xl">📐</span> Matematik
-</button>
+            <button id="btn-matematik" onclick="showPage('matematik')" class="nav-btn w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600">
+                <span class="mr-3 text-xl">📐</span> Matematik
+            </button>
             <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
                 <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧪</span> Fizik 
                 <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
@@ -90,7 +90,56 @@
             </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-10 bg-[#f8fafc]">
-            <div id="kesfet-content" class="block"></div>
+            <div class="space-y-6 animate-in fade-in duration-500">
+    <div class="w-full">
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Raporlab İnteraktif</h2>
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Dijital Öğrenme Laboratuvarı</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="lg:col-span-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-lg min-h-[280px] flex items-center">
+            <div class="relative z-10 max-w-sm">
+                <h3 class="text-3xl font-bold mb-3 leading-tight">Dokun, Dene ve Gerçekten Öğren</h3>
+                <p class="text-blue-100 text-sm opacity-80 mb-6">Karmaşık teorileri modelleri manipüle ederek somut deneyimlere dönüştürün.</p>
+                <button onclick="showPage('matematik')" class="bg-white text-blue-700 px-6 py-2 rounded-xl font-bold text-[10px] hover:scale-105 transition-transform uppercase">Hemen Keşfet</button>
+            </div>
+            <div class="absolute right-12 text-7xl opacity-10 hidden md:block animate-pulse">🧪</div>
+        </div>
+
+        <div class="lg:col-span-4 grid grid-cols-2 gap-4">
+            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-blue-300 transition-all text-center">
+                <span class="text-2xl mb-1">🚀</span>
+                <b class="text-[10px] text-slate-700">HIZLI ERİŞİM</b>
+                <p class="text-[8px] text-slate-400 mt-1 leading-tight">En çok tercih edilen simülasyonlar</p>
+            </div>
+            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-green-300 transition-all text-center">
+                <span class="text-2xl mb-1">📱</span>
+                <b class="text-[10px] text-slate-700">MOBİL UYUM</b>
+                <p class="text-[8px] text-slate-400 mt-1 leading-tight">Her cihazda kusursuz deneyim</p>
+            </div>
+            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-purple-300 transition-all text-center">
+                <span class="text-2xl mb-1">📚</span>
+                <b class="text-[10px] text-slate-700">300+ İÇERİK</b>
+                <p class="text-[8px] text-slate-400 mt-1 leading-tight">Geniş kütüphane ve materyaller</p>
+            </div>
+            <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-orange-300 transition-all text-center">
+                <span class="text-2xl mb-1">💎</span>
+                <b class="text-[10px] text-slate-700">ÜCRETSİZ</b>
+                <p class="text-[8px] text-slate-400 mt-1 leading-tight">Her zaman ücretsiz kalacak</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-slate-900 rounded-[2rem] p-6 text-white relative overflow-hidden">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div class="max-w-md">
+                <h4 class="text-[10px] font-bold text-blue-400 mb-1 uppercase tracking-widest">Vizyonumuz</h4>
+                <p class="text-[11px] text-slate-400 leading-relaxed italic">Eğitimde fırsat eşitliği için yerli ve ücretsiz bir ekosistem inşa ediyoruz. Bilgi paylaştıkça çoğalır.</p>
+            </div>
+            <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="bg-white text-slate-900 px-6 py-2 rounded-lg font-bold text-[10px] hover:bg-blue-50 transition-colors uppercase">Bağış Yap ☕</a>
+        </div>
+    </div>
+</div>
             <div id="matematik-content" class="hidden">
             <div class="mb-8">
                 <h2 class="text-3xl font-extrabold text-slate-900">Matematik Simülasyonları</h2>
@@ -315,9 +364,21 @@
         }
 
         function showPage(pageId) {
+            // 1. İçeriklerin görünürlüğünü değiştir
             document.getElementById('kesfet-content').classList.add('hidden');
             document.getElementById('matematik-content').classList.add('hidden');
             document.getElementById(pageId + '-content').classList.remove('hidden');
+
+            // 2. Tüm butonların aktiflik stilini temizle
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'bg-blue-50');
+                btn.classList.add('text-slate-600');
+            });
+
+            // 3. Tıklanan butonu highlight et
+            const activeBtn = document.getElementById('btn-' + pageId);
+            activeBtn.classList.remove('text-slate-600');
+            activeBtn.classList.add('text-blue-600', 'bg-blue-50');
         }
         
         // SIDEBAR KONTROLÜ
