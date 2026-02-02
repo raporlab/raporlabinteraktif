@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Polinomlar</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (Aydınlık v4.1) */
+            --bg-app: #f8fafc;      
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --color-curve: #3b82f6; /* Ana Grafik (Mavi) */
+            --color-root: #ef4444;  /* Kökler (Kırmızı) */
+            --color-tracer: #f59e0b; /* Gezgin (Turuncu) */
+            --color-grid: #e2e8f0;
+            --color-axis: #94a3b8;
+            
+            --border: #e2e8f0;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 380px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            z-index: 20;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-curve); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Denklem Kartı */
+        .eq-card {
+            background: #1e293b; border: 1px solid var(--border);
+            padding: 20px; border-radius: 16px;
+            text-align: center; color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .eq-display {
+            font-family: var(--font-mono); font-size: 1.3rem;
+            line-height: 1.5; margin-bottom: 10px;
+        }
+        .eq-part { display: inline-block; transition: 0.3s; }
+        .eq-part.highlight { color: #60a5fa; font-weight: bold; transform: scale(1.1); }
+        
+        .badge-container { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
+        .badge {
+            font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; background: rgba(255,255,255,0.1); color: #cbd5e1; font-weight: bold; text-transform: uppercase;
+        }
+
+        /* Kontroller */
+        .params { background: white; padding: 15px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .params h3 { margin: 0 0 10px 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        /* Slider Row */
+        .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .slider-label { width: 20px; font-weight: bold; color: var(--color-curve); font-family: var(--font-mono); }
+        
+        input[type="range"] { 
+            flex: 1; -webkit-appearance: none; background: #e2e8f0; height: 6px; border-radius: 3px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 18px; height: 18px; 
+            background: white; border: 4px solid var(--color-curve); border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        
+        .slider-val { width: 35px; text-align: right; font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-main); }
+
+        /* Hazır Butonlar */
+        .preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        .preset-btn {
+            background: #f1f5f9; border: 1px solid var(--border); color: var(--text-muted);
+            padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+            transition: 0.2s;
+        }
+        .preset-btn:hover { border-color: var(--color-curve); color: var(--color-curve); background: white; }
+
+        /* Manuel Giriş */
+        .manual-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
+        .manual-input-wrapper { position: relative; }
+        .manual-input-wrapper input {
+            width: 100%; background: #f8fafc; border: 2px solid var(--border); color: var(--text-main);
+            padding: 8px 5px; text-align: center; border-radius: 8px; font-family: var(--font-mono); outline: none;
+        }
+        .manual-input-wrapper input:focus { border-color: var(--color-curve); }
+        .manual-input-wrapper span {
+            position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+            font-size: 0.6rem; background: white; padding: 0 4px; color: var(--text-muted);
+        }
+
+        .action-btn {
+            width: 100%; background: var(--color-curve); color: white; border: none;
+            padding: 10px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4); }
+
+        .info-panel { 
+            margin-top: auto; background: #eff6ff; 
+            border-left: 4px solid var(--color-curve); 
+            padding: 15px; border-radius: 12px; 
+            font-size: 0.85rem; line-height: 1.5; color: #1e3a8a;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background: var(--bg-app);
+            /* Hafif Grid Deseni */
+            background-image: radial-gradient(var(--color-grid) 1px, transparent 1px);
+            background-size: 30px 30px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        #mainCanvas {
+            border-radius: 24px;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+            border: 1px solid white;
+        }
+        
+        /* 3D Minyatür */
+        #mini3D {
+            position: absolute; bottom: 30px; right: 30px;
+            width: 180px; height: 180px;
+            border-radius: 16px;
+            background: linear-gradient(to bottom right, #ffffff, #f1f5f9);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1), inset 0 0 0 1px white;
+            border: 1px solid var(--border);
+        }
+        
+        .tooltip {
+            position: absolute; pointer-events: none;
+            background: rgba(30, 41, 59, 0.9); color: white; padding: 6px 12px;
+            border-radius: 8px; font-family: var(--font-mono); font-size: 0.85rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: none; z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="eq-card">
+        <div class="eq-display" id="dispEq">
+            P(x) = <span class="eq-part" id="partA">1</span>x³ + 
+            <span class="eq-part" id="partB">0</span>x² + 
+            <span class="eq-part" id="partC">-4</span>x + 
+            <span class="eq-part" id="partD">0</span>
+        </div>
+        <div class="badge-container">
+            <div class="badge" id="badgeDegree">3. Derece</div>
+            <div class="badge" id="badgeLeading">Uçlar: ↙ ↗</div>
+        </div>
+    </div>
+
+    <div class="params">
+        <h3>Hızlı Ayar (Slider)</h3>
+        <div class="slider-row">
+            <span class="slider-label">a</span>
+            <input type="range" id="slA" min="-3" max="3" step="0.1" value="1">
+            <span class="slider-val" id="valA">1</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">b</span>
+            <input type="range" id="slB" min="-5" max="5" step="0.5" value="0">
+            <span class="slider-val" id="valB">0</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">c</span>
+            <input type="range" id="slC" min="-10" max="10" step="1" value="-4">
+            <span class="slider-val" id="valC">-4</span>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">d</span>
+            <input type="range" id="slD" min="-5" max="5" step="0.5" value="0">
+            <span class="slider-val" id="valD">0</span>
+        </div>
+    </div>
+
+    <div class="params">
+        <h3>Hazır Şekiller</h3>
+        <div class="preset-grid">
+            <button class="preset-btn" onclick="app.setCoef(0, 1, 0, 0)">Parabol (x²)</button>
+            <button class="preset-btn" onclick="app.setCoef(1, 0, 0, 0)">Kübik (x³)</button>
+            <button class="preset-btn" onclick="app.setCoef(0, 0, 2, 1)">Doğru (2x+1)</button>
+            <button class="preset-btn" onclick="app.setCoef(1, 0, -5, 0)">"S" Kıvrımı</button>
+            <button class="preset-btn" onclick="app.setCoef(-0.5, 0, 4, 0)">Ters "S"</button>
+            <button class="preset-btn" onclick="app.setCoef(0, -1, 0, 4)">Ters U</button>
+        </div>
+
+        <h3>Özel Katsayı Girişi</h3>
+        <div class="manual-inputs">
+            <div class="manual-input-wrapper"><input type="text" id="inA" value="1"><span>a</span></div>
+            <div class="manual-input-wrapper"><input type="text" id="inB" value="0"><span>b</span></div>
+            <div class="manual-input-wrapper"><input type="text" id="inC" value="-4"><span>c</span></div>
+            <div class="manual-input-wrapper"><input type="text" id="inD" value="0"><span>d</span></div>
+        </div>
+        <button class="action-btn" onclick="app.manualSubmit()">GRAFİĞİ GÜNCELLE</button>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        <b>Kökler (Kırmızı):</b> Grafiğin x-eksenini kestiği yerler. <br>
+        <b>Gezgin (Turuncu):</b> Fonksiyonun üzerindeki anlık hareket.
+    </div>
+</aside>
+
+<main>
+    <canvas id="mainCanvas"></canvas>
+    <canvas id="mini3D" width="180" height="180"></canvas>
+    <div class="tooltip" id="tooltip"></div>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('mainCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        
+        // 3D Canvas
+        canvas3D: document.getElementById('mini3D'),
+        ctx3D: null,
+
+        state: {
+            a: 1, b: 0, c: -4, d: 0,
+            scale: 40, // 1 birim = 40px
+            offsetX: 0, offsetY: 0,
+            time: 0,
+            roots: [],
+            mouseX: 0 // Gezgin için mouse kontrolü
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            this.ctx3D = this.canvas3D.getContext('2d');
+            
+            // Slider Listeners
+            ['A', 'B', 'C', 'D'].forEach(key => {
+                const sl = document.getElementById('sl'+key);
+                sl.addEventListener('input', (e) => {
+                    this.state[key.toLowerCase()] = parseFloat(e.target.value);
+                    this.syncInputsFromState();
+                    this.update();
+                });
+            });
+
+            // Mouse Gezgini
+            this.canvas.addEventListener('mousemove', (e) => {
+                const rect = this.canvas.getBoundingClientRect();
+                this.state.mouseX = e.clientX - rect.left;
+            });
+            this.canvas.addEventListener('mouseleave', () => { this.state.mouseX = -1; });
+
+            window.addEventListener('resize', () => this.resize());
+            this.resize();
+            this.update();
+            this.loop();
+        },
+
+        resize: function() {
+            const m = document.querySelector('main');
+            this.width = this.canvas.width = m.clientWidth - 40;
+            this.height = this.canvas.height = m.clientHeight - 40;
+            this.state.offsetX = this.width / 2;
+            this.state.offsetY = this.height / 2;
+            this.state.mouseX = this.state.offsetX; // Başlangıçta merkeze al
+        },
+
+        setCoef: function(a, b, c, d) {
+            this.state.a = a; this.state.b = b; this.state.c = c; this.state.d = d;
+            this.syncInputsFromState();
+            this.update();
+        },
+
+        manualSubmit: function() {
+            this.state.a = parseFloat(document.getElementById('inA').value) || 0;
+            this.state.b = parseFloat(document.getElementById('inB').value) || 0;
+            this.state.c = parseFloat(document.getElementById('inC').value) || 0;
+            this.state.d = parseFloat(document.getElementById('inD').value) || 0;
+            this.syncInputsFromState();
+            this.update();
+        },
+
+        syncInputsFromState: function() {
+            const {a,b,c,d} = this.state;
+            // Sliderları güncelle
+            document.getElementById('slA').value = a; document.getElementById('valA').innerText = a;
+            document.getElementById('slB').value = b; document.getElementById('valB').innerText = b;
+            document.getElementById('slC').value = c; document.getElementById('valC').innerText = c;
+            document.getElementById('slD').value = d; document.getElementById('valD').innerText = d;
+            
+            // Text inputları güncelle
+            document.getElementById('inA').value = a;
+            document.getElementById('inB').value = b;
+            document.getElementById('inC').value = c;
+            document.getElementById('inD').value = d;
+        },
+
+        f: function(x) {
+            const {a,b,c,d} = this.state;
+            return (a*x*x*x) + (b*x*x) + (c*x) + d;
+        },
+
+        update: function() {
+            const {a,b,c,d} = this.state;
+            const fmt = (n) => n >= 0 ? `+ ${n}` : `- ${Math.abs(n)}`;
+            
+            document.getElementById('partA').innerText = a;
+            document.getElementById('partB').innerText = fmt(b);
+            document.getElementById('partC').innerText = fmt(c);
+            document.getElementById('partD').innerText = fmt(d);
+
+            let degree = 3;
+            if(a===0) degree = 2; if(a===0 && b===0) degree = 1; if(a===0 && b===0 && c===0) degree = 0;
+            document.getElementById('badgeDegree').innerText = degree + ". Derece";
+            
+            let behavior = "-";
+            if (degree === 3) behavior = a > 0 ? "↙ ↗" : "↖ ↘";
+            if (degree === 2) behavior = b > 0 ? "↖ ↗" : "↙ ↘";
+            if (degree === 1) behavior = c > 0 ? "↙ ↗" : "↖ ↘";
+            document.getElementById('badgeLeading').innerText = "Uçlar: " + behavior;
+
+            this.findRoots();
+        },
+
+        findRoots: function() {
+            this.state.roots = [];
+            const step = 0.05; // Daha hassas tarama
+            for(let x = -10; x <= 10; x += step) {
+                const y1 = this.f(x);
+                const y2 = this.f(x+step);
+                if (Math.sign(y1) !== Math.sign(y2) && Math.abs(y1) < 1) { // İşaret değişimi ve y eksenine yakınlık kontrolü
+                    this.state.roots.push(x + step/2); 
+                }
+            }
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.state.time += 0.01;
+
+            this.drawGrid();
+            this.drawAxes();
+            this.drawCurve();
+            this.drawRoots();
+            this.drawTracer();
+
+            // 3D Çizim
+            this.draw3DScene();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        toCanvasX: function(x) { return this.state.offsetX + (x * this.state.scale); },
+        toCanvasY: function(y) { return this.state.offsetY - (y * this.state.scale); },
+
+        drawGrid: function() {
+            const ctx = this.ctx;
+            ctx.strokeStyle = "var(--color-grid)";
+            ctx.lineWidth = 0.25;
+            ctx.beginPath();
+            
+            const maxGridX = Math.ceil(this.width / 2 / this.state.scale);
+            const maxGridY = Math.ceil(this.height / 2 / this.state.scale);
+
+            for(let i = -maxGridX; i <= maxGridX; i++) {
+                const x = this.toCanvasX(i);
+                ctx.moveTo(x, 0); ctx.lineTo(x, this.height);
+            }
+            for(let i = -maxGridY; i <= maxGridY; i++) {
+                const y = this.toCanvasY(i);
+                ctx.moveTo(0, y); ctx.lineTo(this.width, y);
+            }
+            ctx.stroke();
+        },
+
+        drawAxes: function() {
+            const ctx = this.ctx;
+            ctx.strokeStyle = "var(--color-axis)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, this.state.offsetY); ctx.lineTo(this.width, this.state.offsetY);
+            ctx.moveTo(this.state.offsetX, 0); ctx.lineTo(this.state.offsetX, this.height);
+            ctx.stroke();
+            
+            // Eksen Sayıları
+            ctx.fillStyle = "var(--text-muted)"; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
+            for(let i = -10; i <= 10; i+=2) {
+                if(i===0) continue;
+                ctx.fillText(i, this.toCanvasX(i), this.state.offsetY + 15);
+            }
+        },
+
+        drawCurve: function() {
+            const ctx = this.ctx;
+            ctx.strokeStyle = "var(--color-curve)";
+            ctx.lineWidth = 3;
+            ctx.lineJoin = "round";
+            ctx.beginPath();
+            
+            let isDrawing = false;
+            for (let px = 0; px <= this.width; px += 2) {
+                const mathX = (px - this.state.offsetX) / this.state.scale;
+                const mathY = this.f(mathX);
+                const py = this.toCanvasY(mathY);
+                
+                // TAŞMA KONTROLÜ: Ekranın çok dışına çıkan noktaları çizme
+                const margin = this.height * 0.5; // Ekran boyunun yarısı kadar tolerans
+                if (py < -margin || py > this.height + margin) {
+                    isDrawing = false; // Çizimi kes
+                    continue;
+                }
+                
+                if (!isDrawing) { ctx.moveTo(px, py); isDrawing = true; }
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+        },
+
+        drawRoots: function() {
+            const ctx = this.ctx;
+            this.state.roots.forEach(rx => {
+                const cx = this.toCanvasX(rx);
+                const cy = this.toCanvasY(0);
+                
+                ctx.fillStyle = "var(--color-root)";
+                ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI*2); ctx.fill();
+                
+                ctx.fillStyle = "var(--text-main)";
+                ctx.font = "bold 12px monospace";
+                ctx.fillText(rx.toFixed(2), cx - 15, cy - 15);
+            });
+        },
+
+        drawTracer: function() {
+            const tooltip = document.getElementById('tooltip');
+            if (this.state.mouseX < 0) {
+                tooltip.style.display = 'none';
+                return;
+            }
+
+            // Mouse pozisyonundan matematiksel X'i bul
+            const mathX = (this.state.mouseX - this.state.offsetX) / this.state.scale;
+            const mathY = this.f(mathX);
+            
+            const cx = this.state.mouseX;
+            const cy = this.toCanvasY(mathY);
+
+            // Ekran dışı kontrolü
+            if (cy < 0 || cy > this.height) {
+                 tooltip.style.display = 'none';
+                 return;
+            }
+
+            const ctx = this.ctx;
+            
+            // Nokta
+            ctx.fillStyle = "var(--color-tracer)";
+            ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI*2); ctx.fill();
+
+            // İzdüşüm
+            ctx.strokeStyle = "var(--color-tracer)";
+            ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy); ctx.lineTo(cx, this.state.offsetY);
+            ctx.moveTo(cx, cy); ctx.lineTo(this.state.offsetX, cy);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Tooltip
+            tooltip.style.display = 'block';
+            tooltip.style.left = (cx + 15) + 'px';
+            tooltip.style.top = (cy - 40) + 'px';
+            tooltip.innerHTML = `x: <b>${mathX.toFixed(1)}</b><br>y: <b>${mathY.toFixed(1)}</b>`;
+        },
+
+        // --- 3D MİNYATÜR ÇİZİMİ ---
+        draw3DScene: function() {
+            const ctx = this.ctx3D;
+            const w = this.canvas3D.width;
+            const h = this.canvas3D.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const cx = w / 2;
+            const cy = h / 2;
+            const scale = 4; // 3D için daha küçük ölçek
+            
+            // Basit bir 3D rotasyon (Z ekseni etrafında dönüyormuş gibi)
+            const angle = this.state.time * 0.5;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+
+            // Basit İzometrik Projeksiyon Fonksiyonu
+            const project = (x, y, z) => {
+                // Y ekseni etrafında döndür
+                const x1 = x * cos - z * sin;
+                const z1 = x * sin + z * cos;
+                // X ekseni etrafında hafif eğ (perspektif hissi için)
+                const y1 = y * Math.cos(0.5) - z1 * Math.sin(0.5);
+                // 2D'ye düşür
+                return [cx + x1 * scale, cy - y1 * scale];
+            };
+
+            // Eksenleri Çiz
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1;
+            const axisLen = 15;
+            const [ox, oy] = project(0,0,0);
+            const [xx, xy] = project(axisLen,0,0);
+            const [yx, yy] = project(0,axisLen,0);
+            const [zx, zy] = project(0,0,axisLen);
+
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(xx, xy); ctx.stroke(); // X
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(yx, yy); ctx.stroke(); // Y
+            ctx.strokeStyle = "#94a3b8";
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(zx, zy); ctx.stroke(); // Z (Yukarı)
+            
+            // Eğriyi Çiz (Z=0 düzleminde)
+            ctx.strokeStyle = "var(--color-curve)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            let first = true;
+            for(let x = -10; x <= 10; x += 0.5) {
+                const y = this.f(x);
+                const [px, py] = project(x, y, 0); // Z her zaman 0
+                
+                // Kutu dışına taşanları çizme
+                if (px < 10 || px > w-10 || py < 10 || py > h-10) { first = true; continue; }
+                
+                if(first) { ctx.moveTo(px, py); first = false; }
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+
+            // Kutu Çerçevesi
+            ctx.strokeStyle = "#e2e8f0";
+            ctx.lineWidth = 1; ctx.setLineDash([2,2]);
+            const boxSize = 10;
+            const corners = [
+                [-boxSize, -boxSize, 0], [boxSize, -boxSize, 0], [boxSize, boxSize, 0], [-boxSize, boxSize, 0]
+            ];
+            ctx.beginPath();
+            corners.forEach((c, i) => {
+                const [px, py] = project(...c);
+                if(i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            });
+            ctx.closePath();
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Başlık
+            ctx.fillStyle = "#64748b"; ctx.font = "10px sans-serif"; ctx.textAlign="center";
+            ctx.fillText("3D Bakış", cx, h - 10);
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
