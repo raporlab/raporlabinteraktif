@@ -448,10 +448,12 @@
             document.getElementById('kesfet-content').classList.add('hidden');
             document.getElementById('matematik-content').classList.add('hidden');
             document.getElementById('fizik-content').classList.add('hidden');
+            document.getElementById(pageId + '-content').classList.remove('hidden');
 
             // 2. Buton stillerini sıfırla (hepsini pasif yap)
             document.getElementById('btn-kesfet').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-4";
             document.getElementById('btn-matematik').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600";
+            document.getElementById('btn-fizik').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600";
 
             // 3. Seçili butonu aktif yap
             const activeBtn = document.getElementById('btn-' + pageId);
