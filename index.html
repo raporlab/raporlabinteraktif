@@ -6,18 +6,7 @@
     <title>Raporlab İnteraktif | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        .sidebar-item:hover { background: rgba(59, 130, 246, 0.05); color: #2563eb; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Aktif buton stili */
-        .active-nav {
-            background-color: #eff6ff; /* blue-50 */
-            color: #2563eb; /* blue-600 */
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-slate-800">
 
@@ -26,9 +15,7 @@
             <h2 id="modalTitle" class="font-bold">Simülasyon Başlığı</h2>
             <button onclick="closeSim()" class="bg-red-500 hover:bg-red-600 px-4 py-1 rounded-lg font-bold transition-colors text-sm">Kapat ✕</button>
         </div>
-        <div class="md:hidden bg-amber-100 text-amber-800 text-[10px] p-2 text-center font-bold">
-            ⚠️ En iyi deneyim için cihazınızı yatay çevirin veya bilgisayardan girin.
-        </div>
+        <div class="md:hidden bg-amber-100 text-amber-800 text-[10px] p-2 text-center font-bold">⚠️ En iyi deneyim için cihazınızı yatay çevirin veya bilgisayardan girin.</div>
         <iframe id="simFrame" src="" class="flex-1 w-full border-none bg-white"></iframe>
     </div>
 
@@ -36,9 +23,7 @@
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0 h-full">
         <div class="p-8 flex justify-between items-center">
-            <h1 class="text-2xl tracking-tight">
-                <span class="font-extrabold text-slate-900">Raporlab</span><span class="font-light text-slate-500 ml-1">İnteraktif</span>
-            </h1>
+            <h1 class="text-2xl tracking-tight"><span class="font-extrabold text-slate-900">Raporlab</span><span class="font-light text-slate-500 ml-1">İnteraktif</span></h1>
             <button onclick="toggleSidebar()" class="md:hidden text-2xl text-slate-400 focus:outline-none">✕</button>
         </div>
 
@@ -46,37 +31,15 @@
             <button id="btn-kesfet" onclick="showPage('kesfet')" class="active-nav w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-4">
                 <span class="mr-3 text-xl">🧭</span> Keşfet
             </button>
-
             <div class="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">Dersler</div>
+            <button id="btn-matematik" onclick="showPage('matematik')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600"><span class="mr-3 text-xl">📐</span> Matematik</button>
+            <button id="btn-fizik" onclick="showPage('fizik')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600"><span class="mr-3 text-xl">🧪</span> Fizik</button>
             
-            <button id="btn-matematik" onclick="showPage('matematik')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600">
-                <span class="mr-3 text-xl">📐</span> Matematik
-            </button>
-
-            <button id="btn-fizik" onclick="showPage('fizik')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600">
-                <span class="mr-3 text-xl">🧪</span> Fizik
-            </button>
-            
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
-                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧬</span> Kimya 
-                <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
-            </a>
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
-                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌍</span> Coğrafya 
-                <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
-            </a>
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
-                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌿</span> Biyoloji 
-                <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
-            </a>
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
-                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">📐</span> Geometri 
-                <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
-            </a>
-            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group">
-                <span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">📜</span> Tarih 
-                <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span>
-            </a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧬</span> Kimya <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌍</span> Coğrafya <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌿</span> Biyoloji <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">📐</span> Geometri <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">📜</span> Tarih <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
         </nav>
 
         <div class="p-6 border-t border-slate-100">
@@ -88,7 +51,6 @@
     </aside>
 
     <main class="flex-1 flex flex-col overflow-hidden">
-        
         <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center px-6 md:px-10 shrink-0">
             <button onclick="toggleSidebar()" class="md:hidden mr-4 text-2xl text-slate-600 focus:outline-none">☰</button>
             <div class="relative w-full max-w-md">
@@ -98,457 +60,12 @@
         </header>
 
         <div class="flex-1 overflow-y-auto p-6 md:p-10 bg-[#f8fafc]">
-            
-            <div id="kesfet-content" class="block animate-in fade-in duration-500 space-y-6">
-                <div class="w-full">
-                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Raporlab İnteraktif</h2>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Dijital Öğrenme Laboratuvarı</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                    
-                    <div class="lg:col-span-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-lg min-h-[280px] flex items-center">
-                        <div class="relative z-10 max-w-md">
-                            <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-3 inline-block backdrop-blur-md">Yenilikçi Eğitim</span>
-                            <h3 class="text-3xl font-bold mb-3 leading-tight">Dokun, Dene ve<br>Gerçekten Öğren</h3>
-                            <p class="text-blue-100 text-sm opacity-90 mb-6 leading-relaxed">
-                                Karmaşık teorileri sadece okumayın; modelleri manipüle ederek somut deneyimlere dönüştürün.
-                            </p>
-                            <div class="flex flex-wrap gap-3">
-                                <button onclick="showPage('matematik')" class="bg-white text-blue-700 px-6 py-2.5 rounded-xl font-bold text-xs hover:scale-105 transition-transform shadow-lg uppercase tracking-wide">
-                                    Kütüphaneye Git
-                                </button>
-                                <a href="mailto:raporlab@gmail.com" class="bg-white/10 text-white border border-white/20 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-white/20 transition-all shadow-lg uppercase tracking-wide backdrop-blur-sm flex items-center">
-                                    İletişim
-                                </a>
-                            </div>
-                        </div>
-                        <div class="absolute -right-4 -bottom-4 text-9xl opacity-10 hidden md:block select-none">🧬</div>
-                    </div>
-
-                    <div class="lg:col-span-4 grid grid-cols-2 gap-4">
-                        <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-blue-300 hover:shadow-md transition-all text-center group">
-                            <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">🚀</span>
-                            <b class="text-[10px] text-slate-700 uppercase">Hızlı Erişim</b>
-                            <p class="text-[8px] text-slate-400 mt-1">Popüler içerikler</p>
-                        </div>
-                        <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-green-300 hover:shadow-md transition-all text-center group">
-                            <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">📱</span>
-                            <b class="text-[10px] text-slate-700 uppercase">Mobil Uyum</b>
-                            <p class="text-[8px] text-slate-400 mt-1">Her cihazda aktif</p>
-                        </div>
-                        <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-purple-300 hover:shadow-md transition-all text-center group">
-                            <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">📚</span>
-                            <b class="text-[10px] text-slate-700 uppercase">300+ İçerik</b>
-                            <p class="text-[8px] text-slate-400 mt-1">Geniş kütüphane</p>
-                        </div>
-                        <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-orange-300 hover:shadow-md transition-all text-center group">
-                            <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">💎</span>
-                            <b class="text-[10px] text-slate-700 uppercase">Ücretsiz</b>
-                            <p class="text-[8px] text-slate-400 mt-1">Daima özgür</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl">
-                    <div class="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-                        <div class="max-w-2xl">
-                            <h4 class="text-xs font-bold text-blue-400 mb-2 uppercase tracking-widest flex items-center">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> Vizyonumuz
-                            </h4>
-                            <p class="text-sm text-slate-300 leading-relaxed italic">
-                                "Eğitimde fırsat eşitliği için yerli ve ücretsiz bir ekosistem inşa ediyoruz. Bilgi bir ayrıcalık değil, haktır. Bu platformun yaşaması topluluğun desteğine bağlıdır."
-                            </p>
-                        </div>
-                        <div class="shrink-0">
-                            <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="bg-white text-slate-900 px-8 py-3 rounded-xl font-bold text-xs hover:bg-blue-50 transition-all shadow-lg hover:shadow-white/10 uppercase tracking-wide flex items-center gap-2">
-                                Destek Ol ☕
-                            </a>
-                        </div>
-                    </div>
-                    <div class="absolute -right-10 -bottom-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl"></div>
-                </div>
-            </div>
-
-            <div id="matematik-content" class="hidden animate-in fade-in duration-500">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-extrabold text-slate-900">Matematik Simülasyonları</h2>
-                    <p class="text-slate-500 mt-1 font-medium">Öğrenmeyi kolaylaştıran interaktif modeller.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 md:gap-8">
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300" data-name="ebob ekok">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-blue-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <circle cx="160" cy="30" r="15" fill="#e2e8f0" opacity="0.5" /><rect x="20" y="80" width="10" height="10" fill="#cbd5e1" /><rect x="40" y="40" width="40" height="40" rx="8" fill="#3b82f6" fill-opacity="0.8" /><rect x="90" y="60" width="20" height="20" rx="4" fill="#60a5fa" /><path d="M40 40 L110 40 M40 60 L110 60" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4" /><circle cx="60" cy="60" r="5" fill="white" /><circle cx="100" cy="70" r="3" fill="white" />
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Ebob - Ekok</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Sayıların ortak bölenlerini ve katlarını görselleştirerek keşfedin.</p>
-                            <button onclick="openSim('./ebob-ekok.html', 'Ebob - Ekok Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-orange-400 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300" data-name="asal çarpanlar">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <circle cx="150" cy="40" r="12" fill="#fed7aa" opacity="0.4" /><path d="M100 30 L70 70 M100 30 L130 70" stroke="#f97316" stroke-width="3" stroke-linecap="round" /><circle cx="100" cy="30" r="8" fill="#ea580c" /><circle cx="70" cy="70" r="10" fill="#f97316" /><circle cx="130" cy="70" r="10" fill="#fb923c" /><rect x="40" y="20" width="8" height="8" rx="2" fill="#fdba74" />
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Asal Çarpanlar</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Sayıları temel yapı taşlarına ayırarak çarpan ağaçlarını inceleyin.</p>
-                            <button onclick="openSim('./asal-carpanlar.html', 'Asal Çarpanlar Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-red-400 hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-300" data-name="üslü sayılar">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-red-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <path d="M40 100 Q 100 100 160 20" stroke="#fca5a5" stroke-width="2" fill="none" stroke-dasharray="4" />
-                                <rect x="60" y="60" width="40" height="40" rx="8" fill="#ef4444" fill-opacity="0.9" />
-                                <rect x="105" y="35" width="20" height="20" rx="4" fill="#f87171" />
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Üslü Sayılar</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Kuvvet kavramını ve sayıların tekrarlı çarpımını keşfedin.</p>
-                            <button onclick="openSim('./uslu-sayilar.html', 'Üslü Sayılar Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-red-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300" data-name="köklü sayılar">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-indigo-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <rect x="110" y="40" width="40" height="40" rx="4" fill="#c7d2fe" fill-opacity="0.3" />
-                                <path d="M40 70 L55 90 L75 30 L150 30" stroke="#6366f1" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Köklü Sayılar</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Kök dışına çıkarma ve yaklaşık değer bulma modelleri.</p>
-                            <button onclick="openSim('./koklu-sayilar.html', 'Köklü Sayılar Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-yellow-400 hover:shadow-2xl hover:shadow-yellow-500/10 transition-all duration-300" data-name="mantık önermeler">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-yellow-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <circle cx="85" cy="60" r="25" stroke="#eab308" stroke-width="3" fill="none" />
-                                <circle cx="115" cy="60" r="25" stroke="#eab308" stroke-width="3" fill="none" />
-                                <path d="M100 40 A25 25 0 0 1 115 60 A25 25 0 0 1 100 80 A25 25 0 0 1 85 60 A25 25 0 0 1 100 40" fill="#fde047" fill-opacity="0.6" />
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Mantık</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Doğruluk tabloları ve mantık kapılarını interaktif deneyimleyin.</p>
-                            <button onclick="openSim('./mantik.html', 'Mantık Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-yellow-500 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-cyan-400 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300" data-name="çarpanlara ayırma özdeşlikler">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-cyan-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <rect x="60" y="30" width="50" height="50" rx="8" fill="#22d3ee" fill-opacity="0.8" />
-                                <rect x="120" y="30" width="20" height="50" rx="4" fill="#67e8f9" />
-                                <rect x="60" y="90" width="50" height="15" rx="4" fill="#a5f3fc" />
-                                <path d="M115 55 L125 55 M85 85 L85 95" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-dasharray="3" />
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Çarpanlara Ayırma</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Polinomları ve özdeşlikleri geometrik modellerle çarpanlarına ayırın.</p>
-                            <button onclick="openSim('./carpanlara-ayirma.html', 'Çarpanlara Ayırma Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-cyan-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300" data-name="integral alan riemann">
-                    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-emerald-50 transition-colors">
-                        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                            <line x1="30" y1="100" x2="170" y2="100" stroke="#cbd5e1" stroke-width="2" />
-                            <line x1="40" y1="20" x2="40" y2="110" stroke="#cbd5e1" stroke-width="2" />
-            
-                            <path d="M 50 90 Q 90 30 130 70 T 170 40 L 170 100 L 50 100 Z" fill="#34d399" fill-opacity="0.2" />
-            
-                            <path d="M 50 90 Q 90 30 130 70 T 170 40" stroke="#10b981" stroke-width="4" fill="none" stroke-linecap="round" />
-            
-                            <text x="135" y="45" font-size="28" font-weight="bold" fill="#059669" font-family="serif" font-style="italic">∫</text>
-                        </svg>
-                    </div>
-                    <div class="px-3 pb-3">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg text-slate-800">İntegral</h3>
-                            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                        </div>
-                        <p class="text-sm text-slate-500 mb-5">Eğri altında kalan alanı ve Riemann toplamlarını görselleştirin.</p>
-                        <button onclick="openSim('./integral.html', 'İntegral Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                    </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-violet-400 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300" data-name="permütasyon kombinasyon sayma olasılık">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-violet-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <rect x="40" y="35" width="20" height="20" rx="4" fill="#8b5cf6" />
-                                <rect x="70" y="35" width="20" height="20" rx="4" fill="#a78bfa" />
-                                <rect x="100" y="35" width="20" height="20" rx="4" fill="#c4b5fd" />
-                                
-                                <circle cx="50" cy="85" r="12" fill="#8b5cf6" fill-opacity="0.6" stroke="#7c3aed" stroke-width="2" />
-                                <circle cx="75" cy="85" r="12" fill="#8b5cf6" fill-opacity="0.6" stroke="#7c3aed" stroke-width="2" />
-                                <path d="M40 105 Q 62.5 115 85 105" stroke="#7c3aed" stroke-width="2" fill="none" stroke-linecap="round" />
-                                
-                                <text x="140" y="75" font-size="24" font-weight="bold" fill="#ddd6fe" font-style="italic">n!</text>
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Permütasyon & Kombinasyon</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Sıralama ve seçme arasındaki farkı interaktif deneylerle keşfedin.</p>
-                            <button onclick="openSim('./permutasyon-kombinasyon.html', 'Permütasyon ve Kombinasyon Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-violet-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300" data-name="temel kavramlar sayı kümeleri tam sayılar doğal sayılar">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-indigo-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <line x1="40" y="80" x2="160" y2="80" stroke="#6366f1" stroke-width="3" stroke-linecap="round" />
-                                <path d="M160 80 L150 75 M160 80 L150 85" stroke="#6366f1" stroke-width="3" stroke-linecap="round" />
-                                
-                                <circle cx="80" cy="50" r="25" fill="#818cf8" fill-opacity="0.2" stroke="#6366f1" stroke-width="1" />
-                                <circle cx="95" cy="55" r="15" fill="#c7d2fe" fill-opacity="0.5" stroke="#4f46e5" stroke-width="1" />
-                                
-                                <text x="75" y="55" font-size="14" font-weight="bold" fill="#4338ca" font-family="serif">ℤ</text>
-                                <text x="92" y="58" font-size="10" font-weight="bold" fill="#4338ca" font-family="serif">ℕ</text>
-                                <text x="130" y="45" font-size="18" font-weight="bold" fill="#e0e7ff" font-style="italic">1,2,3...</text>
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Temel Kavramlar</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Sayı kümeleri ve temel işlemleri görselleştirerek kalıcı öğrenme sağlayın.</p>
-                            <button onclick="openSim('./temel-kavramlar.html', 'Temel Kavramlar Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-rose-400 hover:shadow-2xl hover:shadow-rose-500/10 transition-all duration-300" data-name="polinomlar katsayılar derece polinom bölmesi">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-rose-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <line x1="30" y1="100" x2="170" y2="100" stroke="#cbd5e1" stroke-width="2" />
-                                <line x1="100" y1="20" x2="100" y2="110" stroke="#cbd5e1" stroke-width="2" />
-                                
-                                <path d="M50 90 Q 75 20 100 60 T 150 30" stroke="#f43f5e" stroke-width="5" fill="none" stroke-linecap="round" />
-                                
-                                <circle cx="75" cy="40" r="4" fill="#fb7185" />
-                                <circle cx="125" cy="80" r="4" fill="#fb7185" />
-                                
-                                <text x="110" y="45" font-size="12" font-weight="bold" fill="#fda4af" font-style="italic">P(x)</text>
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Polinomlar</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Katsayıların ve derecenin fonksiyon grafiği üzerindeki etkisini interaktif gözlemleyin.</p>
-                            <button onclick="openSim('./polinomlar.html', 'Polinomlar Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-rose-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-                
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-purple-400 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300" data-name="kesirler">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-purple-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <circle cx="40" cy="30" r="10" fill="#e9d5ff" opacity="0.5" /><circle cx="100" cy="60" r="35" stroke="#a855f7" stroke-width="3" fill="none" /><path d="M100 25 A35 35 0 0 1 135 60 L100 60 Z" fill="#a855f7" fill-opacity="0.7" /><line x1="85" y1="105" x2="115" y2="105" stroke="#d8b4fe" stroke-width="4" stroke-linecap="round" />
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Kesirler</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Parça-bütün ilişkisini ve sadeleştirmeyi görsel olarak deneyimleyin.</p>
-                            <button onclick="openSim('./kesirler.html', 'Kesirler Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-purple-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-
-                    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-teal-400 hover:shadow-2xl hover:shadow-teal-500/10 transition-all duration-300" data-name="fonksiyonlar">
-                        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-teal-50 transition-colors">
-                            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                                <line x1="40" y1="100" x2="160" y2="100" stroke="#cbd5e1" stroke-width="2" /><line x1="50" y1="20" x2="50" y2="110" stroke="#cbd5e1" stroke-width="2" /><path d="M50 80 Q90 20 130 60 T170 30" stroke="#14b8a6" stroke-width="4" fill="none" stroke-linecap="round" />
-                            </svg>
-                        </div>
-                        <div class="px-3 pb-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg text-slate-800">Fonksiyonlar</h3>
-                                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                            </div>
-                            <p class="text-sm text-slate-500 mb-5">Grafik dönüşümlerini ve girdi-çıktı ilişkisini keşfedin.</p>
-                            <button onclick="openSim('./fonksiyonlar.html', 'Fonksiyonlar Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-teal-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="fizik-content" class="hidden animate-in fade-in duration-500">
-            <div class="mb-8">
-                <h2 class="text-3xl font-extrabold text-slate-900">Fizik Simülasyonları</h2>
-                <p class="text-slate-500 mt-1 font-medium">Doğa yasalarını deneyimleyerek keşfedin.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 md:gap-8">
-                <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-300" data-name="ısı sıcaklık genleşme">
-                    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-amber-50 transition-colors">
-                        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-                            <rect x="90" y="20" width="20" height="70" rx="10" fill="#fcd34d" opacity="0.3"/>
-                            <circle cx="100" cy="95" r="15" fill="#f59e0b"/>
-                            <rect x="94" y="50" width="12" height="40" fill="#f59e0b"/>
-                            <path d="M 130 80 Q 140 70 130 60" stroke="#f59e0b" stroke-width="3" fill="none" stroke-linecap="round"/>
-                            <path d="M 140 90 Q 150 80 140 70" stroke="#f59e0b" stroke-width="3" fill="none" stroke-linecap="round"/>
-                            <path d="M 60 40 L 140 40" stroke="#d97706" stroke-width="2" stroke-dasharray="4"/>
-                        </svg>
-                    </div>
-                    <div class="px-3 pb-3">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg text-slate-800">Isı ve Genleşme</h3>
-                            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-                        </div>
-                        <p class="text-sm text-slate-500 mb-5">Maddelerin ısıyla değişimini ve genleşme prensiplerini inceleyin.</p>
-                        <button onclick="openSim('./isi-ve-genlesme.html', 'Isı ve Genleşme')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-                    </div>
-                </div>
-
-<div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-sky-400 hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-300" data-name="piston basınç gaz">
-    <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-sky-50 transition-colors">
-        <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
-            <rect x="60" y="30" width="80" height="60" rx="4" stroke="#e0f2fe" stroke-width="2" fill="none" />
-            <line x1="60" y1="30" x2="60" y2="90" stroke="#bae6fd" stroke-width="4" stroke-linecap="round" />
-            <line x1="140" y1="30" x2="140" y2="90" stroke="#bae6fd" stroke-width="4" stroke-linecap="round" />
-            <line x1="60" y1="90" x2="140" y2="90" stroke="#bae6fd" stroke-width="4" stroke-linecap="round" />
-            
-            <circle cx="80" cy="50" r="3" fill="#38bdf8" opacity="0.6" />
-            <circle cx="100" cy="70" r="3" fill="#38bdf8" opacity="0.6" />
-            <circle cx="120" cy="45" r="3" fill="#38bdf8" opacity="0.6" />
-            <circle cx="90" cy="80" r="3" fill="#38bdf8" opacity="0.6" />
-            
-            <rect x="65" y="40" width="70" height="10" rx="2" fill="#0ea5e9" />
-            
-            <line x1="100" y1="40" x2="100" y2="10" stroke="#0284c7" stroke-width="6" stroke-linecap="round" />
-            <rect x="85" y="5" width="30" height="6" rx="2" fill="#0284c7" />
-            
-            <path d="M 115 55 L 115 65 L 110 65 M 115 65 L 120 65" stroke="#7dd3fc" stroke-width="2" fill="none" />
-        </svg>
-    </div>
-    <div class="px-3 pb-3">
-        <div class="flex justify-between items-start mb-2">
-            <h3 class="font-bold text-lg text-slate-800">Piston ve Basınç</h3>
-            <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
-        </div>
-        <p class="text-sm text-slate-500 mb-5">Hacim değişiminin gaz basıncı üzerindeki etkisini pistonla inceleyin.</p>
-        <button onclick="openSim('./piston-ve-basinc.html', 'Piston ve Basınç Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-sky-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
-    </div>
-</div>
-                
-            </div>
-        </div>
+            <div id="kesfet-content" class="block animate-in fade-in duration-500 space-y-6"></div>
+            <div id="matematik-content" class="hidden animate-in fade-in duration-500"></div>
+            <div id="fizik-content" class="hidden animate-in fade-in duration-500"></div>
         </div>
     </main>
 
-    <script>
-        // Sayfa Değiştirme ve Buton Highlight Mantığı
-function showPage(pageId) {
-        // 1. İçerikleri gizle/göster
-        document.getElementById('kesfet-content').classList.add('hidden');
-        document.getElementById('matematik-content').classList.add('hidden');
-        document.getElementById('fizik-content').classList.add('hidden'); // Fizik eklendi
-        
-        document.getElementById(pageId + '-content').classList.remove('hidden');
-
-        // 2. TÜM butonların stillini sıfırla (Hepsini gri yap)
-        document.getElementById('btn-kesfet').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-4";
-        document.getElementById('btn-matematik').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600";
-        document.getElementById('btn-fizik').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600"; // Fizik eklendi
-
-        // 3. Sadece tıklanan butonu mavi yap
-        const activeBtn = document.getElementById('btn-' + pageId);
-        if(activeBtn) {
-            activeBtn.classList.remove('text-slate-600');
-            activeBtn.classList.add('active-nav');
-        }
-
-        // Mobilde menüyü kapat
-        if (window.innerWidth < 768) {
-            const sidebar = document.getElementById('sidebar');
-            if (!sidebar.classList.contains('-translate-x-full')) {
-                toggleSidebar();
-            }
-        }
-    }
-
-        // MODAL KONTROLLERİ
-        function openSim(url, title) {
-            const modal = document.getElementById('simModal');
-            const frame = document.getElementById('simFrame');
-            const titleEl = document.getElementById('modalTitle');
-            
-            frame.src = url; 
-            titleEl.innerText = title; 
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Kaydırmayı engelle
-        }
-
-        function closeSim() {
-            const modal = document.getElementById('simModal');
-            const frame = document.getElementById('simFrame');
-            modal.classList.add('hidden');
-            frame.src = ""; 
-            document.body.style.overflow = 'auto'; // Kaydırmayı aç
-        }
-
-        // SIDEBAR KONTROLÜ
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
-        }
-
-        // ARAMA SİSTEMİ
-        const searchInput = document.getElementById('searchInput');
-        const cards = document.querySelectorAll('.sim-card');
-
-        searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            
-            // Eğer arama yapılırsa otomatik Matematik sekmesine geç (çünkü kartlar orada)
-            if (searchTerm.length > 0 && document.getElementById('matematik-content').classList.contains('hidden')) {
-                showPage('matematik');
-            }
-
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name').toLowerCase();
-                card.style.display = name.includes(searchTerm) ? "block" : "none";
-            });
-        });
-    </script>
+    <script src="js/main.js"></script>
 </body>
 </html>
