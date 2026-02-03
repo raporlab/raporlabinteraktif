@@ -120,3 +120,18 @@ searchInput.addEventListener('input', () => {
         card.style.display = name.includes(searchTerm) ? "block" : "none";
     });
 });
+
+// ==========================================
+// EMBED (SİTEYE GÖMME) ÖZELLİĞİ
+// ==========================================
+function shareSim() {
+    const frame = document.getElementById('simFrame');
+    // Mevcut simülasyonun tam adresini al (https://... şeklinde)
+    const fullUrl = new URL(frame.getAttribute('src'), window.location.href).href;
+
+    // Standart Iframe Kodu Oluştur
+    const embedCode = `<iframe src="${fullUrl}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
+
+    // Kullanıcıya kodu göster ve kopyalamasını sağla
+    prompt("Bu simülasyonu kendi sitene eklemek için aşağıdaki kodu kopyala:", embedCode);
+}
