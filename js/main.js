@@ -5,14 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPart('kesfet');
 });
 
-// Parçayı Yükle ve Göster
+// Parçayı Yükle ve Göster (CACHE ÇÖZÜMÜ EKLENDİ)
 async function loadPart(pageId) {
     const container = document.getElementById(pageId + '-content');
     
     // Eğer içerik boşsa yükle (daha önce yüklenmemişse)
     if (!container.innerHTML.trim()) {
         try {
-            const response = await fetch(`parts/cards-${pageId}.html`);
+            // ?v=... ekleyerek tarayıcının en güncel hali çekmesini sağlıyoruz
+            const response = await fetch(`parts/cards-${pageId}.html?v=${Math.random()}`);
             if (response.ok) {
                 const html = await response.text();
                 container.innerHTML = html;
@@ -30,14 +31,15 @@ function showPage(pageId) {
     // Önce gerekli içeriği yükle
     loadPart(pageId);
 
-    // 1. İçerikleri gizle/göster
+    // 1. İçerikleri gizle
     document.getElementById('kesfet-content').classList.add('hidden');
     document.getElementById('matematik-content').classList.add('hidden');
     document.getElementById('fizik-content').classList.add('hidden');
     
+    // 2. Seçili olanı göster
     document.getElementById(pageId + '-content').classList.remove('hidden');
 
-    // 2. Buton stillerini sıfırla
+    // 3. Buton stillerini sıfırla
     const buttons = ['kesfet', 'matematik', 'fizik'];
     buttons.forEach(id => {
         const btn = document.getElementById('btn-' + id);
@@ -47,7 +49,7 @@ function showPage(pageId) {
         }
     });
 
-    // 3. Aktif butonu boya
+    // 4. Aktif butonu boya
     const activeBtn = document.getElementById('btn-' + pageId);
     if(activeBtn) {
         activeBtn.classList.remove('text-slate-600');
@@ -102,19 +104,13 @@ function toggleSidebar() {
     overlay.classList.toggle('hidden');
 }
 
-// ARAMA SİSTEMİ (Basitleştirilmiş - Yüklü içerikte arar)
+// ARAMA SİSTEMİ
 const searchInput = document.getElementById('searchInput');
 
 searchInput.addEventListener('input', () => {
     const searchTerm = searchInput.value.toLowerCase().trim();
-    // Not: Arama sadece o an DOM'da yüklü olan kartlarda çalışır.
     const cards = document.querySelectorAll('.sim-card');
     
-    if (searchTerm.length > 0) {
-        // Eğer arama yapılıyorsa ve Matematik/Fizik gizliyse, onları açmak gerekebilir
-        // Şimdilik sadece mevcut görünümde filtreleme yapar
-    }
-
     cards.forEach(card => {
         const name = card.getAttribute('data-name').toLowerCase();
         card.style.display = name.includes(searchTerm) ? "block" : "none";
@@ -122,16 +118,27 @@ searchInput.addEventListener('input', () => {
 });
 
 // ==========================================
-// EMBED (SİTEYE GÖMME) ÖZELLİĞİ
+// EMBED (SİTEYE GÖMME) ÖZELLİĞİ - GÜNCELLENDİ
 // ==========================================
 function shareSim() {
     const frame = document.getElementById('simFrame');
-    // Mevcut simülasyonun tam adresini al (https://... şeklinde)
-    const fullUrl = new URL(frame.getAttribute('src'), window.location.href).href;
+    const src = frame.getAttribute('src');
+
+    // Eğer simülasyon açık değilse veya boşsa işlem yapma
+    if (!src || src === "") {
+        alert("Lütfen önce bir simülasyon açın.");
+        return;
+    }
+
+    // Tam URL oluştur
+    const fullUrl = new URL(src, window.location.href).href;
 
     // Standart Iframe Kodu Oluştur
     const embedCode = `<iframe src="${fullUrl}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
 
     // Kullanıcıya kodu göster ve kopyalamasını sağla
-    prompt("Bu simülasyonu kendi sitene eklemek için aşağıdaki kodu kopyala:", embedCode);
+    // setTimeout ile biraz gecikme ekliyoruz ki tarayıcı render etsin
+    setTimeout(() => {
+        prompt("Bu simülasyonu kendi sitene eklemek için aşağıdaki kodu kopyala (CTRL+C):", embedCode);
+    }, 100);
 }
