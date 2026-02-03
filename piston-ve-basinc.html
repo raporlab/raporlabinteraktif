@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Gaz Yasaları</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v5.2 - Gas Lab) */
+            --bg-app: #f1f5f9;      
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --color-gas: #3b82f6;   /* Gaz Molekülleri */
+            --color-fire: #ef4444;  /* Isı */
+            --color-gauge: #0f172a; /* Kadranlar */
+            --color-piston: #94a3b8;
+            
+            --border: #e2e8f0;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 380px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 10px 0 40px rgba(0,0,0,0.03);
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: #0284c7; letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Kadranlar Alanı */
+        .gauge-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            background: #1e293b; padding: 15px; border-radius: 16px;
+            color: white; text-align: center;
+        }
+        .gauge-wrapper { display: flex; flex-direction: column; align-items: center; }
+        .gauge-canvas { width: 100%; height: 80px; }
+        .gauge-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; margin-top: 5px; }
+        .gauge-val { font-family: var(--font-mono); font-weight: bold; font-size: 1.1rem; color: #38bdf8; }
+
+        /* Kontroller */
+        .params { background: white; padding: 20px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .params h3 { margin: 0 0 10px 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .icon { font-size: 1.2rem; width: 30px; text-align: center; }
+        
+        input[type="range"] { 
+            flex: 1; -webkit-appearance: none; background: #e2e8f0; height: 8px; border-radius: 4px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 24px; height: 24px; 
+            background: white; border: 4px solid #0284c7; border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        .pump-btn {
+            width: 100%; background: #0284c7; color: white; border: none;
+            padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3); transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .pump-btn:active { transform: scale(0.98); }
+        .pump-btn:hover { background: #0369a1; }
+
+        .info-panel { 
+            margin-top: auto; background: #f0f9ff; 
+            border-left: 4px solid #0284c7; 
+            padding: 15px; border-radius: 12px; 
+            font-size: 0.85rem; line-height: 1.5; color: #0c4a6e;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background: radial-gradient(circle at center, #cbd5e1 0%, #94a3b8 100%);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #simCanvas {
+            background: transparent;
+            /* Pistonun içini canvas'ta çizeceğiz */
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">Gaz Yasaları</span>
+    </div>
+
+    <div class="gauge-container">
+        <div class="gauge-wrapper">
+            <canvas id="gaugePress" class="gauge-canvas" width="140" height="80"></canvas>
+            <div class="gauge-label">Basınç (P)</div>
+            <div class="gauge-val" id="valPress">1.0 atm</div>
+        </div>
+        <div class="gauge-wrapper">
+            <canvas id="gaugeTemp" class="gauge-canvas" width="140" height="80"></canvas>
+            <div class="gauge-label">Sıcaklık (T)</div>
+            <div class="gauge-val" id="valTemp">300 K</div>
+        </div>
+    </div>
+
+    <div class="params">
+        <h3>Değişkenler</h3>
+        
+        <div class="slider-row">
+            <span class="icon">🔥</span>
+            <input type="range" id="slTemp" min="100" max="600" value="300">
+        </div>
+        <div style="text-align:right; font-size:0.8rem; color:#64748b; margin-top:-10px; margin-bottom:15px;">Sıcaklık</div>
+
+        <div class="slider-row">
+            <span class="icon">📏</span>
+            <input type="range" id="slVol" min="20" max="80" value="50">
+        </div>
+        <div style="text-align:right; font-size:0.8rem; color:#64748b; margin-top:-10px; margin-bottom:15px;">Hacim (Piston)</div>
+
+        <button class="pump-btn" onclick="app.addParticles(10)">
+            <span>💨 Gaz Pompala (+n)</span>
+        </button>
+        <div style="text-align:center; font-size:0.8rem; color:#64748b; margin-top:5px;">
+            Molekül Sayısı: <span id="valN" style="font-weight:bold; color:#0f172a;">50</span>
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        <b>İdeal Gaz Yasası (PV = nRT):</b>
+        Pistonu aşağı iterek (Hacmi azaltarak) veya sıcaklığı artırarak <b>Basıncı (P)</b> yükseltebilirsiniz.
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        
+        // Gauge Contexts
+        ctxP: document.getElementById('gaugePress').getContext('2d'),
+        ctxT: document.getElementById('gaugeTemp').getContext('2d'),
+
+        width: 0, height: 0,
+        
+        state: {
+            temp: 300,  // Kelvin
+            volume: 50, // Yükseklik yüzdesi (%20 - %80)
+            n: 50,      // Parçacık sayısı
+            pressure: 1 // Hesaplanan basınç
+        },
+
+        particles: [],
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Slider Listeners
+            document.getElementById('slTemp').addEventListener('input', (e) => {
+                this.state.temp = parseInt(e.target.value);
+                this.updatePhysics();
+            });
+            document.getElementById('slVol').addEventListener('input', (e) => {
+                // Slider ters çalışsın (Yukarı çekince hacim artsın, aşağı çekince azalsın gibi değil)
+                // Slider değeri pistonun Yüksekliği olsun. (Küçük değer = Az Hacim = Piston Aşağıda)
+                // Ama görsel olarak slider sağa gidince hacim artsın istiyoruz.
+                // 100 - value mantığı kuralım
+                this.state.volume = parseInt(e.target.value); 
+                this.updatePhysics();
+            });
+
+            window.addEventListener('resize', () => this.resize());
+            
+            this.resize();
+            this.addParticles(50); // Başlangıç gazı
+            this.loop();
+        },
+
+        resize: function() {
+            const m = document.querySelector('main');
+            this.width = this.canvas.width = m.clientWidth;
+            this.height = this.canvas.height = m.clientHeight;
+        },
+
+        addParticles: function(count) {
+            this.state.n += count;
+            for(let i=0; i<count; i++) {
+                this.particles.push({
+                    x: this.width/2 + (Math.random()*100 - 50),
+                    y: this.height - 50 - (Math.random() * (this.state.volume * 3)),
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    color: `hsl(${Math.random()*40 + 200}, 80%, 60%)` // Mavi tonları
+                });
+            }
+            this.updatePhysics();
+        },
+
+        updatePhysics: function() {
+            // PV = nRT => P = (n * T) / V
+            // Basitleştirilmiş katsayılar
+            const P = (this.state.n * this.state.temp) / (this.state.volume * 100);
+            this.state.pressure = P;
+
+            // UI Güncelle
+            document.getElementById('valTemp').innerText = this.state.temp + " K";
+            document.getElementById('valN').innerText = this.state.n;
+            document.getElementById('valPress').innerText = P.toFixed(2) + " atm";
+            
+            // Rengi güncelle (Basınç artınca kırmızılaşsın)
+            if(P > 3) document.getElementById('valPress').style.color = "#ef4444";
+            else document.getElementById('valPress').style.color = "#38bdf8";
+
+            // Parçacık Hızını Güncelle (Sıcaklığa göre)
+            // Kinetik Enerji ~ T ~ v^2 -> v ~ sqrt(T)
+            const speedFactor = Math.sqrt(this.state.temp) / 10;
+            
+            // Hız vektörünü normalize edip yeni hızla çarpabiliriz ama
+            // basitlik için global speed çarpanı kullanalım renderda.
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            
+            this.drawContainer();
+            this.drawParticles();
+            this.drawGauges();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawContainer: function() {
+            const ctx = this.ctx;
+            const w = 300; // Kap genişliği
+            const cx = this.width / 2;
+            const bottomY = this.height - 50;
+            
+            // Piston Yüksekliği (Slider volume belirler)
+            // Max yükseklik = 400px
+            const pistonH = (this.state.volume / 100) * 400; 
+            const pistonY = bottomY - pistonH;
+
+            // 1. Silindir Gövdesi (Cam)
+            ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+            ctx.strokeStyle = "#94a3b8";
+            ctx.lineWidth = 4;
+            
+            ctx.beginPath();
+            // Sol duvar
+            ctx.moveTo(cx - w/2, bottomY - 450); 
+            ctx.lineTo(cx - w/2, bottomY);
+            // Zemin
+            ctx.lineTo(cx + w/2, bottomY);
+            // Sağ duvar
+            ctx.lineTo(cx + w/2, bottomY - 450);
+            ctx.stroke();
+            ctx.fill();
+
+            // 2. Piston (Kapak)
+            ctx.fillStyle = "#64748b";
+            ctx.fillRect(cx - w/2 + 2, pistonY - 20, w - 4, 20); // Piston başı
+            
+            // Piston Kolu
+            ctx.fillStyle = "#cbd5e1";
+            ctx.fillRect(cx - 10, pistonY - 200, 20, 180);
+
+            // Isı Kaynağı (Alt zemin)
+            const heatIntensity = (this.state.temp - 100) / 500; // 0 ile 1 arası
+            if (heatIntensity > 0.1) {
+                const grad = ctx.createRadialGradient(cx, bottomY + 20, 10, cx, bottomY + 20, 100);
+                grad.addColorStop(0, `rgba(239, 68, 68, ${heatIntensity})`);
+                grad.addColorStop(1, "rgba(239, 68, 68, 0)");
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.ellipse(cx, bottomY + 5, 80, 20, 0, 0, Math.PI*2);
+                ctx.fill();
+                
+                ctx.font = "20px sans-serif"; ctx.textAlign="center";
+                ctx.fillText("🔥", cx, bottomY + 30);
+            }
+
+            // State'e piston sınırlarını kaydet (çarpışma için)
+            this.bounds = {
+                left: cx - w/2 + 5,
+                right: cx + w/2 - 5,
+                top: pistonY,
+                bottom: bottomY - 5
+            };
+        },
+
+        drawParticles: function() {
+            const ctx = this.ctx;
+            const speedBase = Math.sqrt(this.state.temp) * 0.4;
+            
+            this.particles.forEach(p => {
+                // Hareketi uygula
+                p.x += p.vx * speedBase;
+                p.y += p.vy * speedBase;
+
+                // Çarpışma Kontrolü
+                // Sağ/Sol
+                if (p.x < this.bounds.left || p.x > this.bounds.right) {
+                    p.vx *= -1;
+                    p.x = Math.max(this.bounds.left, Math.min(this.bounds.right, p.x));
+                }
+
+                // Alt/Üst (Piston)
+                if (p.y > this.bounds.bottom) {
+                    p.vy *= -1;
+                    p.y = this.bounds.bottom;
+                }
+                
+                // Pistonla Çarpışma (Üst)
+                // Piston aşağı inerken parçacık dışarıda kalmasın diye "push" mantığı
+                if (p.y < this.bounds.top) {
+                    p.vy = Math.abs(p.vy); // Aşağı sektir
+                    p.y = this.bounds.top + Math.random() * 5; // İçeri it
+                    
+                    // Piston sıkıştırınca enerji aktarımı (Isınma etkisi simülasyonu - opsiyonel)
+                    // p.vx *= 1.1; 
+                }
+
+                // Çizim
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+                ctx.fill();
+            });
+        },
+
+        drawGauges: function() {
+            // Basınç Gauge Çizimi
+            this.drawSingleGauge(this.ctxP, this.state.pressure, 0, 5, "#38bdf8");
+            
+            // Sıcaklık Gauge Çizimi
+            this.drawSingleGauge(this.ctxT, this.state.temp, 0, 600, "#f87171");
+        },
+
+        drawSingleGauge: function(ctx, val, min, max, color) {
+            const w = 140, h = 80;
+            const cx = w/2, cy = h - 10;
+            const r = 60;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Arka Plan Yayı
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, Math.PI, 0);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "#334155";
+            ctx.stroke();
+            
+            // Değer Yayı
+            const range = max - min;
+            const percent = Math.max(0, Math.min(1, (val - min) / range));
+            const angle = Math.PI + (percent * Math.PI);
+            
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, Math.PI, angle);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            
+            // İbre
+            const ix = cx + Math.cos(angle) * (r - 15);
+            const iy = cy + Math.sin(angle) * (r - 15);
+            
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(ix, iy);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "white";
+            ctx.stroke();
+            
+            // Merkez Nokta
+            ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2); ctx.fillStyle="white"; ctx.fill();
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
