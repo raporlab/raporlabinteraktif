@@ -118,27 +118,41 @@ searchInput.addEventListener('input', () => {
 });
 
 // ==========================================
-// EMBED (SİTEYE GÖMME) ÖZELLİĞİ - GÜNCELLENDİ
+// EMBED (SİTEYE GÖMME) ÖZELLİĞİ - GARANTİLİ VERSİYON
 // ==========================================
 function shareSim() {
+    // 1. Simülasyon çerçevesini bul
     const frame = document.getElementById('simFrame');
-    const src = frame.getAttribute('src');
-
-    // Eğer simülasyon açık değilse veya boşsa işlem yapma
-    if (!src || src === "") {
-        alert("Lütfen önce bir simülasyon açın.");
+    
+    if (!frame) {
+        alert("Hata: Simülasyon penceresi (iframe) bulunamadı!");
         return;
     }
 
-    // Tam URL oluştur
-    const fullUrl = new URL(src, window.location.href).href;
+    // 2. Simülasyonun adresini al
+    const src = frame.getAttribute('src');
 
-    // Standart Iframe Kodu Oluştur
-    const embedCode = `<iframe src="${fullUrl}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
+    // Eğer simülasyon açık değilse uyar
+    if (!src || src === "" || src === "undefined") {
+        alert("Lütfen önce listeden bir simülasyon başlatın.");
+        return;
+    }
 
-    // Kullanıcıya kodu göster ve kopyalamasını sağla
-    // setTimeout ile biraz gecikme ekliyoruz ki tarayıcı render etsin
-    setTimeout(() => {
-        prompt("Bu simülasyonu kendi sitene eklemek için aşağıdaki kodu kopyala (CTRL+C):", embedCode);
-    }, 100);
+    try {
+        // 3. Tam internet adresini oluştur
+        const fullUrl = new URL(src, window.location.href).href;
+
+        // 4. Iframe kodunu hazırla
+        const embedCode = `<iframe src="${fullUrl}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
+
+        // 5. Kullanıcıya kutucuk içinde göster
+        window.prompt("Bu simülasyonu sitene eklemek için kodu kopyala (CTRL+C):", embedCode);
+        
+    } catch (error) {
+        console.error("Embed hatası:", error);
+        alert("Bir hata oluştu: " + error.message);
+    }
 }
+
+// Fonksiyonun HTML tarafından görülebilmesini garantiye al
+window.shareSim = shareSim;
