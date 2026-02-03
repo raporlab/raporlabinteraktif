@@ -10,20 +10,26 @@
 </head>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-slate-800">
 
-<div class="h-16 flex items-center justify-between px-4 md:px-6 bg-slate-900 text-white shrink-0 gap-4">
-    <h2 id="modalTitle" class="font-bold text-sm md:text-base truncate">Simülasyon Başlığı</h2>
-    
-    <div class="flex items-center gap-2 shrink-0">
-        <button onclick="shareSim()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg font-bold transition-colors text-xs flex items-center gap-1 border border-indigo-400/30">
-            <span>🔗</span> <span class="hidden md:inline">Sitene Ekle</span>
-        </button>
+    <div id="simModal" class="hidden fixed inset-0 bg-black/90 z-[100] flex flex-col">
+        
+        <div class="h-16 flex items-center justify-between px-4 md:px-6 bg-slate-900 text-white shrink-0 gap-4">
+            <h2 id="modalTitle" class="font-bold text-sm md:text-base truncate">Simülasyon Başlığı</h2>
+            
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="shareSim()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg font-bold transition-colors text-xs flex items-center gap-1 border border-indigo-400/30">
+                    <span>🔗</span> <span class="hidden md:inline">Sitene Ekle</span>
+                </button>
+        
+                <button onclick="closeSim()" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg font-bold transition-colors text-xs">
+                    Kapat ✕
+                </button>
+            </div>
+        </div>
 
-        <button onclick="closeSim()" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg font-bold transition-colors text-xs">
-            Kapat ✕
-        </button>
+        <div class="md:hidden bg-amber-100 text-amber-800 text-[10px] p-2 text-center font-bold">⚠️ En iyi deneyim için cihazınızı yatay çevirin veya bilgisayardan girin.</div>
+        
+        <iframe id="simFrame" src="" class="flex-1 w-full border-none bg-white"></iframe>
     </div>
-</div>
-
     <div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"></div>
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0 h-full">
