@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Isı ve Genleşme</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v5.1 - Termal) */
+            --bg-app: #f8fafc;      
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --color-hot: #ef4444;   /* Sıcak */
+            --color-cold: #3b82f6;  /* Soğuk */
+            --color-metal: #64748b; /* Metal Rengi */
+            --color-atom: #94a3b8;
+            
+            --border: #e2e8f0;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 380px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+            z-index: 20;
+            box-shadow: 10px 0 40px rgba(0,0,0,0.03);
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-hot); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Termometre Ekranı */
+        .temp-card {
+            background: #1e293b; color: white;
+            padding: 20px; border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            position: relative; overflow: hidden;
+        }
+        .temp-val { font-family: var(--font-mono); font-size: 2.5rem; font-weight: 800; color: #fca5a5; }
+        .temp-unit { font-size: 1rem; color: #94a3b8; margin-left: 5px; }
+        .expansion-row { 
+            margin-top: 15px; padding-top: 15px; border-top: 1px solid #334155; 
+            display: flex; justify-content: space-between; font-size: 0.9rem;
+        }
+        .delta-val { font-family: var(--font-mono); color: #4ade80; font-weight: bold; }
+
+        /* Kontroller */
+        .params { background: white; padding: 20px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        /* Materyal Seçici */
+        .mat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+        .mat-btn {
+            background: #f1f5f9; border: 1px solid var(--border); color: var(--text-muted);
+            padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+            transition: 0.2s;
+        }
+        .mat-btn:hover { background: white; border-color: var(--color-hot); color: var(--color-hot); }
+        .mat-btn.active { background: var(--color-hot); color: white; border-color: var(--color-hot); }
+
+        /* Isı Slider (Bunsen Bek) */
+        .heat-control { display: flex; align-items: center; gap: 15px; }
+        .icon-fire { font-size: 1.5rem; color: #cbd5e1; transition: 0.3s; }
+        
+        input[type="range"] { 
+            flex: 1; -webkit-appearance: none; background: #e2e8f0; height: 8px; border-radius: 4px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 24px; height: 24px; 
+            background: white; border: 4px solid var(--color-hot); border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        .info-panel { 
+            margin-top: auto; background: #fff1f2; 
+            border-left: 4px solid var(--color-hot); 
+            padding: 15px; border-radius: 12px; 
+            font-size: 0.85rem; line-height: 1.5; color: #881337;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background: var(--bg-app);
+            /* Izgara */
+            background-image: 
+                linear-gradient(#e2e8f0 1px, transparent 1px), 
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 40px 40px;
+            display: flex; flex-direction: column; /* Dikey yerleşim */
+            justify-content: center; align-items: center; gap: 20px;
+        }
+        
+        canvas {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid white;
+        }
+
+        .label-overlay {
+            position: absolute; font-family: var(--font-mono); font-size: 0.8rem; 
+            background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 4px;
+            color: var(--text-muted); border: 1px solid var(--border); pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="temp-card">
+        <div>
+            <span class="temp-val" id="dispTemp">20</span>
+            <span class="temp-unit">°C</span>
+        </div>
+        <div class="expansion-row">
+            <span>Genleşme (ΔL):</span>
+            <span class="delta-val" id="dispExp">0.00 mm</span>
+        </div>
+        <div class="expansion-row" style="border:none; padding-top:5px; margin-top:5px;">
+            <span>İlk Boy (L₀):</span>
+            <span style="color:white; font-weight:bold;">100.00 mm</span>
+        </div>
+    </div>
+
+    <div class="params">
+        <h3>Materyal Seçimi</h3>
+        <div class="mat-grid">
+            <button class="mat-btn" onclick="app.setMaterial('iron')">Demir</button>
+            <button class="mat-btn" onclick="app.setMaterial('copper')">Bakır</button>
+            <button class="mat-btn active" onclick="app.setMaterial('aluminum')">Alüminyum</button>
+        </div>
+        
+        <h3>Isı Kaynağı (Sıcaklık)</h3>
+        <div class="heat-control">
+            <span class="icon-fire" id="iconFire">🔥</span>
+            <input type="range" id="slTemp" min="0" max="800" value="20">
+        </div>
+        <div style="font-size:0.8rem; color:#64748b; margin-top:10px; text-align:center;">
+            Slider'ı sürükleyerek ısıtın/soğutun.
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        <b>Sıcaklık:</b> Atomların ortalama kinetik enerjisidir (Titreşim hızı). <br>
+        <b>Isı:</b> Enerji transferidir. Isı verdikçe titreşim artar, atomlar birbirinden uzaklaşır (Genleşme).
+    </div>
+</aside>
+
+<main>
+    <div style="position:relative;">
+        <canvas id="macroCanvas" width="800" height="200"></canvas>
+        <div class="label-overlay" style="top:10px; left:10px;">MAKRO GÖRÜNÜM (Çubuk)</div>
+    </div>
+
+    <div style="position:relative;">
+        <canvas id="microCanvas" width="800" height="300"></canvas>
+        <div class="label-overlay" style="top:10px; left:10px;">MİKRO GÖRÜNÜM (Atomik Yapı - Zoom x1000000)</div>
+    </div>
+</main>
+
+<script>
+    const app = {
+        macro: document.getElementById('macroCanvas'),
+        micro: document.getElementById('microCanvas'),
+        ctxMacro: null,
+        ctxMicro: null,
+        
+        state: {
+            temp: 20,       // Santigrat
+            baseLength: 400, // Piksel cinsinden başlangıç boyu (100mm kabul edelim)
+            material: 'aluminum',
+            time: 0
+        },
+
+        // Materyal Özellikleri (Genleşme Katsayıları - Alpha)
+        // Görsel etki için katsayılar abartılmıştır (Exaggerated for visual feedback)
+        materials: {
+            iron: { name: 'Demir', alpha: 0.00012, colorBase: [119, 136, 153], label: 'Fe' }, // SlateGray
+            copper: { name: 'Bakır', alpha: 0.00017, colorBase: [184, 115, 51], label: 'Cu' }, // Copper
+            aluminum: { name: 'Alüminyum', alpha: 0.00023, colorBase: [192, 192, 192], label: 'Al' } // Silver
+        },
+
+        init: function() {
+            this.ctxMacro = this.macro.getContext('2d');
+            this.ctxMicro = this.micro.getContext('2d');
+            
+            const slTemp = document.getElementById('slTemp');
+            slTemp.addEventListener('input', (e) => this.updateTemp(parseInt(e.target.value)));
+
+            this.updateTemp(20);
+            this.loop();
+        },
+
+        setMaterial: function(key) {
+            this.state.material = key;
+            
+            // Buton UI
+            document.querySelectorAll('.mat-btn').forEach(b => b.classList.remove('active'));
+            // Basit text match (Event target daha iyi olurdu ama hızlı çözüm)
+            const btns = document.querySelectorAll('.mat-btn');
+            if(key==='iron') btns[0].classList.add('active');
+            if(key==='copper') btns[1].classList.add('active');
+            if(key==='aluminum') btns[2].classList.add('active');
+            
+            // Sıcaklığı sabit tutarak materyali güncelle
+            this.updateTemp(this.state.temp);
+        },
+
+        updateTemp: function(t) {
+            this.state.temp = t;
+            
+            // UI Güncelle
+            document.getElementById('dispTemp').innerText = t;
+            
+            // İkon Rengi
+            const fire = document.getElementById('iconFire');
+            if (t > 500) fire.style.color = '#ef4444'; // Çok sıcak
+            else if (t > 100) fire.style.color = '#f59e0b'; // Ilık
+            else fire.style.color = '#cbd5e1'; // Soğuk
+
+            // Genleşme Hesabı: dL = L0 * alpha * dT
+            // dT = t - 20 (20 derece oda sıcaklığı referans)
+            const mat = this.materials[this.state.material];
+            const dT = t - 20;
+            const expansionRatio = mat.alpha * dT; // Oransal büyüme
+            
+            // Ekranda göstereceğimiz "Gerçekçi görünen" milimetre hesabı
+            // Diyelim ki L0 = 100mm. 
+            // Gerçek fiziksel değer çok küçük olur (0.002mm gibi), görselleştirmek için çarpan kullanıyoruz.
+            const visualExpansion = (100 * expansionRatio).toFixed(2);
+            document.getElementById('dispExp').innerText = (visualExpansion > 0 ? "+" : "") + visualExpansion + " mm";
+        },
+
+        loop: function() {
+            this.state.time += 0.05;
+
+            // Arka plan temizliği
+            this.ctxMacro.clearRect(0, 0, this.macro.width, this.macro.height);
+            this.ctxMicro.clearRect(0, 0, this.micro.width, this.micro.height);
+
+            this.drawMacro();
+            this.drawMicro();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        // --- MAKRO ÇİZİM (Çubuk ve Cetvel) ---
+        drawMacro: function() {
+            const ctx = this.ctxMacro;
+            const { temp, baseLength, material } = this.state;
+            const mat = this.materials[material];
+            
+            // Genleşme Miktarı (Piksel olarak)
+            // Simülasyonda görülebilmesi için alpha'yı abartıyoruz (x100 gibi)
+            const dT = temp - 20;
+            const pixelExpansion = baseLength * (mat.alpha * 5) * dT; 
+            const currentLength = baseLength + pixelExpansion;
+
+            // Renk Hesaplama (Isınınca kızarma)
+            // Base renkten Kırmızıya (255, 50, 50) doğru interpolasyon
+            // 800 derecede tam kırmızı olsun
+            const heatFactor = Math.max(0, Math.min(1, (temp - 20) / 800));
+            
+            const r = mat.colorBase[0] + (255 - mat.colorBase[0]) * heatFactor;
+            const g = mat.colorBase[1] + (60 - mat.colorBase[1]) * heatFactor;
+            const b = mat.colorBase[2] + (60 - mat.colorBase[2]) * heatFactor;
+            const color = `rgb(${r},${g},${b})`;
+
+            const startX = 50;
+            const startY = 80;
+            const height = 40;
+
+            // 1. Sabit Duvar
+            ctx.fillStyle = "#334155";
+            ctx.fillRect(startX - 20, startY - 20, 20, height + 40);
+            
+            // 2. Metal Çubuk
+            ctx.fillStyle = color;
+            ctx.fillRect(startX, startY, currentLength, height);
+            
+            // Parlama Efekti (Sıcaksa)
+            if (heatFactor > 0.5) {
+                ctx.shadowBlur = 20 * heatFactor;
+                ctx.shadowColor = "rgba(239, 68, 68, 0.6)";
+                ctx.fillRect(startX, startY, currentLength, height);
+                ctx.shadowBlur = 0;
+            }
+
+            // Çubuk Kenarı
+            ctx.strokeStyle = "#475569"; ctx.lineWidth = 1;
+            ctx.strokeRect(startX, startY, currentLength, height);
+
+            // 3. Cetvel (Referans Çizgisi)
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY + height + 20);
+            ctx.lineTo(startX + 600, startY + height + 20); // Uzun bir cetvel çizgisi
+            
+            // Başlangıç işareti
+            ctx.moveTo(startX, startY + height + 15); ctx.lineTo(startX, startY + height + 25);
+            
+            // Orijinal L0 işareti
+            const l0X = startX + baseLength;
+            ctx.moveTo(l0X, startY + height + 15); ctx.lineTo(l0X, startY + height + 35);
+            ctx.fillStyle = "#64748b"; ctx.font = "12px sans-serif"; ctx.textAlign="center";
+            ctx.fillText("L₀ (20°C)", l0X, startY + height + 45);
+
+            // Yeni Boy İşareti (Hareketli)
+            const curX = startX + currentLength;
+            ctx.strokeStyle = "#ef4444"; 
+            ctx.moveTo(curX, startY + height + 10); ctx.lineTo(curX, startY + height + 35);
+            ctx.fillStyle = "#ef4444"; ctx.font = "bold 12px sans-serif";
+            
+            // Eğer genleşme varsa farkı göster
+            if (Math.abs(pixelExpansion) > 1) {
+                ctx.fillText("ΔL", (l0X + curX)/2, startY + height + 15);
+            }
+            
+            ctx.stroke();
+
+            // Etiket
+            ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif"; 
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            if(currentLength > 60) ctx.fillText(mat.name, startX + 10, startY + height/2);
+        },
+
+        // --- MİKRO ÇİZİM (Atomik Kafes) ---
+        drawMicro: function() {
+            const ctx = this.ctxMicro;
+            const { temp, material, time } = this.state;
+            const mat = this.materials[material];
+
+            const centerX = this.micro.width / 2;
+            const centerY = this.micro.height / 2;
+            
+            // Kafes Ayarları
+            const rows = 5;
+            const cols = 8;
+            const baseGap = 50; // Atomlar arası standart mesafe
+
+            // Genleşme Etkisi: Isındıkça kafes genişler (Atomlar birbirinden uzaklaşır)
+            // Bu, makro genleşmenin sebebidir.
+            const expansionFactor = 1 + (temp * 0.0005); 
+            const currentGap = baseGap * expansionFactor;
+
+            // Titreşim Ayarları: Isındıkça titreşim (Genlik) artar
+            // Kinetik Enerji ~ Sıcaklık
+            const vibrationAmp = Math.max(0.5, temp * 0.05); 
+            const vibrationSpeed = 1 + (temp * 0.01); // Sıcaksa daha hızlı titrer
+
+            // Kafesi ortalamak için başlangıç noktası
+            const startX = centerX - ((cols - 1) * currentGap) / 2;
+            const startY = centerY - ((rows - 1) * currentGap) / 2;
+
+            // Atom Rengi (Isınınca parlar)
+            const heatFactor = Math.max(0, Math.min(1, (temp - 20) / 800));
+            const r = 100 + (155 * heatFactor);
+            const g = 116 + (0 * heatFactor); // Mavilik azalır
+            const b = 139 + (0 * heatFactor);
+            
+            // Bağlantı Yayları (Lattice Bonds)
+            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
+            ctx.lineWidth = 2;
+            
+            // Önce atomların konumlarını hesaplayalım (Titreşimli)
+            const atoms = [];
+            for(let i=0; i<rows; i++) {
+                for(let j=0; j<cols; j++) {
+                    // Rastgele ama akıcı titreşim için Sinüs dalgaları kullanıyoruz
+                    // Her atomun fazı farklı olsun ki hepsi aynı anda hareket etmesin
+                    const phase = (i * 99 + j * 33); 
+                    
+                    const vibX = Math.sin(time * vibrationSpeed + phase) * vibrationAmp;
+                    const vibY = Math.cos(time * vibrationSpeed + phase) * vibrationAmp;
+
+                    atoms.push({
+                        x: startX + j * currentGap + vibX,
+                        y: startY + i * currentGap + vibY
+                    });
+                }
+            }
+
+            // Bağları Çiz (Yatay ve Dikey)
+            ctx.beginPath();
+            for(let i=0; i<rows; i++) {
+                for(let j=0; j<cols; j++) {
+                    const idx = i * cols + j;
+                    const curr = atoms[idx];
+
+                    // Sağa bağ
+                    if(j < cols - 1) {
+                        const right = atoms[idx + 1];
+                        ctx.moveTo(curr.x, curr.y); ctx.lineTo(right.x, right.y);
+                    }
+                    // Aşağı bağ
+                    if(i < rows - 1) {
+                        const bottom = atoms[idx + cols];
+                        ctx.moveTo(curr.x, curr.y); ctx.lineTo(bottom.x, bottom.y);
+                    }
+                }
+            }
+            ctx.stroke();
+
+            // Atomları Çiz (Toplar)
+            atoms.forEach(a => {
+                // Çekirdek
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.beginPath(); 
+                ctx.arc(a.x, a.y, 10, 0, Math.PI*2); 
+                ctx.fill();
+
+                // Parlama (Highlight)
+                ctx.fillStyle = "rgba(255,255,255,0.4)";
+                ctx.beginPath();
+                ctx.arc(a.x - 3, a.y - 3, 4, 0, Math.PI*2);
+                ctx.fill();
+
+                // Eğer çok sıcaksa dış hale (Glow)
+                if(temp > 200) {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = `rgb(${r}, 50, 50)`;
+                    ctx.beginPath(); ctx.arc(a.x, a.y, 10, 0, Math.PI*2); ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Element Sembolü
+                ctx.fillStyle = "white"; 
+                ctx.font = "bold 10px sans-serif"; 
+                ctx.textAlign="center"; ctx.textBaseline="middle";
+                ctx.fillText(mat.label, a.x, a.y);
+            });
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
