@@ -443,31 +443,34 @@
 
     <script>
         // Sayfa Değiştirme ve Buton Highlight Mantığı
-        function showPage(pageId) {
-            // 1. İçerikleri gizle/göster
-            document.getElementById('kesfet-content').classList.add('hidden');
-            document.getElementById('matematik-content').classList.add('hidden');
-            document.getElementById('fizik-content').classList.add('hidden');
-            document.getElementById(pageId + '-content').classList.remove('hidden');
+function showPage(pageId) {
+        // 1. İçerikleri gizle/göster
+        document.getElementById('kesfet-content').classList.add('hidden');
+        document.getElementById('matematik-content').classList.add('hidden');
+        document.getElementById('fizik-content').classList.add('hidden'); // Fizik eklendi
+        
+        document.getElementById(pageId + '-content').classList.remove('hidden');
 
-            // 2. Buton stillerini sıfırla (hepsini pasif yap)
-            document.getElementById('btn-kesfet').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-4";
-            document.getElementById('btn-matematik').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600";
-            document.getElementById('btn-fizik').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600";
+        // 2. TÜM butonların stillini sıfırla (Hepsini gri yap)
+        document.getElementById('btn-kesfet').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-4";
+        document.getElementById('btn-matematik').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600";
+        document.getElementById('btn-fizik').className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600"; // Fizik eklendi
 
-            // 3. Seçili butonu aktif yap
-            const activeBtn = document.getElementById('btn-' + pageId);
+        // 3. Sadece tıklanan butonu mavi yap
+        const activeBtn = document.getElementById('btn-' + pageId);
+        if(activeBtn) {
             activeBtn.classList.remove('text-slate-600');
-            activeBtn.classList.add('active-nav'); // Mavi arka plan ve text
+            activeBtn.classList.add('active-nav');
+        }
 
-            // Mobilde menüyü kapat
-            if (window.innerWidth < 768) {
-                const sidebar = document.getElementById('sidebar');
-                if (!sidebar.classList.contains('-translate-x-full')) {
-                    toggleSidebar();
-                }
+        // Mobilde menüyü kapat
+        if (window.innerWidth < 768) {
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar.classList.contains('-translate-x-full')) {
+                toggleSidebar();
             }
         }
+    }
 
         // MODAL KONTROLLERİ
         function openSim(url, title) {
