@@ -51,4 +51,32 @@
             <button onclick="openSim('simulations/fizik/piston-ve-basinc.html', 'Piston ve Basınç Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-sky-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
         </div>
     </div>
+
+    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300" data-name="kaldırma kuvveti arşimet su yoğunluk">
+        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-blue-50 transition-colors">
+            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+                <path d="M50 40 L50 100 Q 100 110 150 100 L 150 40" stroke="#93c5fd" stroke-width="2" fill="#dbeafe" fill-opacity="0.5" />
+                
+                <path d="M50 40 Q 75 45 100 40 T 150 40" stroke="#60a5fa" stroke-width="2" fill="none" />
+                
+                <rect x="85" y="30" width="30" height="30" rx="4" fill="#fcd34d" stroke="#f59e0b" stroke-width="2" />
+                
+                <line x1="100" y1="60" x2="100" y2="35" stroke="#2563eb" stroke-width="3" marker-end="url(#arrowhead)" />
+                <path d="M 100 35 L 95 40 M 100 35 L 105 40" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+                
+                <line x1="100" y1="30" x2="100" y2="55" stroke="#ef4444" stroke-width="3" />
+                <path d="M 100 55 L 95 50 M 100 55 L 105 50" stroke="#ef4444" stroke-width="3" stroke-linecap="round" />
+                
+                <text x="120" y="35" font-size="12" font-weight="bold" fill="#1d4ed8">Fk</text>
+            </svg>
+        </div>
+        <div class="px-3 pb-3">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-slate-800">Kaldırma Kuvveti</h3>
+                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Yeni</span>
+            </div>
+            <p class="text-sm text-slate-500 mb-5">Sıvıların cisimlere uyguladığı kaldırma kuvvetini ve Arşimet prensibini inceleyin.</p>
+            <button onclick="openSim('simulations/fizik/kaldirma-kuvveti.html', 'Kaldırma Kuvveti')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
+        </div>
+    </div>
 </div>
