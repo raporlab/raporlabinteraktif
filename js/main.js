@@ -37,16 +37,19 @@ async function loadPart(pageId) {
 function showPage(pageId, updateUrl = true) {
     loadPart(pageId);
 
+    // 1. İçerikleri Yönet
     ['kesfet', 'matematik', 'fizik'].forEach(id => {
-        document.getElementById(id + '-content').classList.add('hidden');
+        const el = document.getElementById(id + '-content');
+        if(el) el.classList.add('hidden');
     });
     
-    document.getElementById(pageId + '-content').classList.remove('hidden');
+    const target = document.getElementById(pageId + '-content');
+    if(target) target.classList.remove('hidden');
 
-    if (updateUrl) {
-        window.location.hash = pageId;
-    }
+    // 2. URL Güncelle
+    if (updateUrl) window.location.hash = pageId;
 
+    // 3. Menü Butonlarını Güncelle
     ['kesfet', 'matematik', 'fizik'].forEach(id => {
         const btn = document.getElementById('btn-' + id);
         if(btn) {
@@ -61,9 +64,27 @@ function showPage(pageId, updateUrl = true) {
         activeBtn.classList.add('active-nav');
     }
 
+    // ===============================================
+    // 🔥 YENİ ÖZELLİK: Arama Çubuğunu Gizle/Göster
+    // ===============================================
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        // Inputun dışındaki kapsayıcı div'i (ikonla beraber) buluyoruz
+        const searchContainer = searchInput.parentElement;
+        
+        if (pageId === 'kesfet') {
+            // Keşfet sayfasındaysak GİZLE (Görünmez yap ama yer kaplamasın)
+            searchContainer.classList.add('hidden'); 
+        } else {
+            // Diğer sayfalardaysak (Matematik/Fizik) GÖSTER
+            searchContainer.classList.remove('hidden');
+        }
+    }
+
+    // 5. Mobilde menüyü kapat
     if (window.innerWidth < 768) {
         const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('-translate-x-full')) {
+        if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
             toggleSidebar();
         }
     }
