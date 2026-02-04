@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Faktöriyel</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v8.0 - Factorial) */
+            --bg-app: #0f172a;      
+            --bg-panel: #1e293b;    
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            
+            --color-main: #ec4899;  /* Ana Renk (Pembe) */
+            --color-num: #facc15;   /* Sayılar (Sarı) */
+            --color-box: #3b82f6;   /* Kutu Temel */
+            
+            --border: #334155;
+            --radius: 16px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 360px; flex-shrink: 0;
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 5px 0 30px rgba(0,0,0,0.3);
+            overflow-y: auto;
+        }
+
+        .logo { font-size: 1.5rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-main); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Hesap Ekranı */
+        .calc-card {
+            background: #020617; color: white;
+            padding: 20px; border-radius: var(--radius);
+            text-align: center; border: 1px solid var(--border);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .calc-big { font-family: var(--font-mono); font-size: 2.5rem; font-weight: bold; margin-bottom: 5px; color: var(--color-main); }
+        .calc-steps { font-family: var(--font-mono); font-size: 1rem; color: #94a3b8; word-break: break-all; }
+        .calc-result { font-size: 1.2rem; color: var(--color-num); font-weight: bold; margin-top: 10px; }
+
+        /* Slider */
+        .params { background: rgba(255,255,255,0.03); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        
+        input[type="range"] { 
+            flex: 1; -webkit-appearance: none; background: #334155; height: 8px; border-radius: 4px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 24px; height: 24px; 
+            background: var(--color-main); border: 3px solid white; border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        /* Bilgi Paneli */
+        .info-panel { 
+            margin-top: auto; background: rgba(236, 72, 153, 0.1); 
+            border-left: 4px solid var(--color-main); 
+            padding: 15px; border-radius: 12px; 
+            font-size: 0.85rem; line-height: 1.5; color: #fbcfe8;
+        }
+
+        /* --- MAIN --- */
+        main { 
+            flex: 1; position: relative; 
+            background: var(--bg-app);
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 10px;
+            min-width: 0; /* Flex fix */
+        }
+
+        .vis-header {
+            display: flex; justify-content: space-between; align-items: center;
+            color: var(--text-muted); font-size: 0.9rem; font-weight: 600;
+            padding: 0 10px;
+        }
+
+        /* Grid Container (Scrollable) */
+        .grid-container {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 20px; border: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+            
+            /* CSS Grid ile sıralama */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            align-content: start;
+        }
+
+        /* Scrollbar */
+        .grid-container::-webkit-scrollbar { width: 8px; }
+        .grid-container::-webkit-scrollbar-track { background: #0f172a; }
+        .grid-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+        /* Permütasyon Kutuları */
+        .perm-group {
+            background: #1e293b; padding: 10px; border-radius: 10px;
+            display: flex; justify-content: center; gap: 4px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .item-box {
+            width: 25px; height: 25px; border-radius: 6px;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; color: rgba(0,0,0,0.7); font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .overflow-msg {
+            grid-column: 1 / -1;
+            text-align: center; color: var(--text-muted);
+            padding: 20px; font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">Interaktif</span>
+    </div>
+
+    <div class="calc-card">
+        <div class="calc-big" id="dispN">4!</div>
+        <div class="calc-steps" id="dispSteps">4 × 3 × 2 × 1</div>
+        <div class="calc-result" id="dispRes">= 24</div>
+    </div>
+
+    <div class="params">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-weight:bold; color:white;">
+            <span>Sayı (n)</span>
+            <span id="slVal">4</span>
+        </div>
+        <div class="slider-row">
+            <input type="range" id="slN" min="0" max="7" value="4">
+        </div>
+        <div style="font-size:0.75rem; color:#64748b; margin-top:5px;">
+            Not: 8! ve üzeri tarayıcıyı dondurabilir, max 7 ile sınırlıdır (5040 adet).
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        <b>Faktöriyel (n!):</b> n adet farklı nesnenin yan yana kaç farklı şekilde sıralanabileceğidir. <br>
+        Her sayı artışında olasılıklar katlanarak artar.
+    </div>
+</aside>
+
+<main>
+    <div class="vis-header">
+        <span>Sıralama Kombinasyonları (Görselleştirme)</span>
+        <span id="countLabel">Toplam: 24 Adet</span>
+    </div>
+    
+    <div class="grid-container" id="gridArea">
+        </div>
+</main>
+
+<script>
+    const app = {
+        grid: document.getElementById('gridArea'),
+        
+        // Renk Paleti (Kutular için)
+        colors: [
+            '#ef4444', // Kırmızı
+            '#f97316', // Turuncu
+            '#facc15', // Sarı
+            '#22c55e', // Yeşil
+            '#3b82f6', // Mavi
+            '#a855f7', // Mor
+            '#ec4899'  // Pembe
+        ],
+        labels: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+
+        init: function() {
+            const slN = document.getElementById('slN');
+            
+            slN.addEventListener('input', (e) => {
+                this.update(parseInt(e.target.value));
+            });
+
+            this.update(4); // Başlangıç 4!
+        },
+
+        update: function(n) {
+            // 1. Matematiksel Hesap
+            const factorial = this.getFactorial(n);
+            const steps = this.getSteps(n);
+            
+            document.getElementById('slVal').innerText = n;
+            document.getElementById('dispN').innerText = `${n}!`;
+            document.getElementById('dispSteps').innerText = steps;
+            document.getElementById('dispRes').innerText = `= ${factorial.toLocaleString()}`;
+            document.getElementById('countLabel').innerText = `Toplam: ${factorial.toLocaleString()} Adet`;
+            
+            // 2. Özel Durumlar ve Bilgi Metni
+            const info = document.getElementById('infoText');
+            if(n === 0) info.innerHTML = "<b>0! = 1</b><br>Matematiksel kabuldür. Mantıken: Boş bir kümeyi sıralamanın tek yolu vardır, o da hiçbir şey yapmamaktır.";
+            else if (n >= 6) info.innerHTML = "<b>Dikkat:</b> Sayı büyüdükçe kombinasyon sayısı patlama yapar (Exponential Growth). Sadece bir kısmını çiziyoruz.";
+            else info.innerHTML = `<b>${n} Nesne:</b><br>${n} farklı renkli kutu, yan yana ${factorial} farklı şekilde dizilebilir.`;
+
+            // 3. Görselleştirme (Permütasyonları Çiz)
+            this.renderPermutations(n, factorial);
+        },
+
+        getFactorial: function(n) {
+            if (n === 0 || n === 1) return 1;
+            let res = 1;
+            for(let i=2; i<=n; i++) res *= i;
+            return res;
+        },
+
+        getSteps: function(n) {
+            if (n === 0) return "1 (Boş Küme)";
+            let str = "";
+            for(let i=n; i>=1; i--) {
+                str += i + (i>1 ? " × " : "");
+            }
+            return str;
+        },
+
+        // Heap's Algorithm veya basit recursive permütasyon
+        getPermutations: function(arr) {
+            let result = [];
+            
+            const permute = (arr, m = []) => {
+                if (arr.length === 0) {
+                    result.push(m);
+                } else {
+                    for (let i = 0; i < arr.length; i++) {
+                        let curr = arr.slice();
+                        let next = curr.splice(i, 1);
+                        permute(curr.slice(), m.concat(next));
+                    }
+                }
+            }
+            permute(arr);
+            return result;
+        },
+
+        renderPermutations: function(n, totalCount) {
+            this.grid.innerHTML = ''; // Temizle
+
+            if (n === 0) {
+                // 0! için özel görsel: Boş küme
+                const emptyGroup = document.createElement('div');
+                emptyGroup.className = 'perm-group';
+                emptyGroup.style.opacity = '0.5';
+                emptyGroup.style.borderStyle = 'dashed';
+                emptyGroup.innerHTML = '<span style="color:#94a3b8; font-size:0.8rem;">(Boş)</span>';
+                this.grid.appendChild(emptyGroup);
+                return;
+            }
+
+            // Eleman listesini oluştur [0, 1, 2...]
+            let elements = Array.from({length: n}, (_, i) => i);
+
+            // Eğer sayı çok büyükse tarayıcıyı yormamak için limit koyalım
+            // 6! = 720 (Hepsini çizilebilir)
+            // 7! = 5040 (Sınırda, belki donar, limit koyalım)
+            const DRAW_LIMIT = 300; 
+            
+            let perms = [];
+            
+            // Eğer n küçükse hepsini hesapla, büyükse sadece bir kısmını hesapla (Sample)
+            // Basit permütasyon algoritması n=7'de bile hızlı çalışır ama DOM'a basmak yavaştır.
+            // O yüzden hepsini hesaplayıp çizimde keseceğiz.
+            
+            if (n <= 6) {
+                perms = this.getPermutations(elements);
+            } else {
+                // n=7 için hepsini hesaplama, sadece görsel dolduracak kadar rastgele veya sıralı üret
+                // Şimdilik performansı korumak için 6 ile sınırlayalım algoritmayı,
+                // Ama kullanıcı 7 seçerse sadece ilk 300 tanesini gösterelim.
+                // Basitlik için: n>6 ise kullanıcıyı uyardık zaten, yine de ilk 720'yi (n=6 kadarını) alıp gösterelim
+                 elements = elements.slice(0, 6); // Hile: Sadece ilk 6'sının permütasyonunu alıp uzatalım
+                 // Gerçek 7! simülasyonu tarayıcı belleğini şişirebilir, görsel amaçlı ilk 6 eleman yeterli.
+                 // (Kullanıcı 7 seçtiğinde tüm 5040 kombinasyonu görmek istemez, mantığı görmek ister)
+                 perms = this.getPermutations(elements);
+            }
+
+            // Çizim Döngüsü
+            let drawCount = 0;
+            const fragment = document.createDocumentFragment();
+
+            for (let p of perms) {
+                if (drawCount >= DRAW_LIMIT) {
+                    const msg = document.createElement('div');
+                    msg.className = 'overflow-msg';
+                    msg.innerHTML = `... ve ${totalCount - DRAW_LIMIT} kombinasyon daha ...`;
+                    fragment.appendChild(msg);
+                    break;
+                }
+
+                const group = document.createElement('div');
+                group.className = 'perm-group';
+
+                p.forEach(idx => {
+                    const box = document.createElement('div');
+                    box.className = 'item-box';
+                    box.style.backgroundColor = this.colors[idx];
+                    box.innerText = this.labels[idx];
+                    group.appendChild(box);
+                });
+
+                // Eğer n=7 seçildiyse ve biz 6'lı hesapladıysak sonuna bir tane "G" ekleyelim (Görsel hile)
+                if(n > 6) {
+                    const box = document.createElement('div');
+                    box.className = 'item-box';
+                    box.style.backgroundColor = this.colors[6];
+                    box.innerText = this.labels[6];
+                    group.appendChild(box);
+                }
+
+                fragment.appendChild(group);
+                drawCount++;
+            }
+
+            this.grid.appendChild(fragment);
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
