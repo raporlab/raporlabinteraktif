@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Dinamik (Garantili Kutu)</title>
+    <style>
+        :root {
+            /* RAPORLAB ULTIMATE TEMA */
+            --bg-app: #f1f5f9;      
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --color-app: #10b981;   
+            --color-fric: #ef4444;  
+            --color-net: #3b82f6;   
+            --border: #e2e8f0;
+            --font: 'Segoe UI', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-main); font-family: var(--font); height: 100vh; display: flex; overflow: hidden; }
+
+        /* SOL PANEL */
+        aside { 
+            width: 350px; flex-shrink: 0; background: var(--bg-panel); border-right: 1px solid var(--border); 
+            padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; z-index: 20;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--color-net); margin-bottom: 5px; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .dash-card { background: #f8fafc; padding: 10px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+        .dash-val { font-family: var(--font-mono); font-size: 1.2rem; font-weight: bold; }
+        .dash-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; }
+
+        .chart-container { height: 100px; background: white; border: 1px solid var(--border); border-radius: 12px; position: relative; overflow: hidden; }
+        
+        .control-section { background: white; border: 2px solid var(--border); padding: 12px; border-radius: 16px; }
+        .section-header { font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        
+        .surface-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 10px; }
+        .surf-btn { padding: 8px; font-size: 0.75rem; border: 1px solid var(--border); background: white; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .surf-btn.active { background: var(--color-net); color: white; border-color: var(--color-net); }
+        
+        .slider-row { display: flex; align-items: center; gap: 10px; }
+        input[type="range"] { flex: 1; accent-color: var(--color-net); cursor: pointer; height: 6px; }
+
+        .info-panel { margin-top: auto; background: #eff6ff; border-left: 4px solid var(--color-net); padding: 12px; border-radius: 10px; font-size: 0.8rem; color: #1e3a8a; }
+
+        /* SAĞ TARAF (CANVAS) */
+        main { flex: 1; position: relative; background: #e2e8f0; display: block; overflow: hidden; }
+        #simCanvas { display: block; width: 100%; height: 100%; }
+
+        .overlay-instruction {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.95); padding: 10px 20px; border-radius: 30px;
+            font-weight: 600; color: var(--text-main); pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">Raporlab <span style="font-weight:300; color:#64748b;">Dinamik</span></div>
+
+    <div class="dashboard-grid">
+        <div class="dash-card"><div class="dash-val" id="valVel">0.0</div><div class="dash-lbl">Hız (m/s)</div></div>
+        <div class="dash-card"><div class="dash-val" id="valAcc">0.0</div><div class="dash-lbl">İvme (m/s²)</div></div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="chartCanvas" width="320" height="100"></canvas>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dash-card" style="border-color:var(--color-app); color:var(--color-app);">
+            <div class="dash-val" id="valFapp">0 N</div><div class="dash-lbl">Uygulanan</div>
+        </div>
+        <div class="dash-card" style="border-color:var(--color-fric); color:var(--color-fric);">
+            <div class="dash-val" id="valFfric">0 N</div><div class="dash-lbl">Sürtünme</div>
+        </div>
+    </div>
+
+    <div class="control-section">
+        <div class="section-header">Zemin <span id="lblMu">μ = 0.5</span></div>
+        <div class="surface-grid">
+            <button class="surf-btn" onclick="app.setSurface('ice')">Buz</button>
+            <button class="surf-btn active" onclick="app.setSurface('wood')">Tahta</button>
+            <button class="surf-btn" onclick="app.setSurface('carpet')">Halı</button>
+        </div>
+        <div class="slider-row"><input type="range" id="slMu" min="0" max="1.0" step="0.05" value="0.5"></div>
+    </div>
+
+    <div class="control-section">
+        <div class="section-header">Kütle <span id="lblMass">50 kg</span></div>
+        <div class="slider-row"><input type="range" id="slMass" min="10" max="200" step="10" value="50"></div>
+    </div>
+
+    <div class="info-panel">
+        <b>Newton'un 2. Yasası:</b> Kutunun üzerine tıkla ve sağa/sola çek!
+    </div>
+</aside>
+
+<main id="mainContainer">
+    <div class="overlay-instruction">🖱️ Kutuyu TUT ve SÜRÜKLE!</div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        chartCanvas: document.getElementById('chartCanvas'),
+        chartCtx: null,
+        main: document.getElementById('mainContainer'),
+        
+        // Varsayılanlar
+        width: 800, height: 600, 
+        
+        state: {
+            pos: 400, // Başlangıç konumu (Px)
+            vel: 0, acc: 0,
+            mass: 50, mu: 0.5, g: 9.8,
+            appliedForce: 0, frictionForce: 0, netForce: 0,
+            isDragging: false, dragStartX: 0, dragCurrentX: 0,
+            time: 0, historyVel: []
+        },
+
+        floorY: 400,
+        boxSize: 80,
+        
+        surfaces: {
+            ice: { color: "#e0f2fe", mu: 0.05, pattern: "❄️" },
+            wood: { color: "#fed7aa", mu: 0.5, pattern: "🪵" },
+            carpet: { color: "#cbd5e1", mu: 0.9, pattern: "▒▒" }
+        },
+        currentSurface: 'wood',
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            this.chartCtx = this.chartCanvas.getContext('2d');
+            
+            // İlk ayarlar
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.setupEvents();
+
+            // Kontrol Listenerları
+            document.getElementById('slMass').addEventListener('input', (e) => {
+                this.state.mass = parseInt(e.target.value);
+                document.getElementById('lblMass').innerText = this.state.mass + " kg";
+            });
+            document.getElementById('slMu').addEventListener('input', (e) => {
+                this.state.mu = parseFloat(e.target.value);
+                this.updateSurfaceUI();
+            });
+
+            this.updateSurfaceUI();
+            
+            // --- KORUMA: 100ms sonra tekrar resize yap (DOM yüklenmesi için) ---
+            setTimeout(() => { this.resize(); }, 100);
+            
+            this.loop();
+        },
+
+        resize: function() {
+            // Container boyutunu al, yoksa varsayılanı kullan
+            this.width = this.main.clientWidth || 800;
+            this.height = this.main.clientHeight || 600;
+            
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            
+            // Zemin Yüksekliği
+            this.floorY = this.height * 0.7;
+        },
+
+        setSurface: function(type) {
+            this.currentSurface = type;
+            this.state.mu = this.surfaces[type].mu;
+            document.getElementById('slMu').value = this.state.mu;
+            document.querySelectorAll('.surf-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            this.updateSurfaceUI();
+        },
+
+        updateSurfaceUI: function() {
+            document.getElementById('lblMu').innerText = "μ = " + this.state.mu.toFixed(2);
+            const color = this.surfaces[this.currentSurface]?.color || "#e2e8f0";
+            this.main.style.background = color;
+        },
+
+        updatePhysics: function() {
+            const s = this.state;
+            
+            // --- KUTU KAYBOLMA KORUMASI ---
+            // Eğer kutu ekranın çok dışındaysa veya 0'daysa ortaya ışınla
+            if (s.pos < 0 || s.pos > this.width || s.pos === 0) {
+                s.pos = this.width / 2;
+                s.vel = 0; // Hızı da sıfırla ki fırlamasın
+            }
+            // -----------------------------
+
+            if (s.isDragging) {
+                const diff = s.dragCurrentX - s.dragStartX;
+                s.appliedForce = diff * 2;
+                if(s.appliedForce > 2000) s.appliedForce = 2000;
+                if(s.appliedForce < -2000) s.appliedForce = -2000;
+            } else {
+                s.appliedForce = 0;
+            }
+
+            const normal = s.mass * s.g;
+            const maxFric = s.mu * normal;
+            
+            if (Math.abs(s.vel) < 0.1) {
+                if (Math.abs(s.appliedForce) <= maxFric) {
+                    s.frictionForce = -s.appliedForce;
+                    s.vel = 0;
+                } else {
+                    s.frictionForce = -Math.sign(s.appliedForce) * maxFric;
+                }
+            } else {
+                s.frictionForce = -Math.sign(s.vel) * maxFric;
+            }
+
+            s.netForce = s.appliedForce + s.frictionForce;
+            
+            if (Math.abs(s.vel) < 0.1 && Math.abs(s.netForce) < 5) {
+                s.netForce = 0; s.acc = 0; s.vel = 0;
+            } else {
+                s.acc = s.netForce / s.mass;
+            }
+
+            const dt = 1/60;
+            s.vel += s.acc * dt;
+            
+            if (!s.isDragging && Math.abs(s.vel) < 0.5 && Math.abs(s.appliedForce) < 1) {
+                s.vel *= 0.9;
+                if(Math.abs(s.vel) < 0.05) s.vel = 0;
+            }
+            
+            s.pos += s.vel * 10 * dt; // 10 pixel = 1 metre
+
+            // DUVARLAR (Hapis)
+            const padding = 60;
+            if(s.pos < padding) { s.pos = padding; s.vel = 0; }
+            if(s.pos > this.width - padding) { s.pos = this.width - padding; s.vel = 0; }
+
+            // Grafik
+            if (this.state.time % 5 === 0) { 
+                this.state.historyVel.push(s.vel);
+                if(this.state.historyVel.length > 60) this.state.historyVel.shift();
+            }
+            this.state.time++;
+
+            // UI
+            document.getElementById('valVel').innerText = s.vel.toFixed(1);
+            document.getElementById('valAcc').innerText = s.acc.toFixed(1);
+            document.getElementById('valFapp').innerText = Math.round(s.appliedForce);
+            document.getElementById('valFfric').innerText = Math.round(s.frictionForce);
+        },
+
+        draw: function() {
+            const ctx = this.ctx;
+            const s = this.state;
+            const w = this.width; const h = this.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // 1. ZEMİN (Manuel Çizim)
+            ctx.beginPath();
+            ctx.moveTo(0, this.floorY); 
+            ctx.lineTo(w, this.floorY);
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 4; ctx.stroke();
+
+            // Desen
+            ctx.fillStyle = "#64748b"; ctx.font = "20px sans-serif"; ctx.textAlign = "center";
+            const symbol = this.surfaces[this.currentSurface].pattern;
+            for (let x = 50; x < w; x += 150) {
+                ctx.fillText(symbol, x, this.floorY + 30);
+            }
+
+            // 2. KUTU (Basit ve Sağlam Çizim)
+            const scale = 0.8 + (s.mass / 200) * 0.4;
+            const bSize = this.boxSize * scale;
+            const bx = s.pos; // Kutu X Merkezi
+            const by = this.floorY - bSize; // Kutu Üst Y
+
+            ctx.fillStyle = "#f97316"; // Turuncu
+            ctx.fillRect(bx - bSize/2, by, bSize, bSize);
+            
+            ctx.lineWidth = 3; ctx.strokeStyle = "#7c2d12";
+            ctx.strokeRect(bx - bSize/2, by, bSize, bSize);
+
+            // Kütle Yazısı
+            ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
+            ctx.fillText(s.mass + " kg", bx, by + bSize/2 + 5);
+
+            // 3. VEKTÖRLER
+            if (Math.abs(s.appliedForce) > 5) this.drawArrow(bx, by + bSize/2, s.appliedForce * 0.2, "var(--color-app)", "F");
+            if (Math.abs(s.frictionForce) > 5) this.drawArrow(bx, this.floorY + 10, s.frictionForce * 0.2, "var(--color-fric)", "Fs");
+
+            // 4. SAPAN ÇİZGİSİ
+            if (s.isDragging) {
+                ctx.beginPath();
+                ctx.moveTo(bx, by + bSize/2); ctx.lineTo(s.dragCurrentX, by + bSize/2);
+                ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 2; 
+                ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+                
+                ctx.beginPath(); ctx.arc(s.dragCurrentX, by + bSize/2, 8, 0, Math.PI*2); 
+                ctx.fillStyle = "var(--color-app)"; ctx.fill();
+            }
+
+            this.drawChart();
+        },
+
+        drawArrow: function(x, y, len, color, label) {
+            if (len > 200) len = 200; if (len < -200) len = -200;
+            const ctx = this.ctx;
+            ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 4;
+            ctx.moveTo(x, y); ctx.lineTo(x + len, y); ctx.stroke();
+            
+            const dir = Math.sign(len);
+            const tipX = x + len;
+            ctx.beginPath(); ctx.moveTo(tipX, y);
+            ctx.lineTo(tipX - dir*10, y - 8); ctx.lineTo(tipX - dir*10, y + 8);
+            ctx.fillStyle = color; ctx.fill();
+
+            ctx.fillStyle = "black"; ctx.font = "bold 12px sans-serif";
+            ctx.fillText(label, x + len/2, y - 10);
+        },
+
+        drawChart: function() {
+            const ctx = this.chartCtx;
+            const w = this.chartCanvas.width; const h = this.chartCanvas.height;
+            const data = this.state.historyVel;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+
+            if(data.length < 2) return;
+            ctx.beginPath(); ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2;
+            const maxVal = 20;
+            for(let i=0; i<data.length; i++) {
+                const x = (i / 60) * w;
+                const val = Math.max(-maxVal, Math.min(maxVal, data[i]));
+                const y = (h/2) - (val / maxVal) * (h/2);
+                if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        },
+
+        setupEvents: function() {
+            const start = (e) => {
+                const rect = this.canvas.getBoundingClientRect();
+                const mx = (e.clientX || e.touches[0].clientX) - rect.left;
+                const my = (e.clientY || e.touches[0].clientY) - rect.top;
+                
+                // Kutu Alanı Kontrolü
+                const bx = this.state.pos; 
+                const bSize = this.boxSize * (0.8 + (this.state.mass/200)*0.4);
+                const by = this.floorY - bSize;
+
+                if (mx > bx - bSize - 50 && mx < bx + bSize + 50 &&
+                    my > by - 50 && my < this.floorY + 50) {
+                    this.state.isDragging = true;
+                    this.state.dragStartX = mx;
+                    this.state.dragCurrentX = mx;
+                }
+            };
+            
+            const move = (e) => {
+                if(!this.state.isDragging) return;
+                const rect = this.canvas.getBoundingClientRect();
+                this.state.dragCurrentX = (e.clientX || e.touches[0].clientX) - rect.left;
+            };
+
+            const end = () => { this.state.isDragging = false; };
+
+            this.canvas.addEventListener('mousedown', start);
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+            this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, {passive:false});
+            window.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive:false});
+            window.addEventListener('touchend', end);
+        },
+
+        loop: function() {
+            this.updatePhysics();
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
