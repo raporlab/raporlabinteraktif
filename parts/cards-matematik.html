@@ -312,5 +312,32 @@
             <button onclick="openSim('simulations/matematik/faktoriyel-permutasyon.html', 'Faktöriyel ve Permütasyon')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-violet-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
         </div>
     </div>
+
+    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-rose-400 hover:shadow-2xl hover:shadow-rose-500/10 transition-all duration-300" data-name="mutlak değer uzaklık pozitif matematik">
+        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-rose-50 transition-colors">
+            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+                <line x1="30" y1="90" x2="170" y2="90" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" />
+                
+                <line x1="100" y1="85" x2="100" y2="95" stroke="#94a3b8" stroke-width="2" />
+                <text x="96" y="110" font-size="10" fill="#64748b" font-weight="bold">0</text>
+
+                <path d="M 60 90 Q 80 40 100 90" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4" />
+                <path d="M 140 90 Q 120 40 100 90" fill="none" stroke="#f43f5e" stroke-width="2" />
+
+                <circle cx="60" cy="90" r="5" fill="#e11d48" />
+                <circle cx="140" cy="90" r="5" fill="#e11d48" />
+
+                <text x="88" y="45" font-size="28" font-weight="bold" fill="#be123c" style="font-family: serif;">|x|</text>
+            </svg>
+        </div>
+        <div class="px-3 pb-3">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-slate-800">Mutlak Değer</h3>
+                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Aktif</span>
+            </div>
+            <p class="text-sm text-slate-500 mb-5">Sayıların başlangıç noktasına olan uzaklığını interaktif olarak keşfedin.</p>
+            <button onclick="openSim('simulations/matematik/mutlak-deger.html', 'Mutlak Değer Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-rose-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
+        </div>
+    </div>
     
 </div>
