@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Olasılık (Galton)</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v5.4 - Galton) */
+            --bg-app: #0f172a;      
+            --bg-panel: #1e293b;    
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            
+            --color-ball: #38bdf8;  /* Toplar (Mavi) */
+            --color-peg: #64748b;   /* Çiviler */
+            --color-bar: #3b82f6;   /* Sütunlar */
+            --color-curve: #f472b6; /* Teorik Eğri (Pembe) */
+            
+            --border: #334155;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 380px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 5px 0 30px rgba(0,0,0,0.3);
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-ball); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* İstatistik Kartı */
+        .stat-card {
+            background: #020617; border: 1px solid var(--border);
+            padding: 20px; border-radius: 16px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            text-align: center;
+        }
+        .stat-val { font-family: var(--font-mono); font-size: 1.5rem; font-weight: bold; color: white; }
+        .stat-label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-top: 5px; }
+
+        /* Kontroller */
+        .params { background: rgba(255,255,255,0.03); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        
+        input[type="range"] { 
+            flex: 1; -webkit-appearance: none; background: #334155; height: 6px; border-radius: 3px; outline: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 18px; height: 18px; 
+            background: var(--color-ball); border-radius: 50%; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn {
+            padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s;
+        }
+        .btn-primary { background: var(--color-ball); color: #0f172a; }
+        .btn-primary:hover { background: #7dd3fc; }
+        .btn-danger { background: #334155; color: #ef4444; border: 1px solid #ef4444; }
+        .btn-danger:hover { background: #ef4444; color: white; }
+
+        .info-panel { 
+            margin-top: auto; background: rgba(56, 189, 248, 0.1); 
+            border-left: 4px solid var(--color-ball); 
+            padding: 15px; border-radius: 12px; 
+            font-size: 0.85rem; line-height: 1.5; color: #bae6fd;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background: #0f172a;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        #simCanvas {
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%); 
+            border-radius: 16px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border: 1px solid #334155;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İneraktif</span>
+    </div>
+
+    <div class="stat-card">
+        <div>
+            <div class="stat-val" id="valTotal">0</div>
+            <div class="stat-label">Toplam Top</div>
+        </div>
+        <div>
+            <div class="stat-val" id="valMean" style="color:#f472b6">--</div>
+            <div class="stat-label">Ortalama</div>
+        </div>
+    </div>
+
+    <div class="params">
+        <h3>Simülasyon Ayarları</h3>
+        
+        <div class="slider-row">
+            <span style="font-size:0.9rem; min-width:60px;">Hız</span>
+            <input type="range" id="slSpeed" min="1" max="10" value="5">
+        </div>
+
+        <div class="slider-row">
+            <span style="font-size:0.9rem; min-width:60px;">Sıra (n)</span>
+            <input type="range" id="slRows" min="6" max="16" value="10" onchange="app.reset()">
+        </div>
+        <div style="text-align:right; font-size:0.8rem; color:#64748b; margin-top:-10px;">Çivi Satır Sayısı</div>
+        
+        <br>
+        <div class="action-grid">
+            <button class="btn btn-primary" id="btnToggle" onclick="app.toggle()">BAŞLAT</button>
+            <button class="btn btn-danger" onclick="app.reset()">SIFIRLA</button>
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        <b>Galton Kutusu:</b> Her top çivide %50 olasılıkla sağa veya sola düşer. Tekil hareket rastgeledir, ancak binlerce top birikince <b>Normal Dağılım (Çan Eğrisi)</b> oluşur.
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        
+        state: {
+            isRunning: false,
+            rows: 10,
+            speed: 5,
+            balls: [],      // Aktif düşen toplar
+            bins: [],       // Alttaki kutularda biriken sayılar
+            totalBalls: 0,
+            pegRadius: 3,
+            ballRadius: 4
+        },
+
+        // Sabitler
+        pegSpacingX: 30,
+        pegSpacingY: 30,
+        startY: 50,
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Listeners
+            document.getElementById('slSpeed').addEventListener('input', (e) => {
+                this.state.speed = parseInt(e.target.value);
+            });
+            document.getElementById('slRows').addEventListener('input', (e) => {
+                this.state.rows = parseInt(e.target.value);
+                this.reset();
+            });
+
+            window.addEventListener('resize', () => this.resize());
+            this.resize();
+            this.reset();
+            this.loop();
+        },
+
+        resize: function() {
+            const m = document.querySelector('main');
+            this.width = this.canvas.width = m.clientWidth - 40;
+            this.height = this.canvas.height = m.clientHeight - 40;
+        },
+
+        reset: function() {
+            this.state.balls = [];
+            this.state.totalBalls = 0;
+            
+            // Binleri sıfırla (Satır sayısı + 1 tane kutu olur)
+            this.state.bins = new Array(this.state.rows + 1).fill(0);
+            
+            document.getElementById('valTotal').innerText = "0";
+            document.getElementById('valMean').innerText = "--";
+            
+            // Ekran boyutuna göre spacing ayarla
+            this.pegSpacingX = Math.min(40, this.width / (this.state.rows + 5));
+            this.pegSpacingY = Math.min(40, (this.height * 0.6) / this.state.rows);
+        },
+
+        toggle: function() {
+            this.state.isRunning = !this.state.isRunning;
+            const btn = document.getElementById('btnToggle');
+            if(this.state.isRunning) {
+                btn.innerText = "DURDUR";
+                btn.style.backgroundColor = "#fbbf24"; // Sarı
+                btn.style.color = "#0f172a";
+            } else {
+                btn.innerText = "DEVAM ET";
+                btn.style.backgroundColor = "#38bdf8"; // Mavi
+            }
+        },
+
+        spawnBall: function() {
+            // Sadece çalışıyorsa top üret
+            if (!this.state.isRunning) return;
+
+            // Hız arttıkça daha çok top üret (Frame başına)
+            const spawnRate = Math.ceil(this.state.speed / 2);
+            for(let k=0; k<spawnRate; k++) {
+                this.state.balls.push({
+                    x: this.width / 2 + (Math.random() - 0.5) * 2, // Hafif jitter
+                    y: this.startY - 20,
+                    vx: 0,
+                    vy: 0,
+                    row: -1, // Henüz çivilerde değil
+                    color: `hsl(${Math.random()*40 + 190}, 90%, 60%)`, // Mavi tonları
+                    active: true
+                });
+                this.state.totalBalls++;
+            }
+            document.getElementById('valTotal').innerText = this.state.totalBalls;
+        },
+
+        update: function() {
+            const gravity = 0.2 * (this.state.speed / 3);
+            const bounce = 0.5; // Enerji kaybı
+            const damp = 0.98;
+
+            this.state.balls.forEach(b => {
+                if (!b.active) return;
+
+                // Fizik
+                b.vy += gravity;
+                b.vx *= damp;
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Çivi Çarpışma Mantığı (Basitleştirilmiş Galton Mantığı)
+                // Her satırın Y koordinatını kontrol et
+                const currentRow = Math.floor((b.y - this.startY) / this.pegSpacingY);
+                
+                // Eğer yeni bir satıra girdiyse ve bir çiviye çarparsa
+                if (currentRow > b.row && currentRow < this.state.rows) {
+                    b.row = currentRow;
+                    
+                    // Çivi X konumu (Pascal üçgeni yapısı)
+                    // Satır 0'da 1 çivi, Satır 1'de 2 çivi...
+                    // Çiviler ortalanmış olmalı.
+                    
+                    // Basit Galton Kararı:
+                    // Çiviye çarptı mı? (Aslında burada fizik motoru yerine olasılık motoru kullanıyoruz)
+                    // Topu rastgele sağa veya sola it.
+                    const dir = Math.random() < 0.5 ? -1 : 1;
+                    b.vx += dir * (Math.random() * 1.5 + 0.5); // Sağa sola fırlat
+                    b.vy *= 0.6; // Dikey hızı kes (çarpma etkisi)
+                }
+
+                // Alt Kutuya Düştü mü?
+                const binsY = this.startY + this.state.rows * this.pegSpacingY;
+                
+                if (b.y > binsY) {
+                    b.active = false; // Topu dondur
+                    
+                    // Hangi kutuya düştü?
+                    // Kutuların merkezini bulalım.
+                    // En sol kutu indeksi 0.
+                    // X konumuna göre bin index hesapla.
+                    
+                    // Merkezden sapma miktarı
+                    const offsetX = b.x - (this.width / 2);
+                    // Her bin arası = pegSpacingX / 2 (Çünkü her düşüşte yarım aralık kayıyor)
+                    // Ama basitleştirilmiş modelde, bin genişliği = pegSpacingX civarıdır.
+                    
+                    // Matematiksel Bin Indexi:
+                    // Normal Dağılımın merkezi = rows / 2
+                    // X konumu üzerinden yaklaşık index bulma:
+                    let binIdx = Math.round((offsetX / (this.pegSpacingX/2) + this.state.rows) / 2);
+                    
+                    // Sınırları koru
+                    if (binIdx < 0) binIdx = 0;
+                    if (binIdx > this.state.rows) binIdx = this.state.rows;
+                    
+                    this.state.bins[binIdx]++;
+                    this.calculateStats();
+                }
+            });
+
+            // Pasif topları arrayden temizle (Performans)
+            this.state.balls = this.state.balls.filter(b => b.active);
+        },
+
+        calculateStats: function() {
+            // Ortalama (Mean) Hesapla
+            let sum = 0;
+            let count = 0;
+            this.state.bins.forEach((val, idx) => {
+                sum += val * idx;
+                count += val;
+            });
+            
+            if(count > 0) {
+                const mean = sum / count;
+                // Teorik ortalama = rows / 2
+                document.getElementById('valMean').innerText = mean.toFixed(2);
+            }
+        },
+
+        loop: function() {
+            this.spawnBall();
+            this.update();
+            
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.drawPegs();
+            this.drawBins();
+            this.drawBalls();
+            this.drawCurve(); // Teorik eğriyi çiz
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawPegs: function() {
+            const ctx = this.ctx;
+            ctx.fillStyle = "var(--color-peg)";
+            
+            for (let r = 0; r < this.state.rows; r++) {
+                // Her satırda r+1 tane çivi olmaz, Galton tahtasında çiviler üçgen dizilir
+                // Satır 0: 1 çivi
+                // Satır 1: 2 çivi ...
+                
+                // Merkezleme
+                // Satır genişliği = r * pegSpacingX
+                const rowWidth = r * this.pegSpacingX;
+                const startX = (this.width / 2) - (rowWidth / 2);
+                
+                for (let c = 0; c <= r; c++) {
+                    const x = startX + c * this.pegSpacingX;
+                    const y = this.startY + r * this.pegSpacingY;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, this.state.pegRadius, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+        },
+
+        drawBalls: function() {
+            const ctx = this.ctx;
+            this.state.balls.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, this.state.ballRadius, 0, Math.PI*2);
+                ctx.fill();
+            });
+        },
+
+        drawBins: function() {
+            const ctx = this.ctx;
+            const startY = this.startY + this.state.rows * this.pegSpacingY + 10;
+            const binW = this.pegSpacingX; // Bin genişliği
+            const maxBinH = this.height - startY - 20;
+
+            // En çok top olan bin'i bul (Normalize etmek için)
+            const maxVal = Math.max(...this.state.bins, 1);
+
+            // Binleri çiz
+            // Bin sayısı = rows + 1
+            const totalBinW = (this.state.rows + 1) * binW;
+            // Bu genişliğin yarısı kadar değil, çivi yapısına uygun merkezleme:
+            // Son çivi satırı genişliği = rows * spacing.
+            // Binler bunların arasına düşer.
+            
+            // Merkezleme ayarı (Hassas)
+            const rowWidth = this.state.rows * this.pegSpacingX;
+            const startX = (this.width / 2) - (rowWidth / 2);
+
+            this.state.bins.forEach((count, i) => {
+                // Bar yüksekliği
+                const h = (count / maxVal) * maxBinH;
+                const x = startX + (i * binW) - (binW/2);
+                const y = this.height - h;
+
+                // Bar Çizimi
+                ctx.fillStyle = "rgba(59, 130, 246, 0.5)";
+                ctx.fillRect(x + 2, y, binW - 4, h);
+                
+                // Kenarlık
+                ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 1;
+                ctx.strokeRect(x + 2, y, binW - 4, h);
+                
+                // Sayı (Eğer sığarsa)
+                if (count > 0 && binW > 20) {
+                    ctx.fillStyle = "white";
+                    ctx.font = "10px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText(count, x + binW/2, y - 5);
+                }
+            });
+        },
+        
+        drawCurve: function() {
+            // Teorik Normal Dağılım Eğrisi (Bell Curve)
+            // Binlerin üzerine çizilir
+            if(this.state.totalBalls < 50) return; // Veri azsa çizme
+
+            const ctx = this.ctx;
+            const startY = this.startY + this.state.rows * this.pegSpacingY + 10;
+            const binW = this.pegSpacingX;
+            const maxBinH = this.height - startY - 20;
+            const rowWidth = this.state.rows * this.pegSpacingX;
+            const startX = (this.width / 2) - (rowWidth / 2);
+            
+            // Eğri noktalarını hesapla
+            ctx.beginPath();
+            ctx.strokeStyle = "var(--color-curve)";
+            ctx.lineWidth = 2;
+            
+            const maxVal = Math.max(...this.state.bins, 1);
+
+            for (let i = 0; i <= this.state.rows; i++) {
+                const x = startX + (i * binW) - (binW/2) + binW/2;
+                
+                // Binom Dağılım Formülü: C(n, k) * p^k * (1-p)^(n-k)
+                // Burada p=0.5
+                const n = this.state.rows;
+                const k = i;
+                
+                // Kombinasyon hesabı (Basitleştirilmiş Pascal satırı)
+                // C(n, k) 
+                const combinations = this.binomialCoeff(n, k);
+                const prob = combinations / Math.pow(2, n);
+                
+                // Bu olasılığı ekrandaki max yüksekliğe uyarla
+                // Ölçekleme: Simülasyondaki max bar yüksekliğiyle orantıla
+                // Ama max bar, teorik max bara yakınsamalı.
+                // Basitlik için: maxVal'a göre değil, totalBalls * prob'a göre çizelim.
+                
+                const theoreticalCount = this.state.totalBalls * prob;
+                const h = (theoreticalCount / maxVal) * maxBinH; // Mevcut skala ile eşle
+                
+                const y = this.height - h;
+                
+                if (i===0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        },
+        
+        binomialCoeff: function(n, k) {
+            if (k < 0 || k > n) return 0;
+            if (k === 0 || k === n) return 1;
+            if (k > n / 2) k = n - k;
+            let res = 1;
+            for (let i = 1; i <= k; ++i) res = res * (n - i + 1) / i;
+            return res;
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
