@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Doğrusal Denklemler</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA (v5.3 - Linear) */
+            --bg-app: #f8fafc;      
+            --bg-panel: #ffffff;    
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --color-line: #2563eb;  /* Ana Doğru (Mavi) */
+            --color-slope: #a855f7; /* Eğim Üçgeni (Mor) */
+            --color-yint: #f59e0b;  /* Y-Kesişim (Turuncu) */
+            --color-xint: #ef4444;  /* X-Kesişim (Kırmızı) */
+            --color-grid: #cbd5e1;
+            
+            --border: #e2e8f0;
+            --radius: 20px;
+            --font: 'Segoe UI', 'Inter', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 380px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            padding: 25px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 5px 0 30px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .logo { font-size: 1.6rem; display: flex; align-items: baseline; gap: 6px; user-select: none; }
+        .logo .brand-bold { font-weight: 800; color: var(--color-line); letter-spacing: -0.5px; }
+        .logo .brand-thin { font-weight: 300; color: var(--text-muted); }
+
+        /* Denklem Ekranı */
+        .eq-card {
+            background: #1e293b; color: white;
+            padding: 25px; border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .eq-main { font-family: var(--font-mono); font-size: 1.8rem; font-weight: bold; margin-bottom: 5px; }
+        .eq-desc { font-size: 0.85rem; color: #94a3b8; }
+        
+        /* Renkli Parçalar */
+        .hl-slope { color: #d8b4fe; } /* Açık Mor */
+        .hl-offset { color: #fcd34d; } /* Açık Turuncu */
+
+        /* Kontroller */
+        .params { background: white; padding: 20px; border-radius: var(--radius); border: 2px solid var(--border); }
+        .params h3 { margin: 0 0 15px 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .slider-label { min-width: 80px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+        
+        input[type="range"] { 
+            flex: 1; -webkit-appearance: none; background: #e2e8f0; height: 8px; border-radius: 4px; outline: none; 
+        }
+        /* Eğim Slider */
+        #slM::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 22px; height: 22px; 
+            background: var(--color-slope); border: 3px solid white; border-radius: 50%; 
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s;
+        }
+        /* Sabit Slider */
+        #slB::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 22px; height: 22px; 
+            background: var(--color-yint); border: 3px solid white; border-radius: 50%; 
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .slider-val { width: 35px; text-align: right; font-family: var(--font-mono); font-weight: bold; }
+
+        .info-panel { 
+            margin-top: auto; background: #f5f3ff; 
+            border-left: 4px solid var(--color-slope); 
+            padding: 15px; border-radius: 12px; 
+            font-size: 0.85rem; line-height: 1.5; color: #4c1d95;
+        }
+
+        /* --- CANVAS --- */
+        main { 
+            flex: 1; position: relative; 
+            background: var(--bg-app);
+            /* Milimetrik Kağıt Deseni */
+            background-image: 
+                linear-gradient(var(--color-grid) 1px, transparent 1px), 
+                linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        #simCanvas {
+            /* Canvas arkaplanı şeffaf olsun ki CSS grid görünsün */
+            background: rgba(255,255,255,0.4); 
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+            border: 1px solid white;
+        }
+
+        .coord-box {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.9); padding: 10px;
+            border-radius: 8px; border: 1px solid var(--border);
+            font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .coord-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">
+        <span class="brand-bold">Raporlab</span>
+        <span class="brand-thin">İnteraktif</span>
+    </div>
+
+    <div class="eq-card">
+        <div class="eq-main" id="eqDisplay">y = 2x + 1</div>
+        <div class="eq-desc">Doğrusal Denklem Formu</div>
+    </div>
+
+    <div class="params">
+        <h3>Parametreler</h3>
+        
+        <div class="slider-row">
+            <div class="slider-label" style="color:var(--color-slope)">
+                <span>◢ Eğim (m)</span>
+            </div>
+            <input type="range" id="slM" min="-5" max="5" step="0.5" value="2">
+            <div class="slider-val" id="valM">2</div>
+        </div>
+
+        <div class="slider-row">
+            <div class="slider-label" style="color:var(--color-yint)">
+                <span>↕ Sabit (b)</span>
+            </div>
+            <input type="range" id="slB" min="-8" max="8" step="1" value="1">
+            <div class="slider-val" id="valB">1</div>
+        </div>
+    </div>
+
+    <div class="info-panel" id="infoText">
+        <b>Eğim (m):</b> Doğrunun ne kadar dik olduğunu belirler. Her 1 birim sağa gidişte, m birim yukarı/aşağı gideriz. <br>
+        <b>Sabit (b):</b> Doğrunun y-eksenini kestiği yerdir.
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+    
+    <div class="coord-box">
+        <div class="coord-row">
+            <span class="dot" style="background:var(--color-yint)"></span>
+            <span>Y-Kesişim: <b id="lblYInt">(0, 1)</b></span>
+        </div>
+        <div class="coord-row">
+            <span class="dot" style="background:var(--color-xint)"></span>
+            <span>X-Kesişim: <b id="lblXInt">(-0.5, 0)</b></span>
+        </div>
+    </div>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        
+        state: {
+            m: 2,   // Eğim
+            b: 1,   // Sabit
+            scale: 40, // 1 birim = 40px
+            offsetX: 0, offsetY: 0
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            const slM = document.getElementById('slM');
+            const slB = document.getElementById('slB');
+
+            const update = () => {
+                this.state.m = parseFloat(slM.value);
+                this.state.b = parseFloat(slB.value);
+                
+                document.getElementById('valM').innerText = this.state.m;
+                document.getElementById('valB').innerText = this.state.b;
+                
+                this.updateEquation();
+                this.updateCoords();
+            };
+
+            slM.addEventListener('input', update);
+            slB.addEventListener('input', update);
+
+            window.addEventListener('resize', () => this.resize());
+            this.resize();
+            update();
+            this.loop();
+        },
+
+        resize: function() {
+            const m = document.querySelector('main');
+            this.width = this.canvas.width = m.clientWidth - 40;
+            this.height = this.canvas.height = m.clientHeight - 40;
+            this.state.offsetX = this.width / 2;
+            this.state.offsetY = this.height / 2;
+        },
+
+        updateEquation: function() {
+            const { m, b } = this.state;
+            
+            // Temiz matematiksel gösterim
+            let mStr = "";
+            if (m === 1) mStr = "x";
+            else if (m === -1) mStr = "-x";
+            else if (m === 0) mStr = ""; // 0x yazma
+            else mStr = `${m}x`;
+
+            let bStr = "";
+            if (b > 0) bStr = m === 0 ? `${b}` : ` + ${b}`;
+            else if (b < 0) bStr = ` - ${Math.abs(b)}`;
+            else bStr = m === 0 ? "0" : ""; // b=0 ise ve m de varsa boş bırak
+
+            let eq = `y = <span class="hl-slope">${mStr}</span><span class="hl-offset">${bStr}</span>`;
+            
+            // Özel durum: y = 0
+            if (m === 0 && b === 0) eq = "y = 0";
+
+            document.getElementById('eqDisplay').innerHTML = eq;
+        },
+
+        updateCoords: function() {
+            const { m, b } = this.state;
+            
+            // Y-Kesişim (x=0) -> (0, b)
+            document.getElementById('lblYInt').innerText = `(0, ${b})`;
+            
+            // X-Kesişim (y=0) -> 0 = mx + b -> x = -b/m
+            if (m !== 0) {
+                let xRoot = -b / m;
+                // Çok uzun ondalıkları kırp
+                if (!Number.isInteger(xRoot)) xRoot = xRoot.toFixed(2);
+                document.getElementById('lblXInt').innerText = `(${xRoot}, 0)`;
+            } else {
+                document.getElementById('lblXInt').innerText = "Yok (Paralel)";
+            }
+        },
+
+        loop: function() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            
+            this.drawAxes();
+            this.drawGraph();
+            this.drawSlopeTriangle(); // Eğitimsel üçgen
+            this.drawIntercepts();
+
+            requestAnimationFrame(() => this.loop());
+        },
+
+        toCanvasX: function(x) { return this.state.offsetX + (x * this.state.scale); },
+        toCanvasY: function(y) { return this.state.offsetY - (y * this.state.scale); },
+
+        drawAxes: function() {
+            const ctx = this.ctx;
+            ctx.strokeStyle = "#94a3b8";
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            // X ve Y
+            ctx.moveTo(0, this.state.offsetY); ctx.lineTo(this.width, this.state.offsetY);
+            ctx.moveTo(this.state.offsetX, 0); ctx.lineTo(this.state.offsetX, this.height);
+            ctx.stroke();
+
+            // Sayılar
+            ctx.fillStyle = "#64748b"; ctx.font = "10px sans-serif"; ctx.textAlign="center";
+            for(let i=-10; i<=10; i+=2) {
+                if(i===0) continue;
+                // X ekseni sayıları
+                ctx.fillText(i, this.toCanvasX(i), this.state.offsetY + 15);
+                // Y ekseni sayıları
+                ctx.fillText(i, this.state.offsetX - 15, this.toCanvasY(i) + 4);
+            }
+        },
+
+        drawGraph: function() {
+            const ctx = this.ctx;
+            const { m, b } = this.state;
+
+            // Doğrunun başlangıç ve bitiş noktalarını hesapla (Ekran dışına taşırarak)
+            // Ekranın en solu (x = -15 gibi) ve en sağı (x = +15 gibi)
+            const minX = -20;
+            const maxX = 20;
+            
+            const y1 = m * minX + b;
+            const y2 = m * maxX + b;
+
+            ctx.strokeStyle = "#2563eb"; // Mavi
+            ctx.lineWidth = 4;
+            ctx.lineCap = "round";
+
+            ctx.beginPath();
+            ctx.moveTo(this.toCanvasX(minX), this.toCanvasY(y1));
+            ctx.lineTo(this.toCanvasX(maxX), this.toCanvasY(y2));
+            ctx.stroke();
+        },
+
+        drawSlopeTriangle: function() {
+            const ctx = this.ctx;
+            const { m, b } = this.state;
+            
+            // Eğim üçgenini Y-kesişim noktasından başlatarak çizelim (En anlaşılır yer)
+            // Başlangıç: (0, b)
+            // Bitiş: (1, b + m)
+            
+            const startX = 0;
+            const startY = b;
+            const endX = 1;
+            const endY = b + m;
+
+            const px1 = this.toCanvasX(startX);
+            const py1 = this.toCanvasY(startY);
+            const px2 = this.toCanvasX(endX);
+            const py2 = this.toCanvasY(endY);
+            const pCorner = this.toCanvasY(startY); // Köşe noktası Y'si
+
+            // 1. Yatay Çizgi (Run = 1)
+            ctx.strokeStyle = "#a855f7"; // Mor
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            
+            ctx.beginPath();
+            ctx.moveTo(px1, py1);
+            ctx.lineTo(px2, py1); // Sağa git
+            ctx.stroke();
+
+            // 2. Dikey Çizgi (Rise = m)
+            ctx.beginPath();
+            ctx.moveTo(px2, py1); 
+            ctx.lineTo(px2, py2); // Yukarı/Aşağı git
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+
+            // Etiketler
+            ctx.fillStyle = "#a855f7"; 
+            ctx.font = "bold 12px sans-serif";
+            
+            // "1" Etiketi
+            ctx.textAlign = "center";
+            ctx.fillText("1", (px1 + px2)/2, py1 + (m > 0 ? 15 : -5));
+            
+            // "m" Etiketi
+            ctx.textAlign = "left";
+            ctx.fillText("m=" + m, px2 + 5, (py1 + py2)/2);
+        },
+
+        drawIntercepts: function() {
+            const ctx = this.ctx;
+            const { m, b } = this.state;
+
+            // Y-Kesişim (0, b)
+            const py = this.toCanvasY(b);
+            const px = this.toCanvasX(0);
+
+            ctx.fillStyle = "#f59e0b"; // Turuncu
+            ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI*2); ctx.fill();
+            // Etiket
+            ctx.fillStyle = "#b45309"; ctx.font = "bold 11px sans-serif"; ctx.textAlign="right";
+            ctx.fillText("b", px - 10, py + 4);
+
+
+            // X-Kesişim (-b/m, 0)
+            if (m !== 0) {
+                const xRoot = -b / m;
+                const rx = this.toCanvasX(xRoot);
+                const ry = this.toCanvasY(0);
+
+                ctx.fillStyle = "#ef4444"; // Kırmızı
+                ctx.beginPath(); ctx.arc(rx, ry, 6, 0, Math.PI*2); ctx.fill();
+            }
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
