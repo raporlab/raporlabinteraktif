@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Faz Diyagramı</title>
+    <style>
+        :root {
+            /* RAPORLAB PRO TEMA */
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --col-accent: #0f172a; 
+            --col-highlight: #3b82f6;
+            --border: #e2e8f0;
+            --font: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-app); color: var(--text-main); font-family: var(--font); 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        /* SOL PANEL */
+        aside { 
+            width: 300px; flex-shrink: 0; background: var(--bg-panel); border-right: 1px solid var(--border); 
+            padding: 20px; display: flex; flex-direction: column; gap: 20px; z-index: 20; 
+            box-shadow: 2px 0 15px rgba(0,0,0,0.05); overflow-y: auto;
+        }
+
+        .logo { 
+            font-size: 1.5rem; font-weight: 800; color: var(--col-highlight); 
+            letter-spacing: -1px; margin-bottom: 5px; 
+        }
+
+        /* Veri Paneli */
+        .data-panel {
+            background: #1e293b; color: white; padding: 15px; border-radius: 12px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;
+        }
+        .data-cell { display: flex; flex-direction: column; }
+        .data-val { font-size: 1.4rem; font-weight: bold; font-family: 'Consolas', monospace; color: #fbbf24; }
+        .data-lbl { font-size: 0.7rem; color: #94a3b8; }
+
+        /* Durum Göstergesi */
+        .phase-badge {
+            padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 1rem;
+            border: 2px solid transparent; transition: 0.2s;
+        }
+        /* Dinamik Renkler JS ile atanacak */
+
+        /* Madde Seçimi */
+        .substance-selector {
+            display: flex; gap: 5px; background: #f1f5f9; padding: 5px; border-radius: 10px;
+        }
+        .sub-btn {
+            flex: 1; padding: 8px; border: none; background: transparent; cursor: pointer;
+            font-weight: 600; border-radius: 6px; color: #64748b; transition: 0.2s;
+        }
+        .sub-btn.active { background: white; color: var(--col-highlight); shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* Kritik Nokta Butonları */
+        .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .act-btn {
+            padding: 10px; border: 1px solid var(--border); background: white; border-radius: 8px;
+            cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text-main);
+            transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .act-btn:hover { border-color: var(--col-highlight); color: var(--col-highlight); }
+
+        .info-box {
+            margin-top: auto; background: #eff6ff; border-left: 4px solid var(--col-highlight);
+            padding: 12px; font-size: 0.85rem; color: #1e3a8a; border-radius: 6px;
+        }
+
+        /* SAĞ PANEL */
+        main { flex: 1; display: flex; gap: 20px; padding: 20px; position: relative; }
+        
+        .graph-container {
+            flex: 2; background: white; border-radius: 16px; border: 1px solid var(--border);
+            position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .microscope-container {
+            flex: 1; display: flex; flex-direction: column; gap: 10px;
+        }
+        .microscope-view {
+            flex: 1; background: #0f172a; border-radius: 16px; border: 4px solid #334155;
+            position: relative; overflow: hidden; box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+        }
+        .microscope-view::after {
+            content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
+            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+        }
+
+        .view-label {
+            background: #334155; color: white; padding: 8px; border-radius: 8px;
+            text-align: center; font-weight: bold; font-size: 0.9rem;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .cursor-tooltip {
+            position: absolute; pointer-events: none; 
+            background: rgba(0,0,0,0.8); color: white; padding: 5px 10px; 
+            border-radius: 4px; font-size: 0.8rem; transform: translate(15px, -15px);
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">Raporlab <span style="font-weight:300; color:#64748b;">İnteraktif</span></div>
+
+    <div class="substance-selector">
+        <button class="sub-btn active" onclick="app.setSubstance('water')">H₂O (Su)</button>
+        <button class="sub-btn" onclick="app.setSubstance('co2')">CO₂</button>
+    </div>
+
+    <div class="phase-badge" id="phaseBadge">SIVI</div>
+
+    <div class="data-panel">
+        <div class="data-cell">
+            <div class="data-val" id="dispTemp">25</div>
+            <div class="data-lbl">Sıcaklık (°C)</div>
+        </div>
+        <div class="data-cell">
+            <div class="data-val" id="dispPress">1.0</div>
+            <div class="data-lbl">Basınç (atm)</div>
+        </div>
+    </div>
+
+    <div style="font-size:0.75rem; font-weight:bold; color:#64748b; text-transform:uppercase;">Hızlı Işınlanma</div>
+    <div class="quick-actions">
+        <button class="act-btn" onclick="app.snapTo('triple')">⚡ Üçlü Nokta</button>
+        <button class="act-btn" onclick="app.snapTo('critical')">🔥 Kritik Nokta</button>
+        <button class="act-btn" onclick="app.snapTo('stp')">🏠 Oda Koşulları</button>
+        <button class="act-btn" onclick="app.snapTo('vacuum')">🌌 Vakum</button>
+    </div>
+
+    <div class="info-box" id="infoText">
+        Faz diyagramı üzerindeki noktayı sürükleyerek maddenin farklı basınç ve sıcaklıktaki hallerini keşfet.
+    </div>
+</aside>
+
+<main>
+    <div class="graph-container" id="graphWrap">
+        <canvas id="graphCanvas"></canvas>
+        <div class="cursor-tooltip" id="tooltip" style="display:none;"></div>
+    </div>
+    
+    <div class="microscope-container">
+        <div class="view-label">MOLEKÜLER MİKROSKOP</div>
+        <div class="microscope-view">
+            <canvas id="simCanvas"></canvas>
+        </div>
+    </div>
+</main>
+
+<script>
+const app = {
+    gCanvas: document.getElementById('graphCanvas'),
+    sCanvas: document.getElementById('simCanvas'),
+    gCtx: null, sCtx: null,
+    
+    // Grafik Boyutları (Sanaldan piksele)
+    minT: -100, maxT: 400, // Derece
+    minP: 0, maxP: 220,    // ATM (Lineer olmayan ölçekleme yapacağız görsel rahatlık için)
+
+    // Cursor Durumu
+    cursor: { T: 25, P: 1.0 }, // Başlangıç: Oda koşulları
+    isDragging: false,
+    
+    // Madde Verisi (Faz Sınırları)
+    // Basitleştirilmiş çizim verileri (Bezier kontrol noktaları veya lineer hatlar için)
+    currentSub: 'water',
+    substances: {
+        water: {
+            triple: { T: 0.01, P: 0.006 },
+            critical: { T: 374, P: 218 },
+            color: "#3b82f6",
+            // Eğriler: [Başlangıç, Kontrol1, Kontrol2, Bitiş] mantığıyla çizilecek
+            // H2O Özelliği: Erime eğrisi (Solid-Liquid) sola yatıktır (Negatif eğim)
+        },
+        co2: {
+            triple: { T: -56.6, P: 5.1 },
+            critical: { T: 31, P: 73 },
+            color: "#64748b"
+        }
+    },
+
+    particles: [],
+
+    init() {
+        this.gCtx = this.gCanvas.getContext('2d');
+        this.sCtx = this.sCanvas.getContext('2d');
+        
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        
+        this.setupEvents();
+        this.initParticles();
+        this.loop();
+    },
+
+    resize() {
+        const gw = document.getElementById('graphWrap');
+        this.gCanvas.width = gw.clientWidth;
+        this.gCanvas.height = gw.clientHeight;
+        
+        const sw = document.querySelector('.microscope-view');
+        this.sCanvas.width = sw.clientWidth;
+        this.sCanvas.height = sw.clientHeight;
+    },
+
+    setSubstance(sub) {
+        this.currentSub = sub;
+        document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Madde değişince varsayılan STP'ye dön
+        this.snapTo('stp');
+    },
+
+    snapTo(target) {
+        const sub = this.substances[this.currentSub];
+        if(target === 'triple') { this.cursor.T = sub.triple.T; this.cursor.P = sub.triple.P; }
+        else if(target === 'critical') { this.cursor.T = sub.critical.T; this.cursor.P = sub.critical.P; }
+        else if(target === 'stp') { this.cursor.T = 25; this.cursor.P = 1; }
+        else if(target === 'vacuum') { this.cursor.T = -80; this.cursor.P = 0; }
+        
+        // Hızlı geçiş efekti için lerp eklenebilir ama direkt atama daha net.
+    },
+
+    // --- KOORDİNAT DÖNÜŞÜMLERİ ---
+    // Görsel olarak grafiği "kullanılabilir" alana yaymak için logaritmik olmayan ama
+    // kritik noktaları merkeze alan özel bir haritalama kullanacağız.
+    mapToScreen(T, P) {
+        const w = this.gCanvas.width;
+        const h = this.gCanvas.height;
+        const pad = 50;
+        
+        // T Map: Lineer
+        const x = pad + ((T - this.minT) / (this.maxT - this.minT)) * (w - 2*pad);
+        
+        // P Map: Logaritmik benzeri (Görsel dağılım için)
+        // Y ekseni aşağıdan yukarı artmalı (Canvas tersi)
+        // Basitçe lineer yapalım ama P max'ı dinamik tutalım
+        // P: 0 -> h-pad, 220 -> pad
+        
+        // Logaritmik skala simülasyonu (0-1, 1-10, 10-100, 100-220 aralıklarını eşit göstermek için)
+        // Basit görsel hile: P^0.4 gibi bir üs alalım
+        const pNorm = Math.pow(P, 0.4) / Math.pow(this.maxP, 0.4);
+        const y = (h - pad) - pNorm * (h - 2*pad);
+        
+        return {x, y};
+    },
+    
+    mapFromScreen(x, y) {
+        const w = this.gCanvas.width;
+        const h = this.gCanvas.height;
+        const pad = 50;
+        
+        let T = ((x - pad) / (w - 2*pad)) * (this.maxT - this.minT) + this.minT;
+        
+        let yNorm = ((h - pad) - y) / (h - 2*pad);
+        if(yNorm < 0) yNorm = 0;
+        let P = Math.pow(yNorm * Math.pow(this.maxP, 0.4), 1/0.4);
+        
+        return {T, P};
+    },
+
+    // --- FAZ MANTIĞI ---
+    getPhase(T, P) {
+        const sub = this.substances[this.currentSub];
+        const tp = sub.triple;
+        const cp = sub.critical;
+        
+        // Süperkritik
+        if (T > cp.T && P > cp.P) return "SUPERCRITICAL";
+
+        // Basitleştirilmiş Sınırlar
+        // 1. Solid-Gas (Süblimleşme) Eğrisi: T < Tp için. P, T ile artar.
+        // P = P_triple * exp(...) yerine basit bir parabolik hat varsayalım.
+        // P_curve = P_triple * (T + 273) / (Tp + 273) ... çok basit
+        
+        // Görsel Hatlar:
+        // Triple Point referans.
+        
+        if (T < tp.T) {
+            // Katı mı Gaz mı?
+            // Süblimleşme eğrisi altı gaz, üstü katı
+            // Basit eğri: P = tp.P * (T - minT) / (tp.T - minT) * 0.1 (Görsel uydurma)
+            // Daha düzgün: T arttıkça P artar.
+            // P_limit(T)
+            const pLimit = tp.P * Math.pow((T + 273)/(tp.T+273), 10); 
+            return P > pLimit ? "SOLID" : "GAS";
+        } else {
+            // T > Triple Point Temp
+            // Sıvı mı Gaz mı? (Kaynama Eğrisi)
+            // Critical point'e kadar gider.
+            if (T < cp.T) {
+                // Kaynama eğrisi (Clausius-Clapeyron approx)
+                // Triple'dan Critical'a giden eğri
+                const tRatio = (T - tp.T) / (cp.T - tp.T);
+                const pBoil = tp.P + (cp.P - tp.P) * Math.pow(tRatio, 4); // Üstel artış
+                
+                if (P < pBoil) return "GAS";
+                
+                // Sıvı mı Katı mı? (Erime Eğrisi)
+                // Su için sola, diğerleri için sağa
+                let pMelt;
+                if(this.currentSub === 'water') {
+                    // Sola yatık: P arttıkça T azalır. 
+                    // T_melt(P)
+                    const pRatio = (P - tp.P) / (this.maxP - tp.P);
+                    const tMelt = tp.T - pRatio * 10; // Hafif sola kayma
+                    if (T < tMelt) return "SOLID";
+                    return "LIQUID";
+                } else {
+                    // Sağa yatık
+                    const pRatio = (P - tp.P) / (this.maxP - tp.P);
+                    const tMelt = tp.T + pRatio * 20;
+                    if (T < tMelt) return "SOLID";
+                    return "LIQUID";
+                }
+            } else {
+                // T > Critical Temp
+                // P < Critical P ise Gaz, değilse Supercritical
+                return P > cp.P ? "SUPERCRITICAL" : "GAS";
+            }
+        }
+    },
+
+    // --- PARÇACIK SİSTEMİ ---
+    initParticles() {
+        this.particles = [];
+        for(let i=0; i<150; i++) {
+            this.particles.push({
+                x: Math.random() * 300,
+                y: Math.random() * 300,
+                vx: 0, vy: 0,
+                solidX: 0, solidY: 0 // Katı kafes pozisyonu
+            });
+        }
+    },
+
+    updateParticles(phase) {
+        const w = this.sCanvas.width;
+        const h = this.sCanvas.height;
+        const count = this.particles.length;
+        
+        // Parametreler
+        let speed = 0;
+        let randomness = 0;
+        let cohesion = 0;
+        let gravity = 0;
+        
+        // Faz Davranış Ayarları
+        if (phase === "SOLID") {
+            speed = 0.5; randomness = 0.1; cohesion = 1.0;
+        } else if (phase === "LIQUID") {
+            speed = 2.0; randomness = 1.0; cohesion = 0.5; gravity = 0.2;
+        } else if (phase === "GAS") {
+            speed = 8.0; randomness = 1.0; cohesion = 0.0;
+        } else if (phase === "SUPERCRITICAL") {
+            speed = 12.0; randomness = 1.0; cohesion = 0.2; // Yoğun ama çok hızlı
+        }
+
+        // Katı Kafes Düzeni (Grid)
+        const cols = 12;
+        const spacing = 20;
+        const startX = (w - cols*spacing)/2;
+        
+        this.particles.forEach((p, i) => {
+            if (phase === "SOLID") {
+                // Hedef pozisyon (Kafes)
+                const c = i % cols;
+                const r = Math.floor(i / cols);
+                const targetX = startX + c * spacing;
+                const targetY = h - 50 - r * spacing;
+                
+                // Yay hareketi (Spring)
+                p.vx += (targetX - p.x) * 0.1;
+                p.vy += (targetY - p.y) * 0.1;
+                p.vx *= 0.8; p.vy *= 0.8; // Sönümleme
+                
+                // Titreşim (Sıcaklığa göre artabilir ama basit tutalım)
+                p.vx += (Math.random()-0.5) * speed;
+                p.vy += (Math.random()-0.5) * speed;
+            } 
+            else {
+                // Sıvı / Gaz / Süperkritik
+                p.vy += gravity;
+                
+                // Hız limiti kontrolü
+                p.vx += (Math.random()-0.5) * speed * 0.5;
+                p.vy += (Math.random()-0.5) * speed * 0.5;
+                
+                // Sürtünme (Sıvıda yüksek, gazda düşük)
+                const friction = phase === "LIQUID" ? 0.95 : 0.99;
+                p.vx *= friction; p.vy *= friction;
+                
+                // Duvarlar
+                if(p.x < 0) { p.x = 0; p.vx *= -1; }
+                if(p.x > w) { p.x = w; p.vx *= -1; }
+                if(p.y > h) { p.y = h; p.vy *= -0.5; } // Zemin
+                if(p.y < 0) { p.y = 0; p.vy *= -1; }
+
+                // Basit İtme (Sıvı ve Süperkritik için yoğunluk hissi)
+                if(phase !== "GAS") {
+                    // Sadece komşulara bakmıyoruz, basit bir "yığılma" önleyici
+                    // Gazda parçacıklar iç içe geçebilir (İdeal gaz)
+                    // Sıvıda geçemez.
+                }
+            }
+            
+            p.x += p.vx;
+            p.y += p.vy;
+        });
+    },
+
+    // --- ÇİZİM ---
+    drawGraph() {
+        const ctx = this.gCtx;
+        const w = this.gCanvas.width;
+        const h = this.gCanvas.height;
+        const sub = this.substances[this.currentSub];
+        const tp = this.mapToScreen(sub.triple.T, sub.triple.P);
+        const cp = this.mapToScreen(sub.critical.T, sub.critical.P);
+        
+        ctx.clearRect(0,0,w,h);
+        
+        // Eksenler
+        ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth=2;
+        ctx.beginPath();
+        // Y ekseni
+        ctx.moveTo(50, 0); ctx.lineTo(50, h-50);
+        // X ekseni
+        ctx.moveTo(50, h-50); ctx.lineTo(w, h-50);
+        ctx.stroke();
+
+        // Faz Sınır Çizgileri
+        ctx.strokeStyle = "#334155"; ctx.lineWidth=3;
+        ctx.beginPath();
+        
+        // 1. Solid-Gas (Süblimleşme)
+        const origin = this.mapToScreen(this.minT, 0); // ~0 basınç
+        ctx.moveTo(origin.x, origin.y); 
+        ctx.quadraticCurveTo((origin.x+tp.x)/2, tp.y, tp.x, tp.y);
+        
+        // 2. Liquid-Gas (Kaynama) -> Critical'a gider
+        ctx.moveTo(tp.x, tp.y);
+        ctx.bezierCurveTo(tp.x + 50, tp.y, cp.x - 50, cp.y + 20, cp.x, cp.y);
+
+        // 3. Solid-Liquid (Erime)
+        ctx.moveTo(tp.x, tp.y);
+        const topP = this.mapToScreen(tp.T, this.maxP);
+        if(this.currentSub === 'water') {
+            // Sola yatık
+            ctx.lineTo(topP.x - 30, topP.y); 
+        } else {
+            // Sağa yatık
+            ctx.lineTo(topP.x + 30, topP.y);
+        }
+        ctx.stroke();
+
+        // Kritik Nokta Marker
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath(); ctx.arc(cp.x, cp.y, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "#0f172a"; ctx.font = "bold 12px sans-serif";
+        ctx.fillText("Kritik N.", cp.x + 10, cp.y);
+
+        // Üçlü Nokta Marker
+        ctx.fillStyle = "#f59e0b";
+        ctx.beginPath(); ctx.arc(tp.x, tp.y, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText("Üçlü N.", tp.x + 10, tp.y + 10);
+
+        // İMLEÇ (Cursor)
+        const cursor = this.mapToScreen(this.cursor.T, this.cursor.P);
+        
+        // Rehber çizgiler
+        ctx.strokeStyle = "#94a3b8"; ctx.lineWidth=1; ctx.setLineDash([5,5]);
+        ctx.beginPath();
+        ctx.moveTo(50, cursor.y); ctx.lineTo(cursor.x, cursor.y);
+        ctx.moveTo(cursor.x, h-50); ctx.lineTo(cursor.x, cursor.y);
+        ctx.stroke(); ctx.setLineDash([]);
+
+        // Nokta
+        ctx.fillStyle = "white"; ctx.strokeStyle = "#0f172a"; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 8, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        
+        // Pulse efekti
+        ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 15, 0, Math.PI*2); 
+        ctx.strokeStyle = "rgba(15, 23, 42, 0.3)"; ctx.lineWidth=1; ctx.stroke();
+    },
+
+    drawSim() {
+        const ctx = this.sCtx;
+        const w = this.sCanvas.width;
+        const h = this.sCanvas.height;
+        
+        ctx.clearRect(0,0,w,h);
+        
+        // Arka plan rengi faza göre hafif değişsin
+        const phase = this.getPhase(this.cursor.T, this.cursor.P);
+        let bg = "rgba(15, 23, 42, 0)";
+        if (phase === "SUPERCRITICAL") bg = "rgba(255, 100, 100, 0.1)";
+        ctx.fillStyle = bg; ctx.fillRect(0,0,w,h);
+
+        // Parçacıklar
+        ctx.fillStyle = this.currentSub === 'water' ? "#60a5fa" : "#94a3b8";
+        
+        if (phase === "GAS" || phase === "SUPERCRITICAL") {
+             // Gazda biraz flu
+             ctx.globalAlpha = 0.8;
+        }
+
+        this.particles.forEach(p => {
+            ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        // Bilgi Yazısı
+        ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
+        let label = "";
+        switch(phase) {
+            case "SOLID": label = "KATI KAFES YAPISI"; break;
+            case "LIQUID": label = "SIVI AKIŞI"; break;
+            case "GAS": label = "GAZ HAREKETİ"; break;
+            case "SUPERCRITICAL": label = "SÜPERKRİTİK AKIŞKAN (Yoğun Gaz)"; break;
+        }
+        ctx.fillText(label, w/2, 20);
+    },
+
+    updateUI() {
+        document.getElementById('dispTemp').innerText = this.cursor.T.toFixed(1);
+        document.getElementById('dispPress').innerText = this.cursor.P.toFixed(2);
+        
+        const phase = this.getPhase(this.cursor.T, this.cursor.P);
+        const badge = document.getElementById('phaseBadge');
+        
+        badge.innerText = phase === 'SOLID' ? 'KATI' : 
+                          phase === 'LIQUID' ? 'SIVI' : 
+                          phase === 'GAS' ? 'GAZ' : 'SÜPERKRİTİK';
+        
+        // Renkler
+        badge.style.background = phase === 'SOLID' ? '#bae6fd' : 
+                                 phase === 'LIQUID' ? '#bfdbfe' : 
+                                 phase === 'GAS' ? '#e2e8f0' : '#fca5a5';
+        badge.style.color = phase === 'SUPERCRITICAL' ? '#991b1b' : '#1e3a8a';
+        
+        // Info Text
+        const info = document.getElementById('infoText');
+        if(this.currentSub === 'water' && phase === 'SOLID' && this.cursor.P > 100) {
+            info.innerHTML = "<b>Dikkat:</b> Su basınç altında eriyebilen nadir maddelerdendir. Buzun üzerindeki basınç artarsa erime noktası düşer.";
+        } else if(phase === 'SUPERCRITICAL') {
+            info.innerHTML = "<b>Süperkritik:</b> Ne sıvı ne gaz! Hem gaz gibi yayılır hem sıvı gibi çözer. Kafeinsiz kahve üretiminde kullanılır.";
+        } else {
+            info.innerHTML = "Grafik üzerinde gezinerek maddenin hallerini keşfet.";
+        }
+    },
+
+    setupEvents() {
+        const gw = document.getElementById('graphWrap');
+        
+        const updateCursor = (e) => {
+            const rect = this.gCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const coords = this.mapFromScreen(x, y);
+            // Sınırlar
+            this.cursor.T = Math.max(this.minT, Math.min(this.maxT, coords.T));
+            this.cursor.P = Math.max(0, Math.min(this.maxP, coords.P)); // Min P 0 olsun
+        };
+
+        gw.addEventListener('mousedown', (e) => { this.isDragging = true; updateCursor(e); });
+        window.addEventListener('mousemove', (e) => { if(this.isDragging) updateCursor(e); });
+        window.addEventListener('mouseup', () => { this.isDragging = false; });
+        
+        // Touch support
+        gw.addEventListener('touchstart', (e) => { e.preventDefault(); this.isDragging = true; updateCursor(e.touches[0]); }, {passive:false});
+        window.addEventListener('touchmove', (e) => { e.preventDefault(); if(this.isDragging) updateCursor(e.touches[0]); }, {passive:false});
+        window.addEventListener('touchend', () => { this.isDragging = false; });
+    },
+
+    loop() {
+        const phase = this.getPhase(this.cursor.T, this.cursor.P);
+        this.updateParticles(phase);
+        this.drawGraph();
+        this.drawSim();
+        this.updateUI();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+app.init();
+</script>
+</body>
+</html>
