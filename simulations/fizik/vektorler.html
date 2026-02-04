@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Vektörler</title>
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --border: #e2e8f0;
+            
+            --col-a: #3b82f6; /* Mavi (A) */
+            --col-b: #ef4444; /* Kırmızı (B) */
+            --col-r: #10b981; /* Yeşil (R) */
+            
+            --font: 'Segoe UI', sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-main); font-family: var(--font); height: 100vh; display: flex; overflow: hidden; }
+
+        /* SOL PANEL */
+        aside { 
+            width: 340px; background: var(--bg-panel); border-right: 1px solid var(--border); 
+            padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; z-index: 20;
+        }
+
+        /* --- DÜZELTİLEN LOGO STİLİ --- */
+        .logo { font-size: 1.5rem; font-weight: 800; color: #6366f1; letter-spacing: -1px; margin-bottom: 5px; }
+
+        /* Vektör Kartları */
+        .vec-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: #f8fafc; position: relative; overflow: hidden; }
+        .vec-card::before { content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
+        .vec-card.a::before { background: var(--col-a); }
+        .vec-card.b::before { background: var(--col-b); }
+        .vec-card.r { background: #ecfdf5; border-color: #a7f3d0; }
+        .vec-card.r::before { background: var(--col-r); }
+
+        .vec-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
+        .vec-data { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85rem; font-family: var(--font-mono); }
+        .data-row { display: flex; justify-content: space-between; color: #64748b; }
+        .data-val { color: #0f172a; font-weight: 600; }
+
+        /* Kontroller */
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem; cursor: pointer; padding: 5px 0; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #6366f1; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .info-box { margin-top: auto; background: #e0e7ff; padding: 10px; border-radius: 8px; font-size: 0.8rem; color: #3730a3; border-left: 4px solid #6366f1; }
+
+        /* SAĞ PANEL */
+        main { flex: 1; position: relative; cursor: crosshair; }
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        .overlay { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 8px 16px; border-radius: 20px; font-weight: 600; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid var(--border); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">Raporlab <span style="font-weight:300; color:#64748b;">İnteraktif</span></div>
+
+    <div class="vec-card a">
+        <div class="vec-header" style="color:var(--col-a)">VEKTÖR A</div>
+        <div class="vec-data">
+            <div class="data-row"><span>|A|:</span> <span class="data-val" id="valMagA">0</span></div>
+            <div class="data-row"><span>θ:</span> <span class="data-val" id="valAngA">0°</span></div>
+            <div class="data-row"><span>Ax:</span> <span class="data-val" id="valXa">0</span></div>
+            <div class="data-row"><span>Ay:</span> <span class="data-val" id="valYa">0</span></div>
+        </div>
+    </div>
+
+    <div class="vec-card b">
+        <div class="vec-header" style="color:var(--col-b)">VEKTÖR B</div>
+        <div class="vec-data">
+            <div class="data-row"><span>|B|:</span> <span class="data-val" id="valMagB">0</span></div>
+            <div class="data-row"><span>θ:</span> <span class="data-val" id="valAngB">0°</span></div>
+            <div class="data-row"><span>Bx:</span> <span class="data-val" id="valXb">0</span></div>
+            <div class="data-row"><span>By:</span> <span class="data-val" id="valYb">0</span></div>
+        </div>
+    </div>
+
+    <div class="vec-card r">
+        <div class="vec-header" style="color:var(--col-r)">BİLEŞKE (R = A + B)</div>
+        <div class="vec-data">
+            <div class="data-row"><span>|R|:</span> <span class="data-val" id="valMagR">0</span></div>
+            <div class="data-row"><span>θ:</span> <span class="data-val" id="valAngR">0°</span></div>
+            <div class="data-row"><span>Rx:</span> <span class="data-val" id="valXr">0</span></div>
+            <div class="data-row"><span>Ry:</span> <span class="data-val" id="valYr">0</span></div>
+        </div>
+    </div>
+
+    <hr style="width:100%; border:0; border-top:1px solid #e2e8f0;">
+
+    <div class="toggle-row">
+        <span>Izgara (Grid)</span>
+        <label class="switch"><input type="checkbox" checked onchange="app.toggleGrid(this)"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+        <span>Bileşenleri Göster</span>
+        <label class="switch"><input type="checkbox" onchange="app.toggleComps(this)"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+        <span>Bileşkeyi Göster</span>
+        <label class="switch"><input type="checkbox" checked onchange="app.toggleResult(this)"><span class="slider"></span></label>
+    </div>
+
+    <div class="info-box">
+        <b>İpucu:</b> Vektörün ucundan tutup büyüklüğünü değiştir, gövdesinden tutup taşı.
+    </div>
+</aside>
+
+<main id="container">
+    <div class="overlay">Uç Uca Ekleme Yöntemini Dene!</div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        container: document.getElementById('container'),
+        width: 800, height: 600,
+        centerX: 400, centerY: 300,
+
+        // Ayarlar
+        showGrid: true,
+        showComponents: false,
+        showResultant: true,
+
+        // Vektörler (Data: başx, başy, sonx, sony)
+        vecA: { x: 0, y: 0, dx: 100, dy: -100, color: "#3b82f6", label: "A" },
+        vecB: { x: 0, y: 0, dx: 150, dy: 50, color: "#ef4444", label: "B" },
+        
+        // Etkileşim
+        draggedVec: null,
+        dragType: null, // 'head' or 'body'
+        dragOffsetX: 0, dragOffsetY: 0,
+
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.setupEvents();
+            this.resetVectors();
+            this.loop();
+        },
+
+        resize() {
+            this.width = this.container.clientWidth || 800;
+            this.height = this.container.clientHeight || 600;
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            this.centerX = this.width / 2;
+            this.centerY = this.height / 2;
+        },
+
+        resetVectors() {
+            this.vecA.x = 0; this.vecA.y = 0;
+            this.vecA.dx = 100; this.vecA.dy = -100; // Sağ yukarı
+            this.vecB.x = 50; this.vecB.y = 50; 
+            this.vecB.dx = 100; this.vecB.dy = 50; 
+        },
+
+        // --- ÇİZİM ---
+        draw() {
+            const ctx = this.ctx;
+            ctx.clearRect(0, 0, this.width, this.height);
+
+            if (this.showGrid) this.drawGrid();
+
+            // Koordinat Eksenleri
+            ctx.beginPath();
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2;
+            ctx.moveTo(0, this.centerY); ctx.lineTo(this.width, this.centerY); // X
+            ctx.moveTo(this.centerX, 0); ctx.lineTo(this.centerX, this.height); // Y
+            ctx.stroke();
+
+            // Vektörleri Çiz
+            this.drawVector(this.vecA);
+            this.drawVector(this.vecB);
+
+            // Bileşke (R = A + B)
+            if (this.showResultant) {
+                const rx = this.vecA.dx + this.vecB.dx;
+                const ry = this.vecA.dy + this.vecB.dy;
+                // R'yi orjinden başlat
+                this.drawArrow(this.centerX, this.centerY, this.centerX + rx, this.centerY + ry, "#10b981", "R", true);
+                this.updatePanel("R", rx, ry);
+            }
+
+            this.updatePanel("A", this.vecA.dx, this.vecA.dy);
+            this.updatePanel("B", this.vecB.dx, this.vecB.dy);
+        },
+
+        drawGrid() {
+            const ctx = this.ctx;
+            const step = 50;
+            ctx.beginPath();
+            ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1;
+
+            // Dikey çizgiler
+            for (let x = this.centerX; x < this.width; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, this.height); }
+            for (let x = this.centerX; x > 0; x -= step) { ctx.moveTo(x, 0); ctx.lineTo(x, this.height); }
+            
+            // Yatay çizgiler
+            for (let y = this.centerY; y < this.height; y += step) { ctx.moveTo(0, y); ctx.lineTo(this.width, y); }
+            for (let y = this.centerY; y > 0; y -= step) { ctx.moveTo(0, y); ctx.lineTo(this.width, y); }
+            
+            ctx.stroke();
+        },
+
+        drawVector(v) {
+            const startX = this.centerX + v.x;
+            const startY = this.centerY + v.y;
+            const endX = startX + v.dx;
+            const endY = startY + v.dy;
+
+            this.drawArrow(startX, startY, endX, endY, v.color, v.label, false);
+
+            if (this.showComponents) {
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.strokeStyle = v.color;
+                this.ctx.lineWidth = 1;
+                this.ctx.globalAlpha = 0.6;
+                // X bileşeni
+                this.ctx.beginPath(); this.ctx.moveTo(startX, startY); this.ctx.lineTo(endX, startY); this.ctx.stroke();
+                // Y bileşeni
+                this.ctx.beginPath(); this.ctx.moveTo(endX, startY); this.ctx.lineTo(endX, endY); this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                this.ctx.globalAlpha = 1.0;
+            }
+        },
+
+        drawArrow(x1, y1, x2, y2, color, label, isBold) {
+            const ctx = this.ctx;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const headLen = 15;
+
+            ctx.beginPath();
+            ctx.lineWidth = isBold ? 4 : 3;
+            ctx.strokeStyle = color;
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            // Ok Ucu
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+            ctx.fill();
+
+            // Etiket
+            ctx.fillStyle = "black";
+            ctx.font = "bold 14px sans-serif";
+            ctx.fillText(label, x2 + 10, y2);
+        },
+
+        updatePanel(id, dx, dy) {
+            // Fizikte Y ekseni yukarı pozitiftir, Canvas'ta aşağı pozitiftir.
+            const physY = -dy; 
+            
+            const mag = Math.sqrt(dx*dx + physY*physY).toFixed(1);
+            let ang = (Math.atan2(physY, dx) * 180 / Math.PI).toFixed(1);
+            if (ang < 0) ang = 360 + parseFloat(ang); 
+
+            document.getElementById(`valMag${id}`).innerText = mag;
+            document.getElementById(`valAng${id}`).innerText = parseFloat(ang).toFixed(0) + "°";
+            document.getElementById(`valX${id.toLowerCase()}`).innerText = dx.toFixed(0);
+            document.getElementById(`valY${id.toLowerCase()}`).innerText = physY.toFixed(0);
+        },
+
+        // --- ETKİLEŞİM ---
+        getMousePos(e) {
+            const r = this.canvas.getBoundingClientRect();
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            return { x: clientX - r.left, y: clientY - r.top };
+        },
+
+        checkHit(v, mx, my) {
+            const startX = this.centerX + v.x;
+            const startY = this.centerY + v.y;
+            const endX = startX + v.dx;
+            const endY = startY + v.dy;
+
+            // Uç Nokta (Head)
+            if (Math.hypot(mx - endX, my - endY) < 20) return 'head';
+
+            // Gövde (Body)
+            const midX = (startX + endX) / 2;
+            const midY = (startY + endY) / 2;
+            if (Math.hypot(mx - midX, my - midY) < 30) return 'body';
+
+            return null;
+        },
+
+        setupEvents() {
+            const start = (e) => {
+                const m = this.getMousePos(e);
+                let hit = this.checkHit(this.vecB, m.x, m.y);
+                if (hit) {
+                    this.draggedVec = this.vecB;
+                } else {
+                    hit = this.checkHit(this.vecA, m.x, m.y);
+                    if (hit) this.draggedVec = this.vecA;
+                }
+
+                if (this.draggedVec && hit) {
+                    this.dragType = hit;
+                    const startX = this.centerX + this.draggedVec.x;
+                    const startY = this.centerY + this.draggedVec.y;
+                    
+                    if (hit === 'body') {
+                        this.dragOffsetX = m.x - startX;
+                        this.dragOffsetY = m.y - startY;
+                    }
+                }
+            };
+
+            const move = (e) => {
+                if (!this.draggedVec) return;
+                const m = this.getMousePos(e);
+
+                if (this.dragType === 'head') {
+                    const startX = this.centerX + this.draggedVec.x;
+                    const startY = this.centerY + this.draggedVec.y;
+                    this.draggedVec.dx = m.x - startX;
+                    this.draggedVec.dy = m.y - startY;
+                } else if (this.dragType === 'body') {
+                    const newScreenX = m.x - this.dragOffsetX;
+                    const newScreenY = m.y - this.dragOffsetY;
+                    this.draggedVec.x = newScreenX - this.centerX;
+                    this.draggedVec.y = newScreenY - this.centerY;
+                }
+            };
+
+            const end = () => { this.draggedVec = null; };
+
+            this.canvas.addEventListener('mousedown', start);
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+            this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, {passive:false});
+            window.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive:false});
+            window.addEventListener('touchend', end);
+        },
+
+        toggleGrid(el) { this.showGrid = el.checked; },
+        toggleComps(el) { this.showComponents = el.checked; },
+        toggleResult(el) { this.showResultant = el.checked; },
+
+        loop() {
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
