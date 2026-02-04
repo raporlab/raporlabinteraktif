@@ -1,56 +1,87 @@
+<div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    
+    <div class="relative overflow-hidden rounded-[2rem] bg-slate-900 text-white p-8 md:p-12 shadow-2xl shadow-slate-900/20">
+        
+        <div class="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-blue-600/20 blur-3xl"></div>
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 h-40 w-full bg-indigo-900/30 blur-3xl"></div>
 
-<div class="w-full">
-    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Raporlab İnteraktif</h2>
-    <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Dijital Öğrenme Laboratuvarı</p>
-</div>
+        <div class="relative z-10 max-w-3xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[11px] font-bold uppercase tracking-widest mb-6">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                Bağımsız Eğitim Girişimi
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-6 tracking-tight">
+                Soyut Bilgiyi <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Somut Deneyime</span> Dönüştürün.
+            </h1>
+            
+            <p class="text-lg text-slate-300 leading-relaxed mb-8 max-w-2xl font-light">
+                Raporlab İnteraktif, karmaşık teorik konuları etkileşimli simülasyonlarla anlaşılır hale getiren 
+                <strong class="text-white font-semibold">tamamen ücretsiz</strong> bir kütüphanedir. 
+                <br><br>
+                <span class="flex items-center gap-2 text-blue-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Öğretmenlerimiz akıllı tahtalarda sınırsızca kullanabilir.
+                </span>
+            </p>
 
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-    <div class="lg:col-span-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-lg min-h-[280px] flex items-center">
-        <div class="relative z-10 max-w-md">
-            <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-3 inline-block backdrop-blur-md">Yenilikçi Eğitim</span>
-            <h3 class="text-3xl font-bold mb-3 leading-tight">Dokun, Dene ve<br>Gerçekten Öğren</h3>
-            <p class="text-blue-100 text-sm opacity-90 mb-6 leading-relaxed">Karmaşık teorileri sadece okumayın; modelleri manipüle ederek somut deneyimlere dönüştürün.</p>
-            <div class="flex flex-wrap gap-3">
-                <button onclick="showPage('matematik')" class="bg-white text-blue-700 px-6 py-2.5 rounded-xl font-bold text-xs hover:scale-105 transition-transform shadow-lg uppercase tracking-wide">Kütüphaneye Git</button>
-                <a href="mailto:raporlab@gmail.com" class="bg-white/10 text-white border border-white/20 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-white/20 transition-all shadow-lg uppercase tracking-wide backdrop-blur-sm flex items-center">İletişim</a>
+            <div class="flex flex-wrap items-center gap-4">
+                <button onclick="showPage('matematik')" class="group px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-900/50 flex items-center gap-2">
+                    Kütüphaneye Git
+                    <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+                
+                <button class="px-8 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition-all">
+                    İletişim
+                </button>
             </div>
         </div>
-        <div class="absolute -right-4 -bottom-4 text-9xl opacity-10 hidden md:block select-none">🧬</div>
     </div>
 
-    <div class="lg:col-span-4 grid grid-cols-2 gap-4">
-        <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-blue-300 hover:shadow-md transition-all text-center group">
-            <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">🚀</span>
-            <b class="text-[10px] text-slate-700 uppercase">Hızlı Erişim</b>
-            <p class="text-[8px] text-slate-400 mt-1">Popüler içerikler</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 hover:border-blue-400 transition-colors group">
+            <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-slate-900 text-sm">Ücretsiz Erişim</h4>
+                <p class="text-xs text-slate-500 mt-0.5">Ticari amaç gütmeyen yapı.</p>
+            </div>
         </div>
-        <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-green-300 hover:shadow-md transition-all text-center group">
-            <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">📱</span>
-            <b class="text-[10px] text-slate-700 uppercase">Mobil Uyum</b>
-            <p class="text-[8px] text-slate-400 mt-1">Her cihazda aktif</p>
-        </div>
-        <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-purple-300 hover:shadow-md transition-all text-center group">
-            <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">📚</span>
-            <b class="text-[10px] text-slate-700 uppercase">300+ İçerik</b>
-            <p class="text-[8px] text-slate-400 mt-1">Geniş kütüphane</p>
-        </div>
-        <div class="h-32 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm flex flex-col items-center justify-center p-4 hover:border-orange-300 hover:shadow-md transition-all text-center group">
-            <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">💎</span>
-            <b class="text-[10px] text-slate-700 uppercase">Ücretsiz</b>
-            <p class="text-[8px] text-slate-400 mt-1">Daima özgür</p>
-        </div>
-    </div>
-</div>
 
-<div class="bg-slate-900 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl">
-    <div class="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-        <div class="max-w-2xl">
-            <h4 class="text-xs font-bold text-blue-400 mb-2 uppercase tracking-widest flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> Vizyonumuz</h4>
-            <p class="text-sm text-slate-300 leading-relaxed italic">"Eğitimde fırsat eşitliği için yerli ve ücretsiz bir ekosistem inşa ediyoruz. Bilgi bir ayrıcalık değil, haktır. Bu platformun yaşaması topluluğun desteğine bağlıdır."</p>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 hover:border-blue-400 transition-colors group">
+            <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-slate-900 text-sm">Sınıf İçi Kullanım</h4>
+                <p class="text-xs text-slate-500 mt-0.5">Akıllı tahtalarla tam uyumlu.</p>
+            </div>
         </div>
-        <div class="shrink-0">
-            <a href="https://www.shopier.com/raporlab/43847330" target="_blank" class="bg-white text-slate-900 px-8 py-3 rounded-xl font-bold text-xs hover:bg-blue-50 transition-all shadow-lg hover:shadow-white/10 uppercase tracking-wide flex items-center gap-2">Destek Ol ☕</a>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 hover:border-blue-400 transition-colors group">
+            <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-slate-900 text-sm">Somutlaştırma</h4>
+                <p class="text-xs text-slate-500 mt-0.5">Teoriyi pratiğe dökün.</p>
+            </div>
         </div>
     </div>
-    <div class="absolute -right-10 -bottom-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl"></div>
+
+    <div class="bg-slate-100 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-200">
+        <div class="text-center md:text-left">
+            <p class="text-sm text-slate-600 font-medium italic">
+                "Eğitimde fırsat eşitliği için yerli bir ekosistem inşa ediyoruz."
+            </p>
+        </div>
+        
+        <a href="https://www.shopier.com/raporlab/43847330" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-full shadow-sm hover:border-rose-200 hover:bg-rose-50 transition-all text-slate-700 hover:text-rose-600 font-bold text-sm shrink-0">
+            <svg class="w-5 h-5 text-rose-500 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            Projeye Destek Ol
+        </a>
+    </div>
+
 </div>
