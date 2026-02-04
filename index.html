@@ -8,9 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="flex flex-col md:flex-row h-screen overflow-hidden text-slate-800 bg-[#f8fafc]">
+<body class="flex flex-col md:flex-row h-screen overflow-hidden text-slate-800">
 
-    <div id="simModal" class="hidden fixed inset-0 bg-black/90 z-[100] flex flex-col">
+<div id="simModal" class="hidden fixed inset-0 bg-black/90 z-[100] flex flex-col">
+        
         <div class="h-16 flex items-center justify-between px-4 md:px-6 bg-slate-900 text-white shrink-0 gap-4">
             <h2 id="modalTitle" class="font-bold text-sm md:text-base truncate">Simülasyon Başlığı</h2>
             <div class="flex items-center gap-2 shrink-0">
@@ -20,10 +21,12 @@
                 <button onclick="closeSim()" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg font-bold transition-colors text-xs">Kapat ✕</button>
             </div>
         </div>
+
         <div class="md:hidden bg-amber-100 text-amber-800 text-[10px] p-2 text-center font-bold">⚠️ En iyi deneyim için cihazınızı yatay çevirin.</div>
+        
         <div id="simContainer" class="flex-1 w-full bg-white relative"></div>
     </div>
-
+    </div>
     <div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"></div>
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0 h-full">
@@ -31,17 +34,25 @@
             <h1 class="text-2xl tracking-tight"><span class="font-extrabold text-slate-900">Raporlab</span><span class="font-light text-slate-500 ml-1">İnteraktif</span></h1>
             <button onclick="toggleSidebar()" class="md:hidden text-2xl text-slate-400 focus:outline-none">✕</button>
         </div>
-        <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
-            <button id="btn-kesfet" onclick="showPage('kesfet')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-4">
+
+        <nav class="flex-1 px-4 space-y-1 overflow-y-auto hide-scrollbar">
+            <button id="btn-kesfet" onclick="showPage('kesfet')" class="active-nav w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600 mb-4">
                 <span class="mr-3 text-xl">🧭</span> Keşfet
             </button>
             <div class="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">Dersler</div>
             <button id="btn-matematik" onclick="showPage('matematik')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600"><span class="mr-3 text-xl">📐</span> Matematik</button>
             <button id="btn-fizik" onclick="showPage('fizik')" class="w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600"><span class="mr-3 text-xl">🧪</span> Fizik</button>
+            
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🧬</span> Kimya <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌍</span> Coğrafya <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">🌿</span> Biyoloji <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">📐</span> Geometri <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3 rounded-xl transition-all text-slate-400 cursor-not-allowed group"><span class="mr-3 text-xl grayscale group-hover:grayscale-0 transition">📜</span> Tarih <span class="ml-auto text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 uppercase">Yakında</span></a>
         </nav>
+        
         <div class="p-6 border-t border-slate-100">
             <div class="bg-slate-50 rounded-2xl p-4">
-                <p class="text-[11px] text-slate-500 leading-relaxed mb-3 italic text-center">Bağımsız bir eğitim girişimi.</p>
+                <p class="text-xs text-slate-500 leading-relaxed mb-3">Bu platform tamamen ücretsizdir. Gelişime destek olmak ister misiniz?</p>
                 <a href="https://www.shopier.com/raporlab/43847330" class="block w-full bg-slate-900 text-white text-center text-sm py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition shadow-sm">Destek Ol ☕</a>
             </div>
         </div>
@@ -49,14 +60,15 @@
 
     <main class="flex-1 flex flex-col overflow-hidden">
         <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center px-6 md:px-10 shrink-0">
-            <button onclick="toggleSidebar()" class="md:hidden mr-4 text-2xl text-slate-600">☰</button>
-            <div id="searchWrapper" class="relative w-full max-w-md">
+            <button onclick="toggleSidebar()" class="md:hidden mr-4 text-2xl text-slate-600 focus:outline-none">☰</button>
+            <div class="relative w-full max-w-md">
                 <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 italic">🔍</span>
-                <input type="text" id="searchInput" placeholder="Simülasyon ara..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm outline-none transition-all">
+                <input type="text" id="searchInput" placeholder="Simülasyon veya konu ara..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition-all text-slate-600">
             </div>
         </header>
-        <div class="flex-1 overflow-y-auto p-6 md:p-10">
-            <div id="kesfet-content" class="hidden animate-in fade-in duration-500"></div>
+
+        <div class="flex-1 overflow-y-auto p-6 md:p-10 bg-[#f8fafc]">
+            <div id="kesfet-content" class="block animate-in fade-in duration-500 space-y-6"></div>
             <div id="matematik-content" class="hidden animate-in fade-in duration-500"></div>
             <div id="fizik-content" class="hidden animate-in fade-in duration-500"></div>
         </div>
