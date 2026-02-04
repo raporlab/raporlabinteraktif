@@ -108,5 +108,32 @@
             <button onclick="openSim('simulations/fizik/hareket-ve-kuvvet.html', 'Hareket ve Kuvvet')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
         </div>
     </div>
+
+    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300" data-name="vektörler yön doğrultu büyüklü kuvvet hız">
+        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-indigo-50 transition-colors">
+            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+                <path d="M 40 20 L 40 100 M 70 20 L 70 100 M 100 20 L 100 100 M 130 20 L 130 100 M 160 20 L 160 100" stroke="#e2e8f0" stroke-width="1" />
+                <path d="M 30 30 L 170 30 M 30 60 L 170 60 M 30 90 L 170 90" stroke="#e2e8f0" stroke-width="1" />
+
+                <circle cx="70" cy="90" r="4" fill="#4338ca" />
+
+                <line x1="70" y1="90" x2="130" y2="40" stroke="#4f46e5" stroke-width="4" stroke-linecap="round" />
+                <path d="M 120 42 L 130 40 L 128 50" stroke="#4f46e5" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+
+                <text x="135" y="35" font-size="16" font-weight="bold" fill="#4338ca" style="font-family: serif;">v→</text>
+
+                <line x1="70" y1="90" x2="130" y2="90" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4" />
+                <line x1="130" y1="90" x2="130" y2="40" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4" />
+            </svg>
+        </div>
+        <div class="px-3 pb-3">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-slate-800">Vektörler</h3>
+                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Yeni</span>
+            </div>
+            <p class="text-sm text-slate-500 mb-5">Büyüklük, yön ve doğrultu kavramlarını görselleştirerek vektörleri keşfedin.</p>
+            <button onclick="openSim('simulations/matematik/vektorler.html', 'Vektörler Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
+        </div>
+    </div>
     
 </div>
