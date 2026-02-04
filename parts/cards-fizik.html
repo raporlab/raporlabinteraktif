@@ -163,5 +163,35 @@
             <button onclick="openSim('simulations/fizik/optik.html', 'Optik Modeli')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-cyan-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
         </div>
     </div>
+
+    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-300" data-name="indüksiyon manyetik akı bobin mıknatıs faraday lens">
+        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-amber-50 transition-colors">
+            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+                <path d="M 70 40 Q 80 30 90 40 Q 100 50 110 40 Q 120 30 130 40 Q 140 50 150 40" stroke="#d97706" stroke-width="4" fill="none" />
+                <path d="M 70 55 Q 80 45 90 55 Q 100 65 110 55 Q 120 45 130 55 Q 140 65 150 55" stroke="#d97706" stroke-width="4" fill="none" opacity="0.6" />
+                
+                <rect x="30" y="45" width="40" height="20" rx="2" fill="#ef4444" />
+                <rect x="70" y="45" width="10" height="20" fill="#1e40af" rx="2" />
+                <text x="35" y="60" font-size="10" font-weight="bold" fill="white">N</text>
+                
+                <path d="M 80 30 Q 110 10 140 30" stroke="#a855f7" stroke-width="1" stroke-dasharray="3" fill="none" />
+                <path d="M 80 80 Q 110 100 140 80" stroke="#a855f7" stroke-width="1" stroke-dasharray="3" fill="none" />
+                
+                <circle cx="110" cy="90" r="15" fill="white" stroke="#475569" stroke-width="2" />
+                <line x1="110" y1="90" x2="118" y2="82" stroke="#ef4444" stroke-width="2" stroke-linecap="round">
+                    <animateTransform attributeName="transform" type="rotate" from="-20 110 90" to="20 110 90" dur="1s" repeatCount="indefinite" />
+                </line>
+                <text x="107" y="94" font-size="10" font-weight="bold" fill="#475569">G</text>
+            </svg>
+        </div>
+        <div class="px-3 pb-3">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-slate-800">İndüksiyon</h3>
+                <span class="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Yeni</span>
+            </div>
+            <p class="text-sm text-slate-500 mb-5">Manyetik akı değişimiyle elektrik akımı oluşumunu ve Lenz yasasını deneyimleyin.</p>
+            <button onclick="openSim('simulations/fizik/indüksiyon.html', 'İndüksiyon ve Manyetik Akı')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-all shadow-sm">Simülasyonu Başlat</button>
+        </div>
+    </div>
     
 </div>
