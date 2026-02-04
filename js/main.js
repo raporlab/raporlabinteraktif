@@ -9,10 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash.replace('#', '');
     
     if (hash && (hash === 'matematik' || hash === 'fizik')) {
-        // Eğer linkte #matematik veya #fizik varsa o sayfayı aç
-        showPage(hash, false); // false: Tekrar hash eklemeye gerek yok
+        showPage(hash, false); 
     } else {
-        // Yoksa varsayılan olarak Keşfet'i aç
         showPage('kesfet', false);
     }
 });
@@ -21,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadPart(pageId) {
     const container = document.getElementById(pageId + '-content');
     
-    // İçerik boşsa yükle
     if (!container.innerHTML.trim()) {
         try {
             const response = await fetch(`parts/cards-${pageId}.html?v=${Math.random()}`);
@@ -40,37 +37,30 @@ async function loadPart(pageId) {
 function showPage(pageId, updateUrl = true) {
     loadPart(pageId);
 
-    // 1. İçerikleri Gizle
     ['kesfet', 'matematik', 'fizik'].forEach(id => {
         document.getElementById(id + '-content').classList.add('hidden');
     });
     
-    // 2. Seçili Olanı Göster
     document.getElementById(pageId + '-content').classList.remove('hidden');
 
-    // 3. URL'i Güncelle (Sayfa yenilenince kalması için)
     if (updateUrl) {
         window.location.hash = pageId;
     }
 
-    // 4. Menü Butonlarını Güncelle
     ['kesfet', 'matematik', 'fizik'].forEach(id => {
         const btn = document.getElementById('btn-' + id);
         if(btn) {
-            // Hepsini pasif yap
             btn.className = "w-full sidebar-item flex items-center px-4 py-3 rounded-xl transition-all font-semibold text-slate-600";
             if(id === 'kesfet') btn.classList.add('mb-4');
         }
     });
 
-    // Aktif butonu boya
     const activeBtn = document.getElementById('btn-' + pageId);
     if(activeBtn) {
         activeBtn.classList.remove('text-slate-600');
         activeBtn.classList.add('active-nav');
     }
 
-    // Mobilde menüyü kapat
     if (window.innerWidth < 768) {
         const sidebar = document.getElementById('sidebar');
         if (!sidebar.classList.contains('-translate-x-full')) {
@@ -80,7 +70,7 @@ function showPage(pageId, updateUrl = true) {
 }
 
 // ==========================================
-// 2. MODAL (PENCERE) VE GERİ TUŞU YÖNETİMİ
+// 2. MODAL VE GERİ TUŞU YÖNETİMİ (DÜZELTİLDİ)
 // ==========================================
 
 function openSim(url, title) {
@@ -88,23 +78,25 @@ function openSim(url, title) {
     const frame = document.getElementById('simFrame');
     const titleEl = document.getElementById('modalTitle');
     
-    frame.src = url; 
     titleEl.innerText = title; 
-    
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
-    // **ÖNEMLİ:** Tarayıcı geçmişine sanal bir adım ekliyoruz.
-    // Böylece kullanıcı "Geri" tuşuna bastığında siteden çıkmaz, 
-    // sadece bu sanal adımı geri alır (yani modalı kapatır).
+    // 1. Önce geçmişe "Modal Açık" bilgisini ekliyoruz.
     history.pushState({modalOpen: true}, null, window.location.hash); 
+
+    // 2. KRİTİK DÜZELTME BURADA:
+    // frame.src = url yaparsak tarayıcı bunu yeni sayfa sanıp geçmişe ekliyor.
+    // replace() kullanırsak geçmişe eklemeden mevcut boş sayfayı değiştirir.
+    if (frame.contentWindow) {
+        frame.contentWindow.location.replace(url);
+    } else {
+        frame.src = url;
+    }
 }
 
-// Kapat butonuna basınca çalışır
 function closeSim() {
-    // Butona basıldığında manuel kapatmak yerine,
-    // tarayıcıya "Geri Git" komutu veriyoruz.
-    // Bu, aşağıdaki 'popstate' olayını tetikler ve pencereyi kapatır.
+    // Geri tuşunu tetikle (popstate çalışacak ve kapatacak)
     history.back();
 }
 
@@ -116,13 +108,18 @@ window.addEventListener('popstate', function(event) {
     // Eğer modal açıksa kapat
     if (!modal.classList.contains('hidden')) {
         modal.classList.add('hidden');
-        frame.src = ""; // Simülasyonu durdur
+        // Iframe'i temizlerken de replace kullanıyoruz ki geçmiş kirlenmesin
+        if (frame.contentWindow) {
+            frame.contentWindow.location.replace('about:blank');
+        } else {
+            frame.src = ""; 
+        }
         document.body.style.overflow = 'auto';
     }
 });
 
 // ==========================================
-// 3. DİĞER FONKSİYONLAR (Sidebar, Arama, Embed)
+// 3. DİĞER FONKSİYONLAR
 // ==========================================
 
 function toggleSidebar() {
@@ -132,7 +129,6 @@ function toggleSidebar() {
     overlay.classList.toggle('hidden');
 }
 
-// Arama Sistemi
 const searchInput = document.getElementById('searchInput');
 if(searchInput) {
     searchInput.addEventListener('input', () => {
@@ -146,27 +142,32 @@ if(searchInput) {
     });
 }
 
-// Embed (Siteye Gömme) Özelliği
 function shareSim() {
     const frame = document.getElementById('simFrame');
     if (!frame) return;
 
-    const src = frame.getAttribute('src');
-    if (!src || src === "") {
+    // replace kullandığımız için src attribute'u güncellenmeyebilir, contentWindow'dan alıyoruz
+    let currentUrl = "";
+    try {
+        currentUrl = frame.contentWindow.location.href;
+    } catch(e) {
+        // Cross-origin hatası olursa (ki senin projede olmaz ama) yedek:
+        currentUrl = frame.src; 
+    }
+
+    if (!currentUrl || currentUrl === "about:blank" || currentUrl === "") {
         alert("Lütfen önce listeden bir simülasyon başlatın.");
         return;
     }
 
     try {
-        const fullUrl = new URL(src, window.location.href).href;
-        const embedCode = `<iframe src="${fullUrl}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
+        const embedCode = `<iframe src="${currentUrl}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
         window.prompt("Bu simülasyonu sitene eklemek için kodu kopyala (CTRL+C):", embedCode);
     } catch (error) {
         console.error("Embed hatası:", error);
     }
 }
 
-// Fonksiyonları global erişime aç
 window.showPage = showPage;
 window.openSim = openSim;
 window.closeSim = closeSim;
