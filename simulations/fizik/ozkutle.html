@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Özkütle ve Kaldırma Kuvveti</title>
+    <style>
+        :root {
+            /* RAPORLAB TEMA */
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --col-accent: #0ea5e9; /* Gökyüzü Mavisi */
+            --col-water: rgba(56, 189, 248, 0.5);
+            --border: #e2e8f0;
+            --font: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-main); font-family: var(--font); height: 100vh; display: flex; overflow: hidden; }
+
+        /* SOL PANEL */
+        aside { 
+            width: 320px; flex-shrink: 0; background: var(--bg-panel); border-right: 1px solid var(--border); 
+            padding: 20px; display: flex; flex-direction: column; gap: 20px; z-index: 20; box-shadow: 2px 0 15px rgba(0,0,0,0.05); overflow-y: auto;
+        }
+
+        .logo { 
+            font-size: 1.5rem; font-weight: 800; color: #0284c7; 
+            letter-spacing: -1px; margin-bottom: 5px; 
+        }
+
+        .section-title {
+            font-size: 0.75rem; font-weight: 700; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+
+        /* Materyal Butonları */
+        .mat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .mat-btn {
+            padding: 12px; border: 1px solid var(--border); background: #f1f5f9; border-radius: 8px;
+            cursor: pointer; font-weight: 600; color: #334155; transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .mat-btn:hover { background: #e0f2fe; color: var(--col-accent); border-color: var(--col-accent); }
+        .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+        /* Kontrol Kutuları */
+        .control-box { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
+        
+        .slider-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 600; font-size: 0.85rem; margin-bottom: 5px; }
+        input[type="range"] { flex: 1; accent-color: var(--col-accent); cursor: pointer; }
+
+        .info-display {
+            background: #fff; border: 1px solid var(--col-accent); border-radius: 8px; padding: 10px;
+            text-align: center; margin-top: 10px;
+        }
+        .calc-text { font-family: 'Consolas', monospace; font-size: 1.1rem; color: #0369a1; font-weight: bold; }
+        .calc-sub { font-size: 0.75rem; color: #64748b; }
+
+        /* Sıvı Seçimi */
+        .liquid-select { display: flex; gap: 5px; margin-bottom: 10px; }
+        .lq-btn { flex: 1; padding: 8px; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--border); background: white; border-radius: 6px; }
+        .lq-btn.active { background: var(--col-accent); color: white; border-color: var(--col-accent); }
+
+        /* SAĞ PANEL */
+        main { flex: 1; position: relative; background: #e2e8f0; cursor: default; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .overlay-instruction {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 30px;
+            font-weight: 600; color: var(--text-main); pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-tooltip {
+            position: absolute; pointer-events: none; background: rgba(0,0,0,0.8); color: white;
+            padding: 8px; border-radius: 6px; font-size: 0.8rem; display: none; z-index: 50;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">Raporlab <span style="font-weight:300; color:#64748b;">İnteraktif</span></div>
+
+    <div class="section-title">Hazır Materyaller</div>
+    <div class="mat-grid">
+        <button class="mat-btn" onclick="app.spawnObject('wood')"><span class="dot" style="background:#d97706"></span> Tahta (0.6)</button>
+        <button class="mat-btn" onclick="app.spawnObject('ice')"><span class="dot" style="background:#bae6fd"></span> Buz (0.92)</button>
+        <button class="mat-btn" onclick="app.spawnObject('brick')"><span class="dot" style="background:#991b1b"></span> Tuğla (2.0)</button>
+        <button class="mat-btn" onclick="app.spawnObject('gold')"><span class="dot" style="background:#facc15"></span> Altın (19.3)</button>
+    </div>
+
+    <div class="section-title" style="margin-top:20px;">Özel Madde Yarat</div>
+    <div class="control-box">
+        <div class="slider-row">
+            <span>Kütle (m): <span id="valMass">5.0</span> kg</span>
+        </div>
+        <input type="range" id="slMass" min="1" max="20" step="0.5" value="5">
+        
+        <div class="slider-row" style="margin-top:10px;">
+            <span>Hacim (V): <span id="valVol">5.0</span> L</span>
+        </div>
+        <input type="range" id="slVol" min="1" max="10" step="0.5" value="5">
+
+        <button onclick="app.spawnCustom()" style="width:100%; margin-top:10px; padding:8px; background:var(--col-accent); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">OLUŞTUR</button>
+
+        <div class="info-display">
+            <div class="calc-sub">Özkütle (d = m / V)</div>
+            <div class="calc-text" id="valDensity">1.00 g/cm³</div>
+        </div>
+    </div>
+
+    <div class="section-title" style="margin-top:20px;">Sıvı Ortamı</div>
+    <div class="control-box">
+        <div class="liquid-select">
+            <button class="lq-btn" onclick="app.setLiquid(0.9, 'oil', this)">Yağ</button>
+            <button class="lq-btn active" onclick="app.setLiquid(1.0, 'water', this)">Su</button>
+            <button class="lq-btn" onclick="app.setLiquid(1.4, 'honey', this)">Bal</button>
+        </div>
+        <div class="slider-row">
+            <span>Sıvı Özkütlesi:</span>
+            <span id="lblLiquidD">1.00 g/cm³</span>
+        </div>
+    </div>
+    
+    <div style="margin-top:auto;">
+        <button onclick="app.resetScene()" style="width:100%; padding:10px; background:#e2e8f0; color:#475569; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">SAHNEYİ TEMİZLE</button>
+    </div>
+</aside>
+
+<main id="container">
+    <div class="overlay-instruction">📦 Cisimleri Suya At ve Ne Olduğunu Gör!</div>
+    <div class="data-tooltip" id="tooltip"></div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const app = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    width: 0, height: 0,
+
+    // Fizik Ortamı
+    liquid: { 
+        y: 300, 
+        density: 1.0, 
+        color: "rgba(56, 189, 248, 0.5)", 
+        baseLevel: 300, // Sıvının taban yüksekliği (ekran koordinatı)
+        volume: 100 // Başlangıç sıvı hacmi (L)
+    },
+    
+    objects: [],
+    
+    // Etkileşim
+    draggedObj: null,
+    dragOffset: {x:0, y:0},
+    gravity: 0.5,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        
+        this.setupEvents();
+        this.setupUI();
+        
+        // Örnek Başlangıç: 1 Tahta, 1 Tuğla
+        this.spawnObject('wood', this.width/2 - 100, 100);
+        this.spawnObject('brick', this.width/2 + 100, 100);
+
+        this.loop();
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        this.width = this.canvas.width = el.clientWidth;
+        this.height = this.canvas.height = el.clientHeight;
+        this.liquid.baseLevel = this.height - 100; // Alttan 100px boşluk
+    },
+
+    setupUI() {
+        const updateCalc = () => {
+            const m = parseFloat(document.getElementById('slMass').value);
+            const v = parseFloat(document.getElementById('slVol').value);
+            const d = m / v;
+            document.getElementById('valMass').innerText = m.toFixed(1);
+            document.getElementById('valVol').innerText = v.toFixed(1);
+            document.getElementById('valDensity').innerText = d.toFixed(2) + " g/cm³";
+        };
+        document.getElementById('slMass').oninput = updateCalc;
+        document.getElementById('slVol').oninput = updateCalc;
+    },
+
+    resetScene() {
+        this.objects = [];
+        this.liquid.y = this.liquid.baseLevel - 200; // Su seviyesini sıfırla
+    },
+
+    setLiquid(density, type, btn) {
+        this.liquid.density = density;
+        document.getElementById('lblLiquidD').innerText = density.toFixed(2) + " g/cm³";
+        
+        if(type === 'water') this.liquid.color = "rgba(56, 189, 248, 0.5)";
+        else if(type === 'oil') this.liquid.color = "rgba(253, 224, 71, 0.6)"; // Sarı
+        else if(type === 'honey') this.liquid.color = "rgba(217, 119, 6, 0.7)"; // Turuncu
+        
+        // Buton stili
+        document.querySelectorAll('.lq-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    },
+
+    // --- OBJE YÖNETİMİ ---
+    spawnObject(type, startX, startY) {
+        let m=5, v=5, color="#ccc";
+        
+        // Özkütle değerleri (yaklaşık)
+        switch(type) {
+            case 'wood': m=3; v=5; color="#d97706"; break; // d=0.6
+            case 'ice': m=4.6; v=5; color="#e0f2fe"; break; // d=0.92
+            case 'brick': m=10; v=5; color="#991b1b"; break; // d=2.0
+            case 'gold': m=19.3; v=1; color="#facc15"; break; // d=19.3 (Küçük hacim)
+            default: break;
+        }
+
+        this.createBox(
+            startX || this.width/2 + (Math.random()*100-50), 
+            startY || 50, 
+            m, v, color, type
+        );
+    },
+
+    spawnCustom() {
+        const m = parseFloat(document.getElementById('slMass').value);
+        const v = parseFloat(document.getElementById('slVol').value);
+        this.createBox(this.width/2, 50, m, v, "#8b5cf6", "Özel");
+    },
+
+    createBox(x, y, m, v, color, label) {
+        // Hacmi piksel boyutuna çevir (1L = 100x100px küp gibi düşünelim basitleştirme için)
+        // Alan = v * 1000 olsun. Karekökü kenar uzunluğu.
+        const size = Math.sqrt(v * 2500); // Görsel ölçekleme
+        
+        this.objects.push({
+            x: x, y: y,
+            m: m, v: v,
+            w: size, h: size, // Kare şeklinde
+            color: color,
+            label: label,
+            vx: 0, vy: 0,
+            onWater: false
+        });
+    },
+
+    // --- FİZİK MOTORU ---
+    updatePhysics() {
+        // 1. Önce Su Seviyesini Hesapla (Arşimet)
+        // Toplam batan hacmi bul
+        let totalSubmergedVol = 0;
+        
+        // Sıvı Yüzeyi (Görsel olarak ne kadar yükseldi?)
+        // Başlangıç seviyesi (Hacim yokken): this.liquid.baseLevel - 250
+        const baseY = this.liquid.baseLevel - 250;
+        let currentLiquidY = baseY;
+
+        // İteratif çözüm gerekli normalde ama burada bir kare gecikmeli hesaplayacağız
+        // ya da basitçe: Batan hacim kadar Y'yi yukarı çek.
+        // Tank genişliği = this.width. 
+        // Yükselme = BatanHacim / TankKesiti
+        // Basitleştirme: 1L hacim = 10px yükselme diyelim.
+        
+        this.objects.forEach(o => {
+            // Cisim suyun içinde mi?
+            // Basit AABB: Cisim altı > Su yüzeyi
+            // Su yüzeyi dinamik olduğu için biraz hileli.
+            // Önceki karedeki su seviyesini kullanalım.
+            const waterLevel = this.liquid.y;
+            
+            // Batan Yükseklik
+            let submergedH = 0;
+            if (o.y + o.h/2 > waterLevel) {
+                submergedH = (o.y + o.h/2) - waterLevel;
+                if(submergedH > o.h) submergedH = o.h; // Tamamen battı
+            }
+            
+            if(submergedH > 0) {
+                // Batan hacim oranı
+                const ratio = submergedH / o.h;
+                totalSubmergedVol += o.v * ratio;
+                o.onWater = true;
+                
+                // KALDIRMA KUVVETİ (F_kaldırma = V_batan * d_sıvı * g)
+                // V_batan görsel pikseller değil, fiziksel litre cinsinden
+                const v_sub = o.v * ratio;
+                const F_b = v_sub * this.liquid.density * this.gravity;
+                
+                // Cisme kuvvet uygula
+                // F_net = F_kaldırma - G
+                // G = m * g
+                const G = o.m * this.gravity;
+                const F_net = F_b - G;
+                
+                // Suyun içinde sürtünme (Drag)
+                o.vy *= 0.9; 
+                o.vx *= 0.9;
+                
+                // İvme = F / m
+                o.vy -= F_net / o.m; // Yukarı yön eksi
+                
+            } else {
+                o.onWater = false;
+                // Havadayken sadece yerçekimi
+                o.vy += this.gravity;
+            }
+            
+            // Sürükleniyorsa fiziği durdur
+            if(o === this.draggedObj) {
+                o.vx = 0; o.vy = 0;
+            } else {
+                o.y += o.vy;
+                o.x += o.vx;
+            }
+
+            // Çarpışma (Taban ve Duvarlar)
+            // Taban (Sıvı kabının dibi)
+            const floorY = this.liquid.baseLevel;
+            if(o.y + o.h/2 > floorY) {
+                o.y = floorY - o.h/2;
+                o.vy = 0;
+            }
+            // Duvarlar
+            if(o.x - o.w/2 < 0) { o.x = o.w/2; o.vx *= -0.5; }
+            if(o.x + o.w/2 > this.width) { o.x = this.width - o.w/2; o.vx *= -0.5; }
+        });
+
+        // Su Seviyesini Güncelle
+        // 1 Litre batan cisim = 5px yükselme
+        const rise = totalSubmergedVol * 8; 
+        // Hedeflenen su seviyesine yumuşak geçiş
+        const targetY = baseY - rise;
+        this.liquid.y += (targetY - this.liquid.y) * 0.1;
+
+        // UI için hacim güncelleme
+        this.liquid.displaced = totalSubmergedVol;
+    },
+
+    // --- ÇİZİM ---
+    draw() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.width, this.height);
+
+        // 1. Kabı Çiz
+        const floorY = this.liquid.baseLevel;
+        ctx.fillStyle = "#cbd5e1";
+        // Sol Duvar
+        ctx.fillRect(0, 100, 10, floorY - 100);
+        // Sağ Duvar
+        ctx.fillRect(this.width-10, 100, 10, floorY - 100);
+        // Zemin
+        ctx.fillRect(0, floorY, this.width, 20);
+
+        // 2. Sıvıyı Çiz
+        ctx.fillStyle = this.liquid.color;
+        const ly = this.liquid.y;
+        ctx.fillRect(10, ly, this.width-20, floorY - ly);
+        
+        // Sıvı Yüzeyi Çizgisi
+        ctx.beginPath(); ctx.moveTo(10, ly); ctx.lineTo(this.width-10, ly);
+        ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 3; ctx.stroke();
+
+        // 3. Ölçüm Çizgileri (Beaker Scale)
+        ctx.fillStyle = "rgba(0,0,0,0.3)";
+        ctx.font = "12px sans-serif";
+        ctx.textAlign = "right";
+        for(let y = floorY; y > 100; y -= 50) {
+            ctx.fillRect(this.width-30, y, 20, 2);
+            // Litre hesabı (sanal)
+            const l = Math.round((floorY - y) / 5);
+            ctx.fillText(l + "L", this.width-35, y+4);
+        }
+
+        // 4. Objeleri Çiz
+        this.objects.forEach(o => {
+            ctx.save();
+            ctx.translate(o.x, o.y);
+            
+            // Gölge
+            ctx.shadowBlur = 10; ctx.shadowColor = "rgba(0,0,0,0.2)";
+            
+            // Kutu
+            ctx.fillStyle = o.color;
+            ctx.fillRect(-o.w/2, -o.h/2, o.w, o.h);
+            
+            // Kenarlık
+            ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 2;
+            ctx.strokeRect(-o.w/2, -o.h/2, o.w, o.h);
+            
+            // Yazı
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#000";
+            ctx.font = "bold 12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(o.label, 0, -5);
+            ctx.font = "10px sans-serif";
+            const d = (o.m / o.v).toFixed(1);
+            ctx.fillText(`d=${d}`, 0, 10);
+            
+            ctx.restore();
+        });
+        
+        // 5. Tooltip (Taşan Sıvı)
+        ctx.fillStyle = "#0369a1";
+        ctx.font = "bold 16px sans-serif";
+        ctx.textAlign = "left";
+        const totalV = (100 + this.liquid.displaced).toFixed(1); // 100L başlangıç
+        ctx.fillText(`Toplam Hacim: ${totalV} L`, 20, 50);
+        ctx.fillStyle = "#ef4444";
+        ctx.fillText(`Yükselme: +${this.liquid.displaced.toFixed(1)} L`, 20, 70);
+    },
+
+    // --- EVENTS ---
+    setupEvents() {
+        const getPos = (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const cx = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const cy = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            return { x: cx - rect.left, y: cy - rect.top };
+        };
+
+        const start = (e) => {
+            const m = getPos(e);
+            // En üstteki objeyi seç
+            for(let i=this.objects.length-1; i>=0; i--) {
+                const o = this.objects[i];
+                if(Math.abs(m.x - o.x) < o.w/2 && Math.abs(m.y - o.y) < o.h/2) {
+                    this.draggedObj = o;
+                    this.dragOffset.x = m.x - o.x;
+                    this.dragOffset.y = m.y - o.y;
+                    
+                    // Tooltip Göster
+                    const tt = document.getElementById('tooltip');
+                    tt.style.display = 'block';
+                    tt.innerHTML = `<b>${o.label}</b><br>Kütle: ${o.m}kg<br>Hacim: ${o.v}L<br>Özkütle: ${(o.m/o.v).toFixed(2)}`;
+                    break;
+                }
+            }
+        };
+
+        const move = (e) => {
+            const m = getPos(e);
+            if(this.draggedObj) {
+                this.draggedObj.x = m.x - this.dragOffset.x;
+                this.draggedObj.y = m.y - this.dragOffset.y;
+                this.draggedObj.vx = 0; this.draggedObj.vy = 0;
+                
+                // Tooltip takip
+                const tt = document.getElementById('tooltip');
+                tt.style.left = (e.clientX + 15) + 'px';
+                tt.style.top = (e.clientY + 15) + 'px';
+            }
+        };
+
+        const end = () => { 
+            this.draggedObj = null; 
+            document.getElementById('tooltip').style.display = 'none';
+        };
+
+        this.canvas.addEventListener('mousedown', start);
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', end);
+        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, {passive:false});
+        window.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive:false});
+        window.addEventListener('touchend', end);
+    },
+
+    loop() {
+        this.updatePhysics();
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+app.init();
+</script>
+</body>
+</html>
