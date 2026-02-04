@@ -70,53 +70,62 @@ function showPage(pageId, updateUrl = true) {
 }
 
 // ==========================================
-// 2. MODAL VE GERİ TUŞU YÖNETİMİ (DÜZELTİLDİ)
+// 2. MODAL VE IFRAME YÖNETİMİ (KESİN ÇÖZÜM)
 // ==========================================
 
 function openSim(url, title) {
     const modal = document.getElementById('simModal');
-    const frame = document.getElementById('simFrame');
+    const container = document.getElementById('simContainer');
     const titleEl = document.getElementById('modalTitle');
     
     titleEl.innerText = title; 
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
-    // 1. Önce geçmişe "Modal Açık" bilgisini ekliyoruz.
+    // 1. Geçmişe sadece modal için TEK bir kayıt ekle
     history.pushState({modalOpen: true}, null, window.location.hash); 
 
-    // 2. KRİTİK DÜZELTME BURADA:
-    // frame.src = url yaparsak tarayıcı bunu yeni sayfa sanıp geçmişe ekliyor.
-    // replace() kullanırsak geçmişe eklemeden mevcut boş sayfayı değiştirir.
-    if (frame.contentWindow) {
-        frame.contentWindow.location.replace(url);
-    } else {
-        frame.src = url;
-    }
+    // 2. Iframe'i sıfırdan oluştur ve içeri at
+    // Bu sayede tarayıcı iframe'in içindeki yönlenmeleri ana geçmişe yazamaz
+    container.innerHTML = `<iframe id="simFrame" src="${url}" class="absolute inset-0 w-full h-full border-none" allowfullscreen></iframe>`;
 }
 
 function closeSim() {
-    // Geri tuşunu tetikle (popstate çalışacak ve kapatacak)
+    // Sadece geri git komutu veriyoruz
     history.back();
 }
 
-// Tarayıcının Geri Tuşunu Dinleyen Olay
+// Tarayıcı Geri Tuşu veya closeSim tetiklendiğinde
 window.addEventListener('popstate', function(event) {
     const modal = document.getElementById('simModal');
-    const frame = document.getElementById('simFrame');
+    const container = document.getElementById('simContainer');
     
-    // Eğer modal açıksa kapat
     if (!modal.classList.contains('hidden')) {
         modal.classList.add('hidden');
-        // Iframe'i temizlerken de replace kullanıyoruz ki geçmiş kirlenmesin
-        if (frame.contentWindow) {
-            frame.contentWindow.location.replace('about:blank');
-        } else {
-            frame.src = ""; 
-        }
         document.body.style.overflow = 'auto';
+        
+        // IFRAME'İ TAMAMEN SİL
+        // Beyaz ekran sorununun çözümü burasıdır. 
+        // Iframe yok edildiği için geçmişteki hayaleti de gider.
+        container.innerHTML = ""; 
     }
 });
+
+// shareSim fonksiyonu için küçük bir düzeltme (frame artık dinamik)
+function shareSim() {
+    const frame = document.getElementById('simFrame');
+    if (!frame) return;
+
+    const currentUrl = frame.src; // Dinamik yapıda doğrudan src güvenilirdir
+
+    if (!currentUrl || currentUrl === "") {
+        alert("Lütfen önce listeden bir simülasyon başlatın.");
+        return;
+    }
+
+    const embedCode = `<iframe src="${currentUrl}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
+    window.prompt("Bu simülasyonu sitene eklemek için kodu kopyala (CTRL+C):", embedCode);
+}
 
 // ==========================================
 // 3. DİĞER FONKSİYONLAR
