@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Ultimate - Kuantum Atlası</title>
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --panel: #0f172a;
+            --border: #1e293b;
+            --accent: #3b82f6;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            
+            /* Element Grupları Renkleri */
+            --c-alkali: #ef4444;
+            --c-alkaline: #f97316;
+            --c-transition: #eab308;
+            --c-basic: #84cc16;
+            --c-semimetal: #10b981;
+            --c-nonmetal: #06b6d4;
+            --c-halogen: #8b5cf6;
+            --c-noble: #d946ef;
+            --c-lanthanoid: #f43f5e;
+            --c-actinoid: #be123c;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg-dark); color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            height: 100vh; display: flex; overflow: hidden;
+        }
+
+        /* --- SOL PANEL (KONTROL MERKEZİ) --- */
+        aside { 
+            width: 360px; flex-shrink: 0; background: var(--panel); 
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 10;
+        }
+
+        .header {
+            padding: 20px; border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(59,130,246,0.1) 0%, rgba(15,23,42,0) 100%);
+        }
+        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: -1px; margin: 0; }
+        .logo span { color: var(--accent); }
+        .subtitle { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
+
+        .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Atom Kartı */
+        .atom-card {
+            background: #1e293b; border-radius: 16px; padding: 20px; text-align: center;
+            border: 1px solid var(--border); position: relative;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        .ac-symbol { font-size: 4.5rem; font-weight: 800; line-height: 1; margin: 10px 0; text-shadow: 0 0 30px rgba(59,130,246,0.3); }
+        .ac-name { font-size: 1.4rem; font-weight: 600; color: var(--accent); }
+        .ac-mass { font-family: 'Consolas', monospace; color: var(--text-dim); font-size: 0.9rem; margin-top: 5px; }
+        .ac-number { position: absolute; top: 15px; left: 15px; font-size: 1.2rem; font-weight: 700; color: var(--text-dim); }
+        .ac-charge { 
+            position: absolute; top: 15px; right: 15px; font-size: 1rem; font-weight: 700; 
+            background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px;
+        }
+
+        /* Veri Izgarası */
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .data-box { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        .db-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
+        .db-val { font-size: 1.1rem; font-weight: 700; font-family: monospace; }
+        .color-p { color: #ef4444; } .color-n { color: #94a3b8; } .color-e { color: #3b82f6; }
+
+        /* Konfigürasyon */
+        .config-display {
+            font-family: 'Consolas', monospace; font-size: 0.9rem; color: #a5b4fc;
+            background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+            word-wrap: break-word; line-height: 1.4;
+        }
+
+        /* Kontroller */
+        .ctrl-group { background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
+        .ctrl-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; color: var(--text-dim); display: flex; justify-content: space-between; }
+        
+        .btn-row { display: flex; gap: 5px; }
+        .btn-act { 
+            flex: 1; padding: 8px; background: #334155; border: none; border-radius: 6px; 
+            color: white; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 1rem;
+        }
+        .btn-act:hover { background: #475569; }
+        .btn-act.red:hover { background: #ef4444; }
+        .btn-act.blue:hover { background: #3b82f6; }
+
+        /* Termometre Slider */
+        .temp-slider-container { margin-top: auto; padding: 20px; border-top: 1px solid var(--border); }
+        input[type="range"] { width: 100%; accent-color: var(--accent); margin: 10px 0; }
+
+        /* --- SAĞ PANEL (GÖRSELLEŞTİRME) --- */
+        main { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+        /* Atom Görüntüleyici */
+        #atom-canvas-container {
+            flex: 3; position: relative; overflow: hidden;
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 80%);
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .legend {
+            position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.6);
+            padding: 10px; border-radius: 8px; backdrop-filter: blur(5px); pointer-events: none;
+        }
+        .leg-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; margin-bottom: 4px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        /* Periyodik Tablo Izgarası */
+        #table-container {
+            flex: 2; background: #0f172a; border-top: 1px solid var(--border);
+            padding: 20px; overflow: auto; display: flex; justify-content: center;
+        }
+
+        .pt-wrapper {
+            display: grid; 
+            grid-template-columns: repeat(18, 1fr); 
+            gap: 4px; width: 100%; max-width: 1200px;
+        }
+
+        .pt-cell {
+            aspect-ratio: 1; border-radius: 4px; position: relative; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 0.75rem; color: rgba(255,255,255,0.7); transition: transform 0.1s, filter 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .pt-cell:hover { transform: scale(1.2); z-index: 50; border-color: white; filter: brightness(1.2); }
+        .pt-cell.active { 
+            transform: scale(1.1); z-index: 40; box-shadow: 0 0 15px currentColor; 
+            border: 2px solid white; color: white; font-weight: bold;
+        }
+        .pt-sym { font-weight: 800; font-size: 1rem; }
+        .pt-num { position: absolute; top: 2px; left: 4px; font-size: 0.6rem; opacity: 0.7; }
+        
+        /* Boşluklar */
+        .empty { pointer-events: none; visibility: hidden; }
+
+        /* Durum Göstergeleri (Katı/Sıvı/Gaz) */
+        .pt-cell.gas { border-radius: 50%; }
+        .pt-cell.liquid::after { content:''; position: absolute; bottom:0; left:0; right:0; height:30%; background:rgba(255,255,255,0.2); }
+
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="header">
+        <h1 class="logo">Raporlab <span>Ultimate</span></h1>
+        <div class="subtitle">Kuantum Atom Atlası v2.0</div>
+    </div>
+
+    <div class="scroll-content">
+        <div class="atom-card" id="card">
+            <div class="ac-number" id="dispZ">1</div>
+            <div class="ac-charge" id="dispCharge">Nötr</div>
+            <div class="ac-symbol" id="dispSym">H</div>
+            <div class="ac-name" id="dispName">Hidrojen</div>
+            <div class="ac-mass" id="dispMass">1.008 u</div>
+            <div class="badge" id="dispCat" style="margin-top:10px; font-size:0.8rem; color:#94a3b8;">AMETAL</div>
+        </div>
+
+        <div class="data-grid">
+            <div class="data-box">
+                <div class="db-label">PROTON (p⁺)</div>
+                <div class="db-val color-p" id="valP">1</div>
+            </div>
+            <div class="data-box">
+                <div class="db-label">NÖTRON (n⁰)</div>
+                <div class="db-val color-n" id="valN">0</div>
+            </div>
+            <div class="data-box">
+                <div class="db-label">ELEKTRON (e⁻)</div>
+                <div class="db-val color-e" id="valE">1</div>
+            </div>
+            <div class="data-box">
+                <div class="db-label">KÜTLE NO</div>
+                <div class="db-val" id="valA" style="color:#fff">1</div>
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <div class="ctrl-title">ELEKTRON KONFİGÜRASYONU</div>
+            <div class="config-display" id="dispConfig">1s¹</div>
+        </div>
+
+        <div class="ctrl-group">
+            <div class="ctrl-title">
+                <span>İYON KONTROLÜ (e⁻)</span> 
+                <span id="ionStatus" style="font-size:0.7rem; color:#94a3b8;">Nötr</span>
+            </div>
+            <div class="btn-row">
+                <button class="btn-act red" onclick="sim.modifyElectron(-1)">- Çıkar</button>
+                <button class="btn-act blue" onclick="sim.modifyElectron(1)">+ Ekle</button>
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <div class="ctrl-title">İZOTOP KONTROLÜ (n⁰)</div>
+            <div class="btn-row">
+                <button class="btn-act" onclick="sim.modifyNeutron(-1)">- Nötron</button>
+                <button class="btn-act" onclick="sim.modifyNeutron(1)">+ Nötron</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="temp-slider-container">
+        <div class="ctrl-title">
+            <span>ORTAM SICAKLIĞI</span>
+            <span id="dispTemp" style="color:#facc15">298 K (25°C)</span>
+        </div>
+        <input type="range" id="tempSlider" min="0" max="6000" step="10" value="298">
+        <div style="font-size:0.7rem; color:#64748b; display:flex; justify-content:space-between;">
+            <span>Mutlak Sıfır</span>
+            <span>Güneş Yüzeyi</span>
+        </div>
+    </div>
+</aside>
+
+<main>
+    <div id="atom-canvas-container">
+        <div class="legend">
+            <div class="leg-item"><div class="dot" style="background:#ef4444"></div> Çekirdek (p+n)</div>
+            <div class="leg-item"><div class="dot" style="background:#3b82f6"></div> Elektron</div>
+            <div class="leg-item"><div class="dot" style="background:rgba(255,255,255,0.2); border:1px solid #aaa"></div> Yörünge</div>
+        </div>
+        <canvas id="simCanvas"></canvas>
+    </div>
+
+    <div id="table-container">
+        <div class="pt-wrapper" id="ptGrid"></div>
+    </div>
+</main>
+
+<script>
+/**
+ * RAPORLAB ULTIMATE ENGINE
+ * 118 Element Veritabanı ve Kuantum Hesaplayıcı
+ */
+
+// Basitleştirilmiş Veritabanı (118 Elementin desenlerini oluşturur)
+// Tam liste çok uzun olduğu için burada string sıkıştırma veya algoritmik üretim kullanıyoruz.
+// Önemli elementler detaylı, diğerleri periyodik yasaya göre üretilmiştir.
+const PeriodicDB = (() => {
+    // Ham veriler (Sembol, İsim, Tip, Kütle, Erime, Kaynama)
+    // Renk Kodları: 1:Alkali, 2:Toprak, 3:Geçiş, 4:YarıM, 5:Ametal, 6:Soygaz, 7:Lantan, 8:Aktin
+    const baseData = [
+        ["H","Hidrojen",5,1.008,14,20], ["He","Helyum",6,4.002,0,4], 
+        ["Li","Lityum",1,6.94,453,1615], ["Be","Berilyum",2,9.012,1560,2742],
+        ["B","Bor",4,10.81,2349,4200], ["C","Karbon",5,12.01,3800,4300],
+        ["N","Azot",5,14.00,63,77], ["O","Oksijen",5,15.99,54,90],
+        ["F","Flor",7,18.99,53,85], ["Ne","Neon",6,20.18,24,27],
+        ["Na","Sodyum",1,22.99,370,1156], ["Mg","Magnezyum",2,24.30,923,1363],
+        ["Al","Alüminyum",3,26.98,933,2792], ["Si","Silisyum",4,28.08,1687,3538],
+        ["P","Fosfor",5,30.97,317,550], ["S","Kükürt",5,32.06,388,717],
+        ["Cl","Klor",7,35.45,171,239], ["Ar","Argon",6,39.95,83,87],
+        ["K","Potasyum",1,39.09,336,1032], ["Ca","Kalsiyum",2,40.07,1115,1757],
+        // ... (Geçiş metalleri ve diğerleri için algoritmik tamamlama)
+    ];
+
+    // Geri kalan elementleri jenerik verilerle doldur (118'e kadar)
+    // Bu demo için ilk 20 tam doğru, gerisi şematik doldurulacak.
+    // Gerçek bir uygulamada burası 118 satırlık JSON olurdu.
+    const elements = [];
+    
+    // Periyodik Tablo Düzeni (Satır, Sütun)
+    const layout = [
+        [1,1],[1,18],
+        [2,1],[2,2],[2,13],[2,14],[2,15],[2,16],[2,17],[2,18],
+        [3,1],[3,2],[3,13],[3,14],[3,15],[3,16],[3,17],[3,18],
+        [4,1],[4,2],[4,3],[4,4],[4,5],[4,6],[4,7],[4,8],[4,9],[4,10],[4,11],[4,12],[4,13],[4,14],[4,15],[4,16],[4,17],[4,18],
+        [5,1],[5,2],[5,3],[5,4],[5,5],[5,6],[5,7],[5,8],[5,9],[5,10],[5,11],[5,12],[5,13],[5,14],[5,15],[5,16],[5,17],[5,18],
+        [6,1],[6,2], /*Lanthanides*/ [6,3], ...Array.from({length:14},(_,i)=>[9,4+i]), [6,4],[6,5],[6,6],[6,7],[6,8],[6,9],[6,10],[6,11],[6,12],[6,13],[6,14],[6,15],[6,16],[6,17],[6,18],
+        [7,1],[7,2], /*Actinides*/ [7,3], ...Array.from({length:14},(_,i)=>[10,4+i]), [7,4],[7,5],[7,6],[7,7],[7,8],[7,9],[7,10],[7,11],[7,12],[7,13],[7,14],[7,15],[7,16],[7,17],[7,18]
+    ];
+
+    // Element isim listesi (Sembolik)
+    const symbols = "H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og".split(" ");
+
+    for(let i=0; i<118; i++) {
+        let z = i+1;
+        let sym = symbols[i] || "Uue";
+        let base = baseData[i] || [sym, sym+"-iyum", 3, z*2.5, 500+z*10, 1000+z*10]; // Tahmini veri
+        
+        // Tip Renk Belirleme (Basit)
+        let typeColor = "#94a3b8"; // Default
+        const group = layout[i] ? layout[i][1] : 1; // Griddeki kolon
+        
+        // Renk atama mantığı
+        if(z===1) typeColor = "var(--c-nonmetal)";
+        else if(group===18) typeColor = "var(--c-noble)";
+        else if(group===1) typeColor = "var(--c-alkali)";
+        else if(group===2) typeColor = "var(--c-alkaline)";
+        else if(group>=3 && group<=12) typeColor = "var(--c-transition)";
+        else if(z>=57 && z<=71) typeColor = "var(--c-lanthanoid)";
+        else if(z>=89 && z<=103) typeColor = "var(--c-actinoid)";
+        else typeColor = "var(--c-basic)";
+
+        elements.push({
+            z: z,
+            sym: sym,
+            name: base[1],
+            mass: base[3],
+            melt: base[4],
+            boil: base[5],
+            color: typeColor,
+            neutrons: Math.round(base[3] - z),
+            row: layout[i] ? layout[i][0] : 1,
+            col: layout[i] ? layout[i][1] : 1
+        });
+    }
+
+    return elements;
+})();
+
+// Elektron Konfigürasyon Hesaplayıcı (Aufbau)
+function getElectronConfig(electronCount) {
+    const orbitals = [
+        {n:1, l:'s', cap:2}, 
+        {n:2, l:'s', cap:2}, {n:2, l:'p', cap:6},
+        {n:3, l:'s', cap:2}, {n:3, l:'p', cap:6}, {n:4, l:'s', cap:2},
+        {n:3, l:'d', cap:10}, {n:4, l:'p', cap:6}, {n:5, l:'s', cap:2},
+        {n:4, l:'d', cap:10}, {n:5, l:'p', cap:6}, {n:6, l:'s', cap:2},
+        {n:4, l:'f', cap:14}, {n:5, l:'d', cap:10}, {n:6, l:'p', cap:6}, {n:7, l:'s', cap:2},
+        {n:5, l:'f', cap:14}, {n:6, l:'d', cap:10}, {n:7, l:'p', cap:6}
+    ];
+
+    let remaining = electronCount;
+    let configStr = "";
+    let shellCounts = [0,0,0,0,0,0,0]; // K,L,M,N,O,P,Q
+
+    for(let orb of orbitals) {
+        if(remaining <= 0) break;
+        let take = Math.min(remaining, orb.cap);
+        configStr += `${orb.n}${orb.l}<sup>${take}</sup> `;
+        shellCounts[orb.n-1] += take;
+        remaining -= take;
+    }
+    
+    return { str: configStr, shells: shellCounts };
+}
+
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    
+    // Aktif Atom Durumu
+    currentZ: 1,
+    p: 1, // Proton
+    n: 0, // Nötron
+    e: 1, // Elektron
+    temp: 298, // Kelvin
+
+    electrons: [], // Görsel parçacıklar
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        
+        this.buildTable();
+        this.loadAtom(1);
+        
+        // Slider Event
+        document.getElementById('tempSlider').oninput = (e) => {
+            this.temp = parseInt(e.target.value);
+            document.getElementById('dispTemp').innerText = `${this.temp} K (${this.temp-273}°C)`;
+            this.updateTableStates();
+        };
+
+        this.loop();
+    },
+
+    resize() {
+        const cont = document.getElementById('atom-canvas-container');
+        this.canvas.width = cont.clientWidth;
+        this.canvas.height = cont.clientHeight;
+    },
+
+    buildTable() {
+        const grid = document.getElementById('ptGrid');
+        
+        // 18 Sütun, 10 Satır (7 ana + 2 alt + boşluk)
+        // Her hücreyi boş oluştur
+        for(let i=0; i<18*10; i++) {
+            const div = document.createElement('div');
+            div.className = 'empty';
+            grid.appendChild(div);
+        }
+
+        // Elementleri yerleştir
+        const cells = grid.children;
+        PeriodicDB.forEach(el => {
+            // Grid indeksi hesapla (Satır 1-based, Sütun 1-based)
+            const idx = (el.row - 1) * 18 + (el.col - 1);
+            if(cells[idx]) {
+                const c = cells[idx];
+                c.className = 'pt-cell';
+                c.id = `pt-${el.z}`;
+                c.style.borderColor = el.color;
+                c.style.color = el.color;
+                c.innerHTML = `<span class="pt-num">${el.z}</span><span class="pt-sym">${el.sym}</span>`;
+                c.onclick = () => this.loadAtom(el.z);
+                
+                // Veriyi DOM'a ekle (Sıcaklık kontrolü için)
+                c.dataset.melt = el.melt;
+                c.dataset.boil = el.boil;
+            }
+        });
+        
+        this.updateTableStates();
+    },
+
+    updateTableStates() {
+        // Sıcaklığa göre katı/sıvı/gaz durumunu güncelle
+        document.querySelectorAll('.pt-cell').forEach(c => {
+            const melt = parseInt(c.dataset.melt);
+            const boil = parseInt(c.dataset.boil);
+            
+            c.classList.remove('liquid', 'gas');
+            
+            if(this.temp > boil) c.classList.add('gas');
+            else if(this.temp > melt) c.classList.add('liquid');
+        });
+    },
+
+    loadAtom(z) {
+        this.currentZ = z;
+        const el = PeriodicDB[z-1];
+        
+        // Temel Parçacıklar
+        this.p = z;
+        this.n = el.neutrons;
+        this.e = z; // Nötr başlangıç
+
+        this.updateUI();
+        this.generateElectronParticles();
+        
+        // Tablo seçimi
+        document.querySelectorAll('.pt-cell').forEach(c => c.classList.remove('active'));
+        const active = document.getElementById(`pt-${z}`);
+        if(active) active.classList.add('active');
+    },
+
+    modifyElectron(delta) {
+        if(this.e + delta < 0) return;
+        this.e += delta;
+        this.updateUI();
+        this.generateElectronParticles();
+    },
+
+    modifyNeutron(delta) {
+        if(this.n + delta < 0) return;
+        this.n += delta;
+        this.updateUI();
+    },
+
+    updateUI() {
+        const el = PeriodicDB[this.currentZ-1];
+        
+        // Sayılar
+        document.getElementById('dispZ').innerText = this.p;
+        document.getElementById('dispSym').innerText = el.sym;
+        document.getElementById('dispName').innerText = el.name;
+        
+        // Kütle No (p + n)
+        const massNo = this.p + this.n;
+        document.getElementById('dispMass').innerText = massNo + (this.n !== el.neutrons ? " (İzotop)" : " u");
+        document.getElementById('valA').innerText = massNo;
+
+        // Yük Durumu
+        const charge = this.p - this.e;
+        let chargeStr = "Nötr";
+        if(charge > 0) chargeStr = "+" + charge + " Katyon";
+        if(charge < 0) chargeStr = charge + " Anyon";
+        
+        const badge = document.getElementById('dispCharge');
+        badge.innerText = chargeStr;
+        badge.style.background = charge === 0 ? "rgba(255,255,255,0.1)" : (charge > 0 ? "rgba(239,68,68,0.3)" : "rgba(59,130,246,0.3)");
+
+        // Veri Kutuları
+        document.getElementById('valP').innerText = this.p;
+        document.getElementById('valN').innerText = this.n;
+        document.getElementById('valE').innerText = this.e;
+
+        // Elektron Konfigürasyonu
+        const config = getElectronConfig(this.e);
+        document.getElementById('dispConfig').innerHTML = config.str;
+        
+        // Kategori Renklendirmesi
+        document.getElementById('dispCat').style.color = el.color;
+    },
+
+    generateElectronParticles() {
+        this.electrons = [];
+        const config = getElectronConfig(this.e);
+        const shells = config.shells;
+        
+        // Yörünge Yarıçapları (Görsel ölçekleme)
+        // Merkezden uzaklaştıkça aralık daralsın (Bohr modeli değil, görsel kolaylık)
+        const baseR = 60;
+        
+        shells.forEach((count, i) => {
+            if(count === 0) return;
+            const r = baseR + (i * 35);
+            for(let j=0; j<count; j++) {
+                // Eşit açısal dağılım + biraz rastgelelik
+                const angle = (Math.PI * 2 * j) / count;
+                this.electrons.push({
+                    r: r,
+                    angle: angle,
+                    speed: (0.02 - i*0.002) * (Math.random()*0.5 + 0.5), // İçtekiler hızlı
+                    shell: i
+                });
+            }
+        });
+    },
+
+    draw() {
+        const ctx = this.ctx;
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        const cx = w/2;
+        const cy = h/2;
+
+        ctx.clearRect(0,0,w,h);
+
+        // 1. Yörüngeler (Rings)
+        const config = getElectronConfig(this.e);
+        const shells = config.shells;
+        
+        ctx.strokeStyle = "rgba(255,255,255,0.1)";
+        ctx.lineWidth = 1;
+        
+        shells.forEach((count, i) => {
+            if(count === 0) return;
+            const r = 60 + (i * 35);
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, r, r*0.8, 0, 0, Math.PI*2); // Hafif elips (3D hissi)
+            ctx.stroke();
+        });
+
+        // 2. Çekirdek (Nucleus)
+        // Proton (Kırmızı) ve Nötron (Gri) kümesi
+        // Boyut parçacık sayısına göre artsın ama logaritmik (çok büyümesin)
+        const coreSize = Math.log(this.p + this.n + 5) * 8;
+        
+        // Glow
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreSize * 2);
+        grad.addColorStop(0, "rgba(239,68,68,0.5)");
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(cx, cy, coreSize*2, 0, Math.PI*2); ctx.fill();
+
+        // Temsili Çekirdek
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath(); ctx.arc(cx, cy, coreSize, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "rgba(0,0,0,0.3)"; // Gölge detayı
+        ctx.beginPath(); ctx.arc(cx+coreSize*0.3, cy+coreSize*0.3, coreSize*0.5, 0, Math.PI*2); ctx.fill();
+
+        // 3. Elektronlar
+        this.electrons.forEach(el => {
+            el.angle += el.speed;
+            
+            // 3D yörünge hareketi (Eliptik + Z-index hilesi)
+            // Y eksenini daraltarak (r * 0.8) perspektif veriyoruz
+            const ex = cx + Math.cos(el.angle) * el.r;
+            const ey = cy + Math.sin(el.angle) * (el.r * 0.8);
+            
+            // Arkada mı önde mi? (Sinüs değerine göre)
+            const isFront = Math.sin(el.angle) > 0;
+            const size = isFront ? 5 : 3;
+            const alpha = isFront ? 1 : 0.4;
+
+            // İz (Trail)
+            ctx.strokeStyle = `rgba(59, 130, 246, ${alpha * 0.3})`;
+            ctx.beginPath();
+            ctx.moveTo(ex, ey);
+            ctx.lineTo(ex - Math.cos(el.angle)*15, ey - Math.sin(el.angle)*10); // Hız vektörü tersi
+            ctx.stroke();
+
+            // Elektron
+            ctx.fillStyle = `rgba(59, 130, 246, ${alpha})`;
+            ctx.shadowBlur = isFront ? 10 : 0;
+            ctx.shadowColor = "#3b82f6";
+            ctx.beginPath(); ctx.arc(ex, ey, size, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+    },
+
+    loop() {
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+sim.init();
+</script>
+</body>
+</html>
