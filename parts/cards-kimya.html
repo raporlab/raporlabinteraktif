@@ -124,4 +124,47 @@
         </div>
     </div>
 
+    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-rose-400 hover:shadow-2xl hover:shadow-rose-500/10 transition-all duration-300" data-name="bağlar iyonik kovalent metalik güçlü zayıf etkileşim van der waals hidrojen">
+        
+        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-rose-50 transition-colors">
+            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+                <circle cx="70" cy="60" r="20" fill="#f43f5e" opacity="0.8" />
+                <circle cx="70" cy="60" r="6" fill="white" opacity="0.5" />
+                
+                <circle cx="130" cy="60" r="20" fill="#fb7185" opacity="0.8" />
+                <circle cx="130" cy="60" r="6" fill="white" opacity="0.5" />
+                
+                <path d="M 85 60 L 115 60" stroke="#fda4af" stroke-width="4" stroke-dasharray="4">
+                    <animate attributeName="stroke-dashoffset" from="8" to="0" dur="1s" repeatCount="indefinite" />
+                </path>
+                
+                <circle cx="70" cy="60" r="30" stroke="#fecdd3" stroke-width="1" fill="none" />
+                <circle cx="130" cy="60" r="30" stroke="#fecdd3" stroke-width="1" fill="none" />
+                
+                <circle cx="70" cy="30" r="3" fill="#be123c">
+                    <animateTransform attributeName="transform" type="rotate" from="0 70 60" to="360 70 60" dur="3s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="130" cy="90" r="3" fill="#be123c">
+                    <animateTransform attributeName="transform" type="rotate" from="0 130 60" to="-360 130 60" dur="3s" repeatCount="indefinite" />
+                </circle>
+
+                <path d="M 95 40 L 105 50 L 100 50 L 105 60" stroke="#f43f5e" stroke-width="2" fill="none" opacity="0">
+                     <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
+                </path>
+            </svg>
+        </div>
+
+        <div class="px-3 pb-3">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-slate-800">Türler Arası Etkileşim</h3>
+                <span class="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full uppercase italic">Etkileşimler</span>
+            </div>
+            <p class="text-sm text-slate-500 mb-5">Atomlar arası güçlü bağları ve moleküller arası zayıf etkileşimleri somut modellerle keşfedin.</p>
+            
+            <button onclick="openSim('simulations/kimya/kimyasal-turler-arasi-etkilesimler.html', 'Kimyasal Türler Arası Etkileşimler')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-rose-600 group-hover:text-white transition-all shadow-sm border border-slate-100 group-hover:border-rose-600">
+                Simülasyonu Başlat
+            </button>
+        </div>
+    </div>
+
 </div>
