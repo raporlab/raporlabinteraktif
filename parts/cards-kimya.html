@@ -144,4 +144,40 @@
         </div>
     </div>
 
+    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-lime-400 hover:shadow-2xl hover:shadow-lime-500/10 transition-all duration-300" data-name="organik kimya karbon molekül bağ alkan alken alkin aromatik izomer">
+        
+        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-lime-50 transition-colors">
+            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+                <g transform="translate(100, 60)">
+                    <line x1="-30" y1="0" x2="30" y2="0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" /> <line x1="-30" y1="0" x2="-50" y2="-30" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" /> <line x1="-30" y1="0" x2="-50" y2="30" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" /> <path d="M 30 -2 L 60 -20 M 30 2 L 60 -16" stroke="#84cc16" stroke-width="2" stroke-linecap="round" opacity="0.8" />
+
+                    <circle cx="-30" cy="0" r="12" fill="#475569" stroke="#64748b" stroke-width="1" />
+                    <circle cx="30" cy="0" r="12" fill="#475569" stroke="#64748b" stroke-width="1" />
+                    
+                    <circle cx="-50" cy="-30" r="6" fill="#e2e8f0" />
+                    <circle cx="-50" cy="30" r="6" fill="#e2e8f0" />
+                    <circle cx="60" cy="-18" r="6" fill="#e2e8f0" />
+
+                    <animateTransform attributeName="transform" type="rotate" values="0; 5; 0; -5; 0" dur="6s" repeatCount="indefinite" additive="sum"/>
+                </g>
+
+                <path d="M 160 30 L 170 45 L 160 60 L 140 60 L 130 45 L 140 30 Z" stroke="#a3e635" stroke-width="1" fill="none" opacity="0.2" transform="rotate(-20 150 45)">
+                    <animateTransform attributeName="transform" type="rotate" from="-20 150 45" to="340 150 45" dur="20s" repeatCount="indefinite" />
+                </path>
+            </svg>
+        </div>
+
+        <div class="px-3 pb-3">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-slate-800">Organik Kimya</h3>
+                <span class="text-[10px] font-bold bg-lime-100 text-lime-700 px-2 py-0.5 rounded-full uppercase italic">Moleküler Yapı</span>
+            </div>
+            <p class="text-sm text-slate-500 mb-5 leading-relaxed">Karbon bileşiklerinin 3D yapılarını, bağ türlerini, izomeri ve fonksiyonel grupları keşfedin.</p>
+            
+            <button onclick="openSim('simulations/kimya/organik-kimya.html', 'Organik Kimya ve Moleküller')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-lime-600 group-hover:text-white transition-all shadow-sm border border-slate-100 group-hover:border-lime-600">
+                Simülasyonu Başlat
+            </button>
+        </div>
+    </div>
+
 </div>
