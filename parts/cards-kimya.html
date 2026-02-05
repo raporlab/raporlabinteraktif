@@ -33,4 +33,40 @@
         </div>
     </div>
 
+    <div class="group sim-card bg-white rounded-[2rem] border border-slate-200 p-3 hover:border-purple-400 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300" data-name="atom periyodik tablo proton nötron elektron element">
+        
+        <div class="aspect-video bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center overflow-hidden group-hover:bg-purple-50 transition-colors">
+            <svg viewBox="0 0 200 120" class="w-32 h-32 transition-transform duration-500 group-hover:scale-110">
+                <ellipse cx="100" cy="60" rx="45" ry="12" stroke="#d8b4fe" stroke-width="1" fill="none" transform="rotate(0 100 60)" />
+                <ellipse cx="100" cy="60" rx="45" ry="12" stroke="#d8b4fe" stroke-width="1" fill="none" transform="rotate(60 100 60)" />
+                <ellipse cx="100" cy="60" rx="45" ry="12" stroke="#d8b4fe" stroke-width="1" fill="none" transform="rotate(120 100 60)" />
+                
+                <circle cx="100" cy="60" r="8" fill="#a855f7" />
+                <circle cx="98" cy="58" r="3" fill="#f3e8ff" opacity="0.6" />
+                
+                <circle r="3" fill="#3b82f6">
+                    <animateMotion dur="3s" repeatCount="indefinite" path="M100,60 m-45,0 a45,12 0 1,0 90,0 a45,12 0 1,0 -90,0" />
+                </circle>
+                <circle r="3" fill="#3b82f6">
+                    <animateMotion dur="3s" begin="1s" repeatCount="indefinite" path="M100,60 m-22.5,-38.9 a45,12 60 1,0 45,77.9 a45,12 60 1,0 -45,-77.9" />
+                </circle>
+                <circle r="3" fill="#3b82f6">
+                    <animateMotion dur="3s" begin="2s" repeatCount="indefinite" path="M100,60 m-22.5,38.9 a45,12 -60 1,0 45,-77.9 a45,12 -60 1,0 -45,77.9" />
+                </circle>
+            </svg>
+        </div>
+
+        <div class="px-3 pb-3">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-slate-800">Atom ve Periyodik Sistem</h3>
+                <span class="text-[10px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full uppercase italic">Etkileşimli</span>
+            </div>
+            <p class="text-sm text-slate-500 mb-5 leading-relaxed">Proton, nötron ve elektron sayılarını değiştirerek elementleri oluşturun ve özelliklerini keşfedin.</p>
+            
+            <button onclick="openSim('simulations/kimya/atom-ve-periyodik-sistem.html', 'Atom Modeli ve Periyodik Sistem')" class="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-2xl group-hover:bg-purple-600 group-hover:text-white transition-all shadow-sm border border-slate-100 group-hover:border-purple-600">
+                Simülasyonu Başlat
+            </button>
+        </div>
+    </div>
+
 </div>
