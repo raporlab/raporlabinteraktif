@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Elektro Studio (Fixed)</title>
+    <style>
+        :root {
+            /* AYDINLIK LABORATUVAR TEMASI */
+            --bg-body: #f8fafc;
+            --panel-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --primary: #2563eb;
+            --accent: #0ea5e9;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+        }
+
+        * { box-sizing: border-box; outline: none; user-select: none; }
+
+        body {
+            margin: 0; padding: 0;
+            background: var(--bg-body); color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            height: 100vh; display: flex; overflow: hidden;
+        }
+
+        /* --- SOL KONTROL PANELİ --- */
+        aside {
+            width: 340px; background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 20;
+            box-shadow: 10px 0 20px rgba(0,0,0,0.02);
+        }
+
+        .header {
+            padding: 20px; border-bottom: 1px solid var(--border);
+            background: #fff;
+        }
+        .logo { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin: 0; }
+        .logo span { color: var(--primary); }
+        
+        .controls { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* KARTLAR */
+        .card {
+            background: white; border: 1px solid var(--border);
+            border-radius: 10px; padding: 15px;
+            box-shadow: var(--shadow);
+        }
+        
+        .card-header {
+            font-size: 0.75rem; font-weight: 700; color: var(--text-light);
+            text-transform: uppercase; margin-bottom: 10px;
+            border-bottom: 2px solid #f1f5f9; padding-bottom: 5px;
+        }
+
+        .input-row { margin-bottom: 12px; }
+        .label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 5px; }
+
+        select {
+            width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;
+            background: #f8fafc; color: #334155; font-weight: 600; cursor: pointer;
+        }
+        select:hover { border-color: var(--primary); }
+
+        input[type=range] { width: 100%; accent-color: var(--primary); height: 5px; cursor: pointer; }
+
+        .val-badge {
+            float: right; background: #e0f2fe; color: var(--primary); 
+            padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;
+        }
+
+        /* TOGGLE BUTON */
+        .toggle-btn {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            background: #e2e8f0; color: #64748b; font-weight: 700; cursor: pointer;
+            transition: 0.3s; display: flex; align-items: center; justify-content: space-between;
+        }
+        .toggle-btn.active { background: #10b981; color: white; }
+        .toggle-btn::after { content: 'KAPALI'; font-size: 0.7rem; }
+        .toggle-btn.active::after { content: 'AÇIK'; }
+
+        /* VOLTMETRE */
+        .multimeter {
+            background: #1e293b; color: #4ade80; padding: 15px; border-radius: 8px;
+            text-align: center; margin-top: auto; font-family: 'Consolas', monospace;
+            border: 4px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .volt-val { font-size: 2rem; font-weight: bold; }
+        .volt-label { font-size: 0.7rem; color: #94a3b8; letter-spacing: 1px; }
+
+        /* --- SAĞ PANEL --- */
+        main { flex: 1; position: relative; background: #fff; display: flex; flex-direction: column; }
+        
+        #bench {
+            flex: 1; position: relative;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* Alt Bilgi Paneli */
+        .reaction-bar {
+            background: white; border-top: 1px solid var(--border);
+            padding: 15px; display: flex; justify-content: center; gap: 40px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+        }
+        .rxn-box { text-align: center; }
+        .rxn-head { font-size: 0.7rem; font-weight: 800; color: var(--text-light); margin-bottom: 5px; }
+        .rxn-eq { 
+            font-family: 'Consolas', monospace; font-size: 1rem; font-weight: 600; 
+            background: #f1f5f9; padding: 5px 15px; border-radius: 6px; border: 1px solid #e2e8f0;
+        }
+
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="header">
+        <h1 class="logo">Raporlab <span>İnteraktif</span></h1>
+    </div>
+
+    <div class="controls">
+        <div class="card" style="border-left: 4px solid #ef4444;">
+            <div class="card-header">SOL YARI HÜCRE</div>
+            <div class="input-row">
+                <span class="label">Elektrot Metali</span>
+                <select id="selLeft" onchange="sim.recalc()">
+                    <option value="Mg">Magnezyum (Mg)</option>
+                    <option value="Zn" selected>Çinko (Zn)</option>
+                    <option value="Cu">Bakır (Cu)</option>
+                    <option value="Ag">Gümüş (Ag)</option>
+                </select>
+            </div>
+            <div class="input-row">
+                <span class="label">Derişim <span id="txtM1" class="val-badge">1.0 M</span></span>
+                <input type="range" id="slM1" min="0.1" max="2.0" step="0.1" value="1.0" oninput="sim.recalc()">
+            </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #2563eb;">
+            <div class="card-header">SAĞ YARI HÜCRE</div>
+            <div class="input-row">
+                <span class="label">Elektrot Metali</span>
+                <select id="selRight" onchange="sim.recalc()">
+                    <option value="Mg">Magnezyum (Mg)</option>
+                    <option value="Zn">Çinko (Zn)</option>
+                    <option value="Cu" selected>Bakır (Cu)</option>
+                    <option value="Ag">Gümüş (Ag)</option>
+                </select>
+            </div>
+            <div class="input-row">
+                <span class="label">Derişim <span id="txtM2" class="val-badge">1.0 M</span></span>
+                <input type="range" id="slM2" min="0.1" max="2.0" step="0.1" value="1.0" oninput="sim.recalc()">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">DEVRE BAĞLANTISI</div>
+            <button id="btnBridge" class="toggle-btn active" onclick="sim.toggleBridge()">TUZ KÖPRÜSÜ</button>
+        </div>
+
+        <div class="multimeter">
+            <div class="volt-val" id="dispVolt">0.00 V</div>
+            <div class="volt-label">POTANSİYEL FARKI</div>
+        </div>
+    </div>
+</aside>
+
+<main>
+    <div id="bench">
+        <canvas id="canvas"></canvas>
+    </div>
+    
+    <div class="reaction-bar">
+        <div class="rxn-box">
+            <div class="rxn-head" style="color:#ef4444">ANOT (YÜKSELTGENME)</div>
+            <div class="rxn-eq" id="eqAnode">Zn → Zn²⁺ + 2e⁻</div>
+        </div>
+        <div class="rxn-box">
+            <div class="rxn-head" style="color:#2563eb">KATOT (İNDİRGENME)</div>
+            <div class="rxn-eq" id="eqCathode">Cu²⁺ + 2e⁻ → Cu</div>
+        </div>
+    </div>
+</main>
+
+<script>
+/**
+ * Raporlab Electro Engine - Fixed & Optimized
+ */
+const METALS = {
+    'Mg': { name: 'Magnezyum', E0: -2.37, n: 2, color: '#94a3b8', ion: 'Mg²⁺' },
+    'Zn': { name: 'Çinko',     E0: -0.76, n: 2, color: '#64748b', ion: 'Zn²⁺' },
+    'Cu': { name: 'Bakır',     E0: +0.34, n: 2, color: '#d97706', ion: 'Cu²⁺' },
+    'Ag': { name: 'Gümüş',     E0: +0.80, n: 1, color: '#e2e8f0', ion: 'Ag⁺'  }
+};
+
+const sim = {
+    canvas: document.getElementById('canvas'),
+    ctx: null,
+    width: 0, height: 0,
+
+    // State
+    left: 'Zn', right: 'Cu',
+    m1: 1.0, m2: 1.0,
+    hasBridge: true,
+    
+    // Calculated
+    voltage: 0,
+    anodeSide: 'left',
+    electrons: [],
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.recalc();
+        this.loop();
+    },
+
+    resize() {
+        this.width = this.canvas.width = this.canvas.parentElement.clientWidth;
+        this.height = this.canvas.height = this.canvas.parentElement.clientHeight;
+    },
+
+    toggleBridge() {
+        this.hasBridge = !this.hasBridge;
+        const btn = document.getElementById('btnBridge');
+        if(this.hasBridge) btn.classList.add('active'); else btn.classList.remove('active');
+        this.recalc();
+    },
+
+    recalc() {
+        // 1. Get Values
+        this.left = document.getElementById('selLeft').value;
+        this.right = document.getElementById('selRight').value;
+        this.m1 = parseFloat(document.getElementById('slM1').value);
+        this.m2 = parseFloat(document.getElementById('slM2').value);
+
+        // UI Update
+        document.getElementById('txtM1').innerText = this.m1.toFixed(1) + " M";
+        document.getElementById('txtM2').innerText = this.m2.toFixed(1) + " M";
+
+        const mL = METALS[this.left];
+        const mR = METALS[this.right];
+
+        // 2. Circuit Logic
+        if(!this.hasBridge || (this.left === this.right && this.m1 === this.m2)) {
+            this.voltage = 0;
+            this.updateDisplay(0);
+            return;
+        }
+
+        // 3. Nernst Calculation
+        let E0_cell = 0;
+        let Q = 1;
+        let n = 2; // electron count
+
+        // Determine Anode (Lower E0)
+        if (mL.E0 < mR.E0) {
+            // Left is Anode
+            this.anodeSide = 'left';
+            E0_cell = mR.E0 - mL.E0;
+            
+            // Q = [Anode]/[Cathode] = [Left]/[Right]
+            // Coefficients logic (simplified for UI, accurate for calc)
+            if(mL.n === 1 && mR.n === 2) { n=2; Q = Math.pow(this.m1, 2) / this.m2; }
+            else if(mL.n === 2 && mR.n === 1) { n=2; Q = this.m1 / Math.pow(this.m2, 2); }
+            else { n = mL.n; Q = this.m1 / this.m2; }
+
+            // UI Text
+            document.getElementById('eqAnode').innerHTML = `${mL.name} → ${mL.ion} + ${mL.n}e⁻`;
+            document.getElementById('eqCathode').innerHTML = `${mR.ion} + ${mR.n}e⁻ → ${mR.name}`;
+
+        } else {
+            // Right is Anode
+            this.anodeSide = 'right';
+            E0_cell = mL.E0 - mR.E0;
+            
+            // Q = [Right]/[Left]
+            if(mR.n === 1 && mL.n === 2) { n=2; Q = Math.pow(this.m2, 2) / this.m1; }
+            else if(mR.n === 2 && mL.n === 1) { n=2; Q = this.m2 / Math.pow(this.m1, 2); }
+            else { n = mR.n; Q = this.m2 / this.m1; }
+
+            document.getElementById('eqAnode').innerHTML = `${mR.name} → ${mR.ion} + ${mR.n}e⁻`;
+            document.getElementById('eqCathode').innerHTML = `${mL.ion} + ${mL.n}e⁻ → ${mL.name}`;
+        }
+
+        // Nernst Equation
+        let v = E0_cell - (0.0592 / n) * Math.log10(Q);
+        if(v < 0) v = 0;
+        this.voltage = v;
+        this.updateDisplay(v);
+    },
+
+    updateDisplay(v) {
+        document.getElementById('dispVolt').innerText = v.toFixed(2) + " V";
+    },
+
+    draw() {
+        const ctx = this.ctx;
+        const w = this.width;
+        const h = this.height;
+        
+        ctx.clearRect(0, 0, w, h);
+
+        const groundY = h * 0.7;
+        const beakerW = 140;
+        const beakerH = 180;
+        const lx = w*0.3 - beakerW/2;
+        const rx = w*0.7 - beakerW/2;
+
+        // --- BEAKERS ---
+        const drawBeaker = (x, color) => {
+            // Liquid
+            ctx.fillStyle = color;
+            ctx.fillRect(x, groundY - 120, beakerW, 120);
+            
+            // Glass Outline
+            ctx.strokeStyle = "rgba(100, 116, 139, 0.3)"; ctx.lineWidth = 4;
+            ctx.strokeRect(x, groundY - beakerH, beakerW, beakerH);
+            
+            // Surface
+            ctx.fillStyle = "rgba(255,255,255,0.2)";
+            ctx.fillRect(x, groundY - 120, beakerW, 10);
+        };
+
+        const cL = this.left === 'Cu' ? "rgba(59,130,246,0.2)" : "rgba(203,213,225,0.3)";
+        const cR = this.right === 'Cu' ? "rgba(59,130,246,0.2)" : "rgba(203,213,225,0.3)";
+        
+        drawBeaker(lx, cL);
+        drawBeaker(rx, cR);
+
+        // --- ELECTRODES ---
+        const drawRod = (x, key, isAnode) => {
+            const m = METALS[key];
+            ctx.fillStyle = m.color;
+            ctx.shadowBlur = 10; ctx.shadowColor = "rgba(0,0,0,0.1)";
+            
+            // Erosion/Plating Visuals
+            let wMod = 0;
+            if(this.voltage > 0) wMod = isAnode ? -6 : 6;
+
+            const rw = 40 + wMod;
+            const rx = x + beakerW/2 - rw/2;
+            ctx.fillRect(rx, groundY - 160, rw, 140);
+            ctx.shadowBlur = 0;
+            
+            // Label
+            ctx.fillStyle = "#1e293b"; ctx.font = "bold 14px sans-serif"; ctx.textAlign="center";
+            ctx.fillText(key, x + beakerW/2, groundY - 170);
+        };
+
+        drawRod(lx, this.left, this.anodeSide === 'left');
+        drawRod(rx, this.right, this.anodeSide === 'right');
+
+        // --- SALT BRIDGE ---
+        if(this.hasBridge) {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 20; ctx.lineCap = "round";
+            ctx.moveTo(lx + beakerW - 20, groundY - 80);
+            ctx.quadraticCurveTo(w/2, groundY - 250, rx + 20, groundY - 80);
+            ctx.stroke();
+            
+            ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 24;
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(200,200,200,0.5)"; ctx.lineWidth = 18;
+            ctx.stroke();
+        }
+
+        // --- CIRCUIT WIRES ---
+        ctx.strokeStyle = "#475569"; ctx.lineWidth = 3;
+        ctx.beginPath();
+        // Left Path
+        ctx.moveTo(lx + beakerW/2, groundY - 160);
+        ctx.lineTo(lx + beakerW/2, groundY - beakerH - 30);
+        ctx.lineTo(w/2 - 50, groundY - beakerH - 30);
+        // Right Path
+        ctx.moveTo(rx + beakerW/2, groundY - 160);
+        ctx.lineTo(rx + beakerW/2, groundY - beakerH - 30);
+        ctx.lineTo(w/2 + 50, groundY - beakerH - 30);
+        ctx.stroke();
+
+        // Voltmeter Box (Visual)
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(w/2 - 50, groundY - beakerH - 50, 100, 40);
+        ctx.fillStyle = "#4ade80"; ctx.font = "16px monospace";
+        ctx.fillText(this.voltage.toFixed(2) + "V", w/2, groundY - beakerH - 25);
+
+        // --- ELECTRONS ---
+        if(this.voltage > 0) {
+            // Add new electron
+            if(Math.random() < 0.15) {
+                this.electrons.push({ pos: 0 });
+            }
+
+            const yWire = groundY - beakerH - 30;
+            const xL = lx + beakerW/2;
+            const xR = rx + beakerW/2;
+            const dist = xR - xL;
+
+            ctx.fillStyle = "#ef4444";
+            for(let i=this.electrons.length-1; i>=0; i--) {
+                let e = this.electrons[i];
+                e.pos += 0.01 + (this.voltage * 0.02); // Speed relative to voltage
+
+                let ex, ey;
+                // Anode to Cathode
+                if(this.anodeSide === 'left') {
+                    // Left to Right
+                    ex = xL + e.pos * dist;
+                } else {
+                    // Right to Left
+                    ex = xR - e.pos * dist;
+                }
+                ey = yWire;
+
+                ctx.beginPath(); ctx.arc(ex, ey, 4, 0, Math.PI*2); ctx.fill();
+
+                if(e.pos > 1) this.electrons.splice(i,1);
+            }
+        }
+    },
+
+    loop() {
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+sim.init();
+</script>
+</body>
+</html>
