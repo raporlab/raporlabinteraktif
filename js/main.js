@@ -1,11 +1,16 @@
 // js/main.js
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Sayfa ilk açıldığında veya yenilendiğinde URL'deki #hash değerini al
     const hash = window.location.hash.replace('#', '');
-    // Kimya eklendi
-    if (hash && ['matematik', 'fizik', 'kimya'].includes(hash)) {
+    
+    // Geçerli sayfalar listesine 'kimya'yı ekliyoruz
+    const validPages = ['kesfet', 'matematik', 'fizik', 'kimya'];
+    
+    if (hash && validPages.includes(hash)) {
         showPage(hash, false); 
     } else {
+        // Eğer hash yoksa veya geçersizse keşfetten başla
         showPage('kesfet', false);
     }
 });
