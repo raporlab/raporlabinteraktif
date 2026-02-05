@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Organik Mimar</title>
+    <style>
+        :root {
+            /* RAPORLAB CLEAN SCIENCE THEME */
+            --bg-body: #f8fafc;
+            --panel-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --primary: #2563eb;    /* Bilimsel Mavi */
+            --accent: #0ea5e9;
+            --atom-c: #334155;     /* Karbon */
+            --atom-h: #94a3b8;     /* Hidrojen */
+            --atom-o: #ef4444;     /* Oksijen */
+            --atom-n: #3b82f6;     /* Azot */
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; outline: none; user-select: none; }
+
+        body {
+            margin: 0; padding: 0; background: var(--bg-body); color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            height: 100vh; display: flex; overflow: hidden;
+        }
+
+        /* --- SOL PANEL --- */
+        aside {
+            width: 360px; background: var(--panel-bg); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 20; box-shadow: 5px 0 15px rgba(0,0,0,0.03);
+        }
+
+        .header {
+            padding: 24px; border-bottom: 1px solid var(--border); background: #fff;
+        }
+        .logo { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; }
+        .logo span { color: var(--primary); }
+        .tagline { font-size: 0.8rem; color: var(--text-light); margin-top: 5px; font-weight: 500; }
+
+        .controls { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* KARTLAR */
+        .card {
+            background: white; border: 1px solid var(--border); border-radius: 12px;
+            padding: 16px; box-shadow: var(--shadow); transition: 0.2s;
+        }
+        .card:hover { border-color: #cbd5e1; }
+        
+        .card-header {
+            font-size: 0.75rem; font-weight: 700; color: var(--text-light);
+            text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;
+        }
+
+        /* Karbon Zinciri Slider */
+        .slider-group { margin-bottom: 10px; }
+        .slider-label { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; }
+        input[type=range] { width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; cursor: pointer; }
+        
+        /* Fonksiyonel Grup Grid */
+        .group-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .group-btn {
+            padding: 10px; border: 1px solid var(--border); background: #f8fafc;
+            border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #475569;
+            transition: 0.2s; text-align: center;
+        }
+        .group-btn:hover { background: #e2e8f0; }
+        .group-btn.active {
+            background: rgba(37, 99, 235, 0.1); border-color: var(--primary); color: var(--primary);
+        }
+
+        /* Bilgi Paneli */
+        .info-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px; }
+        .info-val { font-weight: 700; font-family: 'Consolas', monospace; color: var(--primary); }
+
+        /* --- SAĞ PANEL --- */
+        main { flex: 1; position: relative; background: #fff; display: flex; flex-direction: column; }
+        
+        #canvas-wrapper {
+            flex: 1; position: relative;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* IUPAC İsim Tabelası */
+        .name-badge {
+            position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95); padding: 15px 40px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--border);
+            text-align: center;
+        }
+        .iupac-name { font-size: 2rem; font-weight: 800; color: #0f172a; margin: 0; }
+        .formula { font-size: 1rem; color: var(--text-light); font-weight: 600; font-family: 'Consolas', monospace; margin-top: 5px; }
+
+        /* Efsane (Legend) */
+        .legend {
+            position: absolute; bottom: 20px; right: 20px;
+            background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+            display: flex; gap: 15px;
+        }
+        .leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #475569; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="header">
+        <h1 class="logo">Raporlab <span>İnteraktif</span></h1>
+        <div class="tagline">Molekül Mimarı & Analizör</div>
+    </div>
+
+    <div class="controls">
+        <div class="card">
+            <div class="card-header">Ana Karbon Zinciri</div>
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Karbon Sayısı</span>
+                    <span id="cCountDisplay" style="color:var(--primary)">3 (Prop-)</span>
+                </div>
+                <input type="range" id="slCarbon" min="1" max="8" value="3" oninput="app.updateState()">
+            </div>
+            <div style="font-size:0.75rem; color:#94a3b8;">
+                Zincir uzadıkça London kuvvetleri artar, kaynama noktası yükselir.
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Fonksiyonel Grup Seçimi</div>
+            <div class="group-grid" id="groupGrid">
+                <div class="group-btn active" onclick="app.setGroup('alkane', this)">Alkan (-an)</div>
+                <div class="group-btn" onclick="app.setGroup('alkene', this)">Alken (-en)</div>
+                <div class="group-btn" onclick="app.setGroup('alcohol', this)">Alkol (-ol)</div>
+                <div class="group-btn" onclick="app.setGroup('aldehyde', this)">Aldehit (-al)</div>
+                <div class="group-btn" onclick="app.setGroup('ketone', this)">Keton (-on)</div>
+                <div class="group-btn" onclick="app.setGroup('acid', this)">K. Asit (-oik)</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Fiziksel Özellikler (Tahmini)</div>
+            <div class="info-row">
+                <span>Molekül Kütlesi:</span>
+                <span class="info-val" id="valMass">44 g/mol</span>
+            </div>
+            <div class="info-row">
+                <span>Hibritleşme (Ana):</span>
+                <span class="info-val" id="valHyb">sp³</span>
+            </div>
+            <div class="info-row" style="border:none">
+                <span>Kaynama Noktası:</span>
+                <span class="info-val" id="valBP">Düşük</span>
+            </div>
+        </div>
+
+    </div>
+</aside>
+
+<main>
+    <div id="canvas-wrapper">
+        <div class="name-badge">
+            <div class="iupac-name" id="dispName">Propan</div>
+            <div class="formula" id="dispFormula">C3H8</div>
+        </div>
+
+        <canvas id="mainCanvas"></canvas>
+
+        <div class="legend">
+            <div class="leg-item"><div class="dot" style="background:var(--atom-c)"></div> Karbon</div>
+            <div class="leg-item"><div class="dot" style="background:var(--atom-h)"></div> Hidrojen</div>
+            <div class="leg-item"><div class="dot" style="background:var(--atom-o)"></div> Oksijen</div>
+        </div>
+    </div>
+</main>
+
+<script>
+/**
+ * Raporlab Organic Architect
+ * Generates dynamic 2D Ball & Stick models based on logic.
+ */
+
+const PREFIXES = ["Met", "Et", "Prop", "Büt", "Pent", "Hegz", "Hept", "Okt"];
+
+const app = {
+    canvas: document.getElementById('mainCanvas'),
+    ctx: null,
+    width: 0, height: 0,
+    
+    // State
+    numC: 3,
+    group: 'alkane', // alkane, alkene, alcohol, aldehyde, ketone, acid
+    
+    // Physics / Drawing Config
+    bondLen: 60,
+    atomR: 18,
+    
+    atoms: [], // {x, y, element, id}
+    bonds: [], // {from, to, type}
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.updateState();
+        this.loop();
+    },
+
+    resize() {
+        this.width = this.canvas.width = this.canvas.parentElement.clientWidth;
+        this.height = this.canvas.height = this.canvas.parentElement.clientHeight;
+    },
+
+    setGroup(g, btn) {
+        this.group = g;
+        // Keton için en az 3 karbon lazım
+        if(g === 'ketone' && this.numC < 3) {
+            this.numC = 3;
+            document.getElementById('slCarbon').value = 3;
+        }
+        
+        // Buton UI güncelleme
+        document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        this.updateState();
+    },
+
+    updateState() {
+        this.numC = parseInt(document.getElementById('slCarbon').value);
+        
+        // Keton Kontrolü (Tekrar)
+        if(this.group === 'ketone' && this.numC < 3) {
+            this.numC = 3;
+            document.getElementById('slCarbon').value = 3;
+        }
+
+        // 1. IUPAC İsimlendirme
+        const prefix = PREFIXES[this.numC - 1];
+        let name = "";
+        let formula = "";
+        let bpDesc = "Düşük";
+        let hyb = "sp³";
+        
+        // Mol Kütlesi (Yaklaşık)
+        let mass = this.numC * 12;
+
+        switch(this.group) {
+            case 'alkane':
+                name = prefix + "an";
+                formula = `C${this.numC}H${2*this.numC + 2}`;
+                mass += (2*this.numC + 2);
+                bpDesc = "Düşük (London)";
+                break;
+            case 'alkene':
+                name = prefix + "en"; // Basitlik için 1-alken varsayalım
+                formula = `C${this.numC}H${2*this.numC}`;
+                mass += (2*this.numC);
+                bpDesc = "Düşük";
+                hyb = "sp² - sp³";
+                break;
+            case 'alcohol':
+                name = prefix + "anol";
+                formula = `C${this.numC}H${2*this.numC + 1}OH`;
+                mass += (2*this.numC + 2) + 16;
+                bpDesc = "Yüksek (H-Bağı)";
+                break;
+            case 'aldehyde':
+                name = prefix + "anal";
+                formula = `C${this.numC-1}H${2*this.numC-1}CHO`;
+                mass += (2*this.numC) + 16;
+                bpDesc = "Orta (Dipol-Dipol)";
+                hyb = "sp² - sp³";
+                break;
+            case 'ketone':
+                name = prefix + "anon";
+                formula = `C${this.numC}H${2*this.numC}O`;
+                mass += (2*this.numC) + 16;
+                bpDesc = "Orta";
+                hyb = "sp² - sp³";
+                break;
+            case 'acid':
+                name = prefix + "anoik Asit";
+                formula = `C${this.numC-1}H${2*this.numC-1}COOH`;
+                mass += (2*this.numC) + 32;
+                bpDesc = "Çok Yüksek (Dimer)";
+                hyb = "sp² - sp³";
+                break;
+        }
+
+        // UI Güncelle
+        document.getElementById('cCountDisplay').innerText = `${this.numC} (${prefix}-)`;
+        document.getElementById('dispName').innerText = name;
+        document.getElementById('dispFormula').innerText = formula;
+        document.getElementById('valMass').innerText = mass + " g/mol";
+        document.getElementById('valHyb').innerText = hyb;
+        document.getElementById('valBP').innerText = bpDesc;
+
+        // 2. Molekülü İnşa Et (Koordinat Hesaplama)
+        this.buildMolecule();
+    },
+
+    buildMolecule() {
+        this.atoms = [];
+        this.bonds = [];
+        
+        const startX = (this.width - (this.numC * this.bondLen * 0.8)) / 2;
+        const startY = this.height / 2;
+        
+        // Karbon Zinciri (Zigzag)
+        for(let i=0; i<this.numC; i++) {
+            this.atoms.push({
+                x: startX + i * this.bondLen,
+                y: startY + (i % 2 === 0 ? -20 : 20),
+                el: 'C',
+                id: i
+            });
+            if(i > 0) this.bonds.push({from: i-1, to: i, type: (this.group==='alkene' && i===1) ? 2 : 1});
+        }
+
+        // Fonksiyonel Grupları Ekle
+        const lastC = this.atoms[this.numC - 1];
+        let hCount = 0; // Hidrojen sayacı
+
+        // Her karbona (fonksiyonel grup hariç) H ekle
+        // Bu simülasyon için basitleştirilmiş H gösterimi (Sadece uçlara veya gerekli yerlere)
+        // Karışıklığı önlemek için H'leri 'stick' olarak çizeceğiz, atom listesine tam eklemeyeceğiz
+        // Ancak fonksiyonel grup atomlarını ekleyelim.
+
+        if(this.group === 'alcohol') {
+            // Son karbona O bağla
+            const oIdx = this.atoms.length;
+            this.atoms.push({ x: lastC.x + this.bondLen, y: lastC.y, el: 'O', id: oIdx });
+            this.bonds.push({ from: this.numC-1, to: oIdx, type: 1 });
+            
+            // O'ya H bağla (Açılı)
+            const hIdx = this.atoms.length;
+            this.atoms.push({ x: lastC.x + this.bondLen + 20, y: lastC.y - 20, el: 'H', id: hIdx });
+            this.bonds.push({ from: oIdx, to: hIdx, type: 1 });
+        }
+        else if(this.group === 'aldehyde') {
+            // Son karbona çift bağ O
+            const oIdx = this.atoms.length;
+            this.atoms.push({ x: lastC.x + 20, y: lastC.y - 50, el: 'O', id: oIdx });
+            this.bonds.push({ from: this.numC-1, to: oIdx, type: 2 });
+            // H zaten iskelette var varsayıyoruz görsel sadelik için
+        }
+        else if(this.group === 'acid') {
+            // Çift bağ O
+            const o1Idx = this.atoms.length;
+            this.atoms.push({ x: lastC.x + 10, y: lastC.y - 50, el: 'O', id: o1Idx });
+            this.bonds.push({ from: this.numC-1, to: o1Idx, type: 2 });
+            
+            // Tek bağ OH
+            const o2Idx = this.atoms.length;
+            this.atoms.push({ x: lastC.x + 40, y: lastC.y + 10, el: 'O', id: o2Idx });
+            this.bonds.push({ from: this.numC-1, to: o2Idx, type: 1 });
+
+            const hIdx = this.atoms.length;
+            this.atoms.push({ x: lastC.x + 60, y: lastC.y, el: 'H', id: hIdx });
+            this.bonds.push({ from: o2Idx, to: hIdx, type: 1 });
+        }
+        else if(this.group === 'ketone') {
+            // Sondan bir önceki karbona O bağla (Orta karbon)
+            // Ketonlar uçta olmaz.
+            const targetCIdx = this.numC - 2; 
+            const targetC = this.atoms[targetCIdx];
+            
+            const oIdx = this.atoms.length;
+            // Zigzag durumuna göre O'yu yukarı veya aşağı koy
+            const oY = targetC.id % 2 === 0 ? targetC.y - 50 : targetC.y + 50;
+            
+            this.atoms.push({ x: targetC.x, y: oY, el: 'O', id: oIdx });
+            this.bonds.push({ from: targetCIdx, to: oIdx, type: 2 });
+        }
+    },
+
+    draw() {
+        const ctx = this.ctx;
+        ctx.clearRect(0,0,this.width, this.height);
+
+        // Bağları Çiz
+        ctx.lineCap = 'round';
+        this.bonds.forEach(b => {
+            const a1 = this.atoms[b.from];
+            const a2 = this.atoms[b.to];
+            
+            ctx.strokeStyle = "#94a3b8";
+            ctx.lineWidth = 6;
+            
+            if(b.type === 2) {
+                // Çift Bağ (İki çizgi)
+                // Basit offset hesabı
+                ctx.beginPath();
+                ctx.moveTo(a1.x, a1.y - 3); ctx.lineTo(a2.x, a2.y - 3);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(a1.x, a1.y + 3); ctx.lineTo(a2.x, a2.y + 3);
+                ctx.stroke();
+            } else {
+                // Tek Bağ
+                ctx.beginPath();
+                ctx.moveTo(a1.x, a1.y);
+                ctx.lineTo(a2.x, a2.y);
+                ctx.stroke();
+            }
+        });
+
+        // Hidrojenleri (Basit Karbon Doyurma Görseli) Çiz
+        // Bu kısım tam 3D hesaplaması olmadan estetik bir dolgu yapar
+        this.atoms.forEach(a => {
+            if(a.el === 'C') {
+                // Her C için çevresine küçük H topları at (Görsel Süs)
+                // Fonksiyonel grup mantığına girmeden sadece karbon zincirini "dolu" göstermek için
+                ctx.fillStyle = "#cbd5e1";
+                // Üst ve Alt
+                // (Bu kısım çok karmaşık olmasın diye sadece görsel bir 'halo' efekti verebiliriz veya basit stickler)
+            }
+        });
+
+        // Atomları Çiz
+        this.atoms.forEach(a => {
+            ctx.beginPath();
+            ctx.arc(a.x, a.y, this.atomR, 0, Math.PI*2);
+            
+            // Renkler
+            if(a.el === 'C') ctx.fillStyle = "#334155";
+            else if(a.el === 'O') ctx.fillStyle = "#ef4444";
+            else if(a.el === 'H') ctx.fillStyle = "#94a3b8";
+            else ctx.fillStyle = "#3b82f6";
+
+            // Gölge (3D Efekti)
+            const grad = ctx.createRadialGradient(a.x-5, a.y-5, 2, a.x, a.y, this.atomR);
+            grad.addColorStop(0, lighten(ctx.fillStyle, 20)); // Highlight
+            grad.addColorStop(1, ctx.fillStyle); // Base
+            
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Etiket
+            ctx.fillStyle = "white";
+            ctx.font = "bold 14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(a.el, a.x, a.y);
+        });
+    },
+
+    loop() {
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+// Renk açma yardımcısı (Highlight için)
+function lighten(color, percent) {
+    // Basit bir placeholder, gerçek uygulamada HEX manipülasyonu gerekir.
+    // Şimdilik sadece beyaz dönüyor parlama için.
+    return "#ffffff"; 
+}
+
+app.init();
+</script>
+</body>
+</html>
