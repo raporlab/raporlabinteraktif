@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Etkileşim Fiziği (Stabilize)</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --text: #334155;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+        body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; overflow: hidden; }
+
+        aside { width: 360px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 20; box-shadow: 5px 0 25px rgba(0,0,0,0.03); }
+        .header { padding: 20px; border-bottom: 1px solid var(--border); }
+        .logo { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin: 0; }
+        .logo span { color: var(--primary); }
+        .tagline { font-size: 0.75rem; color: var(--muted); font-weight: 600; margin-top: 5px;}
+
+        .controls { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .card-title { font-size: 0.75rem; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; border-bottom: 2px solid #f8fafc; padding-bottom: 5px; }
+
+        label { font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; display: block; }
+        select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; margin: 15px 0 5px 0; }
+        .dist-val { font-family: monospace; font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+        .snap-btn { width: 100%; margin-top: 10px; padding: 10px; border: 1px solid var(--primary); background: rgba(37, 99, 235, 0.05); color: var(--primary); border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .snap-btn:hover { background: var(--primary); color: white; }
+
+        .energy-meter { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin-top: 10px; }
+        .energy-fill { height: 100%; width: 0%; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .result-box { background: #1e293b; color: white; padding: 15px; border-radius: 10px; text-align: center; margin-top: auto; }
+        .res-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 5px; }
+        .res-desc { font-size: 0.8rem; color: #94a3b8; line-height: 1.3; }
+
+        main { flex: 1; position: relative; background: white; overflow: hidden; }
+        #sim-canvas-container { width: 100%; height: 100%; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 30px 30px; }
+        canvas { display: block; }
+
+        #graph-overlay { position: absolute; bottom: 20px; right: 20px; width: 300px; height: 180px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 12px; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); pointer-events: none; }
+        .graph-title { font-size: 0.65rem; font-weight: 800; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+
+        .legend { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.7rem; font-weight: 700; }
+        .leg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="header">
+        <h1 class="logo">Raporlab <span>Fizik</span></h1>
+        <div class="tagline">Etkileşim & Potansiyel Enerji Analizi</div>
+    </div>
+
+    <div class="controls">
+        <div class="card">
+            <div class="card-title">Tür Seçimi</div>
+            <label>1. Tür (Sol)</label>
+            <select id="selA" onchange="sim.calculateInteraction()">
+                <optgroup label="Atomlar">
+                    <option value="Na">Sodyum (Na)</option>
+                    <option value="Cl">Klor (Cl)</option>
+                    <option value="He">Helyum (He)</option>
+                </optgroup>
+                <optgroup label="İyonlar">
+                    <option value="Na_ion" selected>Sodyum İyonu (Na⁺)</option>
+                    <option value="Cl_ion">Klor İyonu (Cl⁻)</option>
+                </optgroup>
+                <optgroup label="Moleküller">
+                    <option value="H2O">Su (H₂O)</option>
+                    <option value="CH4">Metan (CH₄)</option>
+                </optgroup>
+            </select>
+
+            <label>2. Tür (Sağ)</label>
+            <select id="selB" onchange="sim.calculateInteraction()">
+                <optgroup label="Atomlar">
+                    <option value="Na">Sodyum (Na)</option>
+                    <option value="Cl">Klor (Cl)</option>
+                    <option value="He">Helyum (He)</option>
+                </optgroup>
+                <optgroup label="İyonlar">
+                    <option value="Na_ion">Sodyum İyonu (Na⁺)</option>
+                    <option value="Cl_ion" selected>Klor İyonu (Cl⁻)</option>
+                </optgroup>
+                <optgroup label="Moleküller">
+                    <option value="H2O">Su (H₂O)</option>
+                    <option value="CH4">Metan (CH₄)</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Mesafe (r)</div>
+            <div class="slider-container">
+                <input type="range" id="distSlider" min="60" max="450" value="250" step="1">
+                <div class="dist-val"><span id="valDist">250</span> pm</div>
+            </div>
+            <button class="snap-btn" onclick="sim.snapToOptimal()">⚡ İdeal Bağ Mesafesi</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Bağ Kararlılığı</div>
+            <div class="energy-meter">
+                <div class="energy-fill" id="energyBar"></div>
+            </div>
+        </div>
+
+        <div class="result-box">
+            <div class="res-title" id="resTitle">Analiz Ediliyor...</div>
+            <div class="res-desc" id="resDesc">-</div>
+        </div>
+    </div>
+</aside>
+
+<main>
+    <div id="sim-canvas-container">
+        <canvas id="simCanvas"></canvas>
+        <div class="legend">
+            <div class="leg-row"><div class="dot" style="background:#ef4444"></div> Çekirdek (+)</div>
+            <div class="leg-row"><div class="dot" style="background:rgba(37, 99, 235, 0.4)"></div> Elektron Bulutu</div>
+        </div>
+    </div>
+    
+    <div id="graph-overlay">
+        <div class="graph-title">Potansiyel Enerji Eğrisi</div>
+        <canvas id="graphCanvas"></canvas>
+    </div>
+</main>
+
+<script>
+const DB = {
+    'Na': { type: 'metal', r: 28, color: '#cbd5e1', label: 'Na' },
+    'Cl': { type: 'nonmetal', r: 24, color: '#86efac', label: 'Cl' },
+    'He': { type: 'noble', r: 20, color: '#fca5a5', label: 'He' },
+    'Na_ion': { type: 'ion', charge: 1, r: 20, color: '#94a3b8', label: 'Na⁺' },
+    'Cl_ion': { type: 'ion', charge: -1, r: 32, color: '#22c55e', label: 'Cl⁻' },
+    'H2O': { type: 'polar', hBond: true, r: 35, color: '#3b82f6', label: 'H₂O' },
+    'CH4': { type: 'nonpolar', r: 35, color: '#475569', label: 'CH₄' }
+};
+
+const sim = {
+    cSim: document.getElementById('simCanvas'),
+    cGraph: document.getElementById('graphCanvas'),
+    ctxS: null, ctxG: null,
+    dist: 250,
+    itemA: null, itemB: null,
+    params: { r0: 200, depth: 50, strength: 50, color: '#3b82f6' },
+
+    init() {
+        this.ctxS = this.cSim.getContext('2d');
+        this.ctxG = this.cGraph.getContext('2d');
+        window.addEventListener('resize', () => this.resize());
+        this.resize();
+
+        document.getElementById('distSlider').oninput = (e) => {
+            this.dist = parseInt(e.target.value);
+            document.getElementById('valDist').innerText = this.dist;
+        };
+
+        this.calculateInteraction();
+        this.loop();
+    },
+
+    resize() {
+        this.cSim.width = this.cSim.parentElement.clientWidth;
+        this.cSim.height = this.cSim.parentElement.clientHeight;
+        this.cGraph.width = this.cGraph.parentElement.clientWidth;
+        this.cGraph.height = this.cGraph.parentElement.clientHeight - 20;
+    },
+
+    calculateInteraction() {
+        const kA = document.getElementById('selA').value;
+        const kB = document.getElementById('selB').value;
+        this.itemA = DB[kA]; this.itemB = DB[kB];
+        let p = this.params;
+
+        // Mantıksal Matris
+        if(this.itemA.type === 'ion' && this.itemB.type === 'ion') {
+            if(this.itemA.charge * this.itemB.charge < 0) {
+                p.type = "İyonik Bağ"; p.desc = "Zıt yüklü iyonlar arası güçlü çekim.";
+                p.r0 = 160; p.depth = 120; p.strength = 95; p.color = "#ef4444";
+            } else {
+                p.type = "İyonik İtme"; p.desc = "Aynı yüklü iyonlar birbirini iter.";
+                p.r0 = 400; p.depth = 0; p.strength = 0; p.color = "#64748b";
+            }
+        } else if(this.itemA.type === 'polar' && this.itemB.type === 'polar') {
+            p.type = "Hidrojen Bağı / Dipol"; p.desc = "Polar moleküller arası zayıf etkileşim.";
+            p.r0 = 200; p.depth = 40; p.strength = 35; p.color = "#2563eb";
+        } else if(kA === 'He' || kB === 'He' || this.itemA.type === 'nonpolar') {
+            p.type = "London Kuvvetleri"; p.desc = "Anlık kutuplanma sonucu oluşan zayıf çekim.";
+            p.r0 = 300; p.depth = 10; p.strength = 10; p.color = "#94a3b8";
+        } else {
+            p.type = "Kovalent / Dipol"; p.desc = "Elektron ortaklaşması veya kutupsal çekim.";
+            p.r0 = 120; p.depth = 80; p.strength = 75; p.color = "#f59e0b";
+        }
+
+        document.getElementById('resTitle').innerText = p.type;
+        document.getElementById('resTitle').style.color = p.color;
+        document.getElementById('resDesc').innerText = p.desc;
+        document.getElementById('energyBar').style.width = p.strength + "%";
+        document.getElementById('energyBar').style.backgroundColor = p.color;
+    },
+
+    snapToOptimal() {
+        this.dist = this.params.r0;
+        document.getElementById('distSlider').value = this.dist;
+        document.getElementById('valDist').innerText = this.dist;
+    },
+
+    getEnergy(r) {
+        if(this.params.depth === 0) return 0;
+        const ratio = this.params.r0 / r;
+        // Lennard-Jones simplified
+        return this.params.depth * (Math.pow(ratio, 12) - 2 * Math.pow(ratio, 6));
+    },
+
+    drawSim() {
+        const ctx = this.ctxS;
+        const w = this.cSim.width;
+        const h = this.cSim.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const cx = w/2; const cy = h/2;
+        const currentE = this.getEnergy(this.dist);
+        
+        // --- STABİLİZE TİTREŞİM ---
+        let shake = 0;
+        if(currentE > 40) {
+            // İtme bölgesinde titreşimi sönümle (Max 3px)
+            shake = (Math.random() - 0.5) * Math.min(3, currentE / 50);
+        } else if (Math.abs(this.dist - this.params.r0) < 5) {
+            // İdeal mesafede çok hafif salınım
+            shake = Math.sin(Date.now() / 150) * 0.8;
+        }
+
+        const visualR = this.dist * 0.8;
+        const ax = cx - visualR/2 + shake;
+        const bx = cx + visualR/2 - shake;
+
+        // Bağ Çizgisi
+        if(this.dist < this.params.r0 * 2.2) {
+            ctx.beginPath();
+            ctx.setLineDash(this.params.strength < 40 ? [5, 5] : []);
+            ctx.moveTo(ax, cy); ctx.lineTo(bx, cy);
+            ctx.strokeStyle = Math.abs(this.dist - this.params.r0) < 10 ? "#10b981" : this.params.color;
+            ctx.lineWidth = currentE > 50 ? 8 : 4;
+            ctx.globalAlpha = Math.max(0.1, 1 - (this.dist / 500));
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.setLineDash([]);
+        }
+
+        this.drawSpecies(ctx, this.itemA, ax, cy);
+        this.drawSpecies(ctx, this.itemB, bx, cy);
+    },
+
+    drawSpecies(ctx, item, x, y) {
+        // Elektron Bulutu
+        const grad = ctx.createRadialGradient(x, y, 5, x, y, item.r * 2.5);
+        grad.addColorStop(0, item.color);
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(x, y, item.r * 2.5, 0, Math.PI*2); ctx.fill();
+
+        // Çekirdek
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI*2); ctx.fill();
+        
+        ctx.fillStyle = "#1e293b"; ctx.font = "bold 13px sans-serif";
+        ctx.textAlign = "center"; ctx.fillText(item.label, x, y + item.r * 3);
+    },
+
+    drawGraph() {
+        const ctx = this.ctxG; const w = this.cGraph.width; const h = this.cGraph.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const ox = 30; const oy = h/2 + 20;
+        ctx.strokeStyle = "rgba(100,116,139,0.3)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(ox, 10); ctx.lineTo(ox, h-10); ctx.moveTo(ox, oy); ctx.lineTo(w-10, oy); ctx.stroke();
+
+        if(this.params.depth === 0) return;
+
+        ctx.beginPath();
+        ctx.strokeStyle = this.params.color; ctx.lineWidth = 2;
+        let started = false;
+        for(let r=55; r<450; r+=5) {
+            const E = this.getEnergy(r);
+            const px = ox + (r * (w/500));
+            const py = oy - (E * (h/250));
+            if(py < 5 || py > h-5) continue;
+            if(!started) { ctx.moveTo(px, py); started=true; } else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Nokta
+        const curE = this.getEnergy(this.dist);
+        const dx = ox + (this.dist * (w/500));
+        const dy = oy - (curE * (h/250));
+        ctx.fillStyle = curE > 40 ? "#ef4444" : (Math.abs(this.dist - this.params.r0) < 10 ? "#10b981" : this.params.color);
+        ctx.beginPath(); ctx.arc(dx, Math.max(5, Math.min(h-5, dy)), 5, 0, Math.PI*2); ctx.fill();
+    },
+
+    loop() {
+        this.drawSim();
+        this.drawGraph();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+sim.init();
+</script>
+</body>
+</html>
