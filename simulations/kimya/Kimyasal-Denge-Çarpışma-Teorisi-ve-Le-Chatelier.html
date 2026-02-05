@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab Pro - Reaksiyon Uzmanı</title>
+    <style>
+        :root {
+            /* Tema Renkleri (Deep Blue Science Theme) */
+            --bg-dark: #020617;
+            --panel-bg: #0f172a;
+            --border: #1e293b;
+            
+            --primary: #3b82f6;   /* Mavi - Girenler (A) */
+            --product: #ef4444;   /* Kırmızı - Ürünler (B) */
+            --catalyst: #10b981;  /* Yeşil - Katalizör */
+            --flash: #ffffff;     /* Çarpışma Rengi */
+            
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --font: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+
+        body {
+            margin: 0; padding: 0;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: var(--font);
+            height: 100vh; width: 100vw;
+            display: flex; overflow: hidden;
+        }
+
+        /* --- SOL KONTROL PANELİ --- */
+        aside {
+            width: 340px; background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 20;
+        }
+
+        .header {
+            padding: 20px; border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(59,130,246,0.1), transparent);
+        }
+        .logo { font-size: 1.6rem; font-weight: 800; letter-spacing: -1px; margin: 0; color: white; }
+        .logo span { color: var(--primary); }
+        .version { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
+
+        .scroll-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* Kart Yapısı */
+        .card {
+            background: #172033; border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px;
+        }
+        .card-title {
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Madde Kontrol Butonları (+ / -) */
+        .particle-ctrl {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+            background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;
+        }
+        .p-label { font-weight: 600; font-size: 0.9rem; }
+        .btn-group { display: flex; gap: 5px; }
+        .btn-mini {
+            width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 6px;
+            background: #1e293b; color: white; cursor: pointer; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .btn-mini:hover { background: var(--primary); border-color: var(--primary); }
+        .btn-mini.red:hover { background: var(--product); border-color: var(--product); }
+
+        /* Slider */
+        .slider-container { margin: 10px 0; }
+        input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+        
+        /* Büyük Butonlar */
+        .btn-block {
+            width: 100%; padding: 10px; border: none; border-radius: 6px;
+            font-weight: 600; cursor: pointer; margin-top: 5px; color: white;
+            transition: 0.2s; background: #334155;
+        }
+        .btn-block:hover { background: #475569; }
+        .btn-block.active { background: var(--catalyst); box-shadow: 0 0 10px rgba(16,185,129,0.3); }
+        .btn-block.reset { background: #7f1d1d; color: #fecaca; }
+        .btn-block.reset:hover { background: #991b1b; }
+
+        /* EĞİTİM KUTUSU (Sol Alt) */
+        .edu-box {
+            margin-top: auto; padding: 15px; border-top: 1px solid var(--border);
+            background: #0b1121;
+        }
+        .edu-title { color: var(--catalyst); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+        .edu-text { font-size: 0.8rem; color: #cbd5e1; line-height: 1.4; }
+
+        /* --- SAĞ ANA EKRAN --- */
+        main { flex: 1; display: grid; grid-template-rows: 60% 40%; }
+
+        /* Simülasyon Alanı */
+        #sim-wrapper { position: relative; overflow: hidden; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); }
+        canvas#simCanvas { display: block; width: 100%; height: 100%; }
+
+        .overlay-stats {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+            padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);
+            text-align: right; pointer-events: none;
+        }
+        .stat-row { font-size: 0.9rem; margin-bottom: 4px; display: flex; justify-content: flex-end; gap: 10px; }
+        
+        /* Grafikler Alanı */
+        #graphs-wrapper {
+            display: grid; grid-template-columns: 1fr 1fr; 
+            background: #020617; border-top: 1px solid var(--border);
+        }
+        .chart-box {
+            position: relative; border-right: 1px solid var(--border); padding: 5px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .chart-label {
+            position: absolute; top: 10px; left: 10px; 
+            font-size: 0.75rem; font-weight: bold; color: #64748b; 
+            background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 4px;
+        }
+        canvas.chart { width: 100%; height: 100%; }
+
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="header">
+        <h1 class="logo">Raporlab <span>Pro</span></h1>
+        <div class="version">Reaction Dynamics Engine v4.0</div>
+    </div>
+
+    <div class="scroll-area">
+        
+        <div class="card">
+            <div class="card-title">Madde Miktarı (Derişim)</div>
+            
+            <div class="particle-ctrl" style="border-left: 3px solid var(--primary);">
+                <div class="p-label" style="color:var(--primary)">[A] Girenler</div>
+                <div class="btn-group">
+                    <button class="btn-mini" onclick="sim.removeParticles('A', 5)">-</button>
+                    <button class="btn-mini" onclick="sim.addParticles('A', 5)">+</button>
+                </div>
+            </div>
+
+            <div class="particle-ctrl" style="border-left: 3px solid var(--product);">
+                <div class="p-label" style="color:var(--product)">[B] Ürünler</div>
+                <div class="btn-group">
+                    <button class="btn-mini red" onclick="sim.removeParticles('B', 5)">-</button>
+                    <button class="btn-mini red" onclick="sim.addParticles('B', 5)">+</button>
+                </div>
+            </div>
+            
+            <div style="font-size:0.7rem; color:#64748b; margin-top:5px; text-align:center;">
+                Dengeyi bozmak için madde ekle/çıkar (Le Chatelier)
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span>Reaksiyon Şartları</span>
+                <span id="dispTemp" style="color:white;">300 K</span>
+            </div>
+            
+            <div class="slider-container">
+                <input type="range" id="tempSlider" min="100" max="800" value="300" step="10">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#64748b;">
+                    <span>Soğuk (Yavaş)</span>
+                    <span>Sıcak (Hızlı)</span>
+                </div>
+            </div>
+
+            <button class="btn-block" id="btnCat" onclick="sim.toggleCatalyst()">⚡ Katalizör Ekle</button>
+            <div style="margin-top:5px; display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                <button class="btn-block" onclick="sim.setEnthalpy('exo')" style="font-size:0.8rem">Ekzotermik</button>
+                <button class="btn-block" onclick="sim.setEnthalpy('endo')" style="font-size:0.8rem">Endotermik</button>
+            </div>
+        </div>
+
+        <button class="btn-block reset" onclick="sim.reset()">⚠️ SİSTEMİ SIFIRLA</button>
+
+    </div>
+
+    <div class="edu-box">
+        <div class="edu-title">💡 <span id="eduTitle">Sistem Dengede</span></div>
+        <div class="edu-text" id="eduText">
+            İleri ve geri yöndeki tepkime hızları eşitlendi. Giren ve ürün derişimleri sabit kaldı. Sıcaklığı artırarak dengeyi bozabilirsin.
+        </div>
+    </div>
+</aside>
+
+<main>
+    <div id="sim-wrapper">
+        <canvas id="simCanvas"></canvas>
+        <div class="overlay-stats">
+            <div class="stat-row"><span style="color:#94a3b8">Toplam Tanecik:</span> <b id="valTotal">0</b></div>
+            <div class="stat-row"><span style="color:var(--primary)">Çarpışma (KE):</span> <b id="valKE">Orta</b></div>
+            <div class="stat-row"><span style="color:var(--catalyst)">Aktifleşme (Ea):</span> <b id="valEa">Yüksek</b></div>
+        </div>
+    </div>
+
+    <div id="graphs-wrapper">
+        <div class="chart-box">
+            <div class="chart-label">POTANSİYEL ENERJİ (PE) DİYAGRAMI</div>
+            <canvas id="energyChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <div class="chart-label">ZAMAN vs DERİŞİM (MOL/L)</div>
+            <canvas id="timeChart"></canvas>
+        </div>
+    </div>
+</main>
+
+<script>
+/**
+ * Raporlab Reaction Engine v4.0
+ * Features: Collision Detection, Visual Flash, Dynamic Graphs
+ */
+const sim = {
+    // Canvas & Contexts
+    cSim: document.getElementById('simCanvas'),
+    cEng: document.getElementById('energyChart'),
+    cTime: document.getElementById('timeChart'),
+    ctx: null, ctxE: null, ctxT: null,
+
+    // State Variables
+    particles: [],
+    temp: 300,
+    isCatalyst: false,
+    reactionType: 'exo', // 'exo' or 'endo'
+    
+    // Physics Constants
+    radius: 5,
+    baseSpeed: 2,
+    Ea_base: 70, // Base Activation Energy
+    dH: -30,     // Enthalpy (-30 for Exo, +30 for Endo)
+    
+    // Data Recording
+    historyA: [],
+    historyB: [],
+    maxHistory: 300,
+    width: 0, height: 0,
+
+    init() {
+        this.ctx = this.cSim.getContext('2d');
+        this.ctxE = this.cEng.getContext('2d');
+        this.ctxT = this.cTime.getContext('2d');
+        
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        
+        // Input Listeners
+        document.getElementById('tempSlider').oninput = (e) => {
+            this.temp = parseInt(e.target.value);
+            document.getElementById('dispTemp').innerText = this.temp + " K";
+            this.updateEdu("Sıcaklık Değişimi", "Sıcaklık artışı taneciklerin kinetik enerjisini artırır. Çarpışma sayısı ve şiddeti artar, tepkime hızlanır.");
+        };
+
+        this.reset();
+        this.loop();
+    },
+
+    resize() {
+        // Dynamic resizing for sharper canvas on high DPI
+        const scaleCanvas = (cvs) => {
+            cvs.width = cvs.parentElement.clientWidth;
+            cvs.height = cvs.parentElement.clientHeight;
+        };
+        scaleCanvas(this.cSim);
+        scaleCanvas(this.cEng);
+        scaleCanvas(this.cTime);
+        this.width = this.cSim.width;
+        this.height = this.cSim.height;
+    },
+
+    reset() {
+        this.particles = [];
+        this.historyA = [];
+        this.historyB = [];
+        this.addParticles('A', 60); // Start with 60 A
+        this.addParticles('B', 10); // Start with 10 B
+        this.updateEdu("Sistem Hazır", "Başlangıç koşulları yüklendi. Tanecikler rastgele hareket ediyor. Çarpışmalar sonucu renk değişimi (tepkime) gözlemle.");
+    },
+
+    addParticles(type, count) {
+        for(let i=0; i<count; i++) {
+            this.particles.push({
+                x: Math.random() * this.width,
+                y: Math.random() * this.height,
+                vx: (Math.random()-0.5) * 2,
+                vy: (Math.random()-0.5) * 2,
+                type: type,
+                flash: 0 // For white flash effect (0 to 1)
+            });
+        }
+    },
+
+    removeParticles(type, count) {
+        // Remove 'count' number of particles of 'type'
+        let removed = 0;
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            if (this.particles[i].type === type && removed < count) {
+                this.particles.splice(i, 1);
+                removed++;
+            }
+        }
+        this.updateEdu("Madde Çıkarıldı", `${type} maddesi ortamdan çekildi. Le Chatelier ilkesine göre sistem bu kaybı telafi etmek için o yöne kayacaktır.`);
+    },
+
+    toggleCatalyst() {
+        this.isCatalyst = !this.isCatalyst;
+        const btn = document.getElementById('btnCat');
+        if(this.isCatalyst) {
+            btn.classList.add('active');
+            this.updateEdu("Katalizör Eklendi", "Aktifleşme enerjisi (Ea) düşürüldü! Artık daha düşük enerjili çarpışmalar bile ürüne dönüşebilir.");
+        } else {
+            btn.classList.remove('active');
+        }
+    },
+
+    setEnthalpy(type) {
+        this.reactionType = type;
+        this.dH = type === 'exo' ? -30 : 30;
+        this.updateEdu("Entalpi Değişti", type === 'exo' ? "Tepkime Ekzotermik yapıldı. Isı açığa çıkıyor." : "Tepkime Endotermik yapıldı. Isı alıyor.");
+    },
+
+    updateEdu(title, text) {
+        document.getElementById('eduTitle').innerText = title;
+        document.getElementById('eduText').innerText = text;
+        // Highlight animation
+        const box = document.querySelector('.edu-box');
+        box.style.background = "#1e293b";
+        setTimeout(() => box.style.background = "#0b1121", 300);
+    },
+
+    // --- PHYSICS ENGINE ---
+    update() {
+        const speedFactor = this.temp / 300;
+        const currentEa = this.isCatalyst ? this.Ea_base - 30 : this.Ea_base;
+        
+        // Ea Forward & Reverse
+        // Forward: Needs currentEa
+        // Reverse: Needs currentEa - dH (If dH is negative, reverse is harder)
+        const Ea_fwd = currentEa;
+        const Ea_rev = currentEa - this.dH;
+
+        let countA = 0;
+        let countB = 0;
+
+        // Collision Grid or N^2 Check (Using N^2 for < 300 particles is fine)
+        for (let i = 0; i < this.particles.length; i++) {
+            let p1 = this.particles[i];
+            
+            // Movement
+            p1.x += p1.vx * speedFactor;
+            p1.y += p1.vy * speedFactor;
+
+            // Wall Bounce
+            if(p1.x < this.radius || p1.x > this.width - this.radius) p1.vx *= -1;
+            if(p1.y < this.radius || p1.y > this.height - this.radius) p1.vy *= -1;
+            
+            // Stats Count
+            if(p1.type === 'A') countA++; else countB++;
+
+            // Flash Decay
+            if(p1.flash > 0) p1.flash -= 0.05;
+
+            // Collision & Reaction
+            for (let j = i + 1; j < this.particles.length; j++) {
+                let p2 = this.particles[j];
+                
+                // Distance Check
+                const dx = p1.x - p2.x;
+                const dy = p1.y - p2.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < this.radius * 2) {
+                    // Elastic Collision Physics (Simple swap for visuals)
+                    // In a real physics engine, we conserve momentum. 
+                    // Here we just swap velocities slightly randomized to simulate chaos.
+                    const tempVx = p1.vx; p1.vx = p2.vx; p2.vx = tempVx;
+                    const tempVy = p1.vy; p1.vy = p2.vy; p2.vy = tempVy;
+                    
+                    // Separate particles to prevent sticking
+                    const angle = Math.atan2(dy, dx);
+                    const overlap = (this.radius * 2) - dist;
+                    p1.x += Math.cos(angle) * overlap / 2;
+                    p1.y += Math.sin(angle) * overlap / 2;
+                    p2.x -= Math.cos(angle) * overlap / 2;
+                    p2.y -= Math.sin(angle) * overlap / 2;
+
+                    // --- REACTION LOGIC ---
+                    // Calculate Collision Energy (Randomized based on Temp)
+                    const kineticEnergy = Math.random() * this.temp * 0.4;
+                    
+                    // Reaction: A + A -> No change (usually)
+                    // Let's model Unimolecular or Pseudo-first order via collisions
+                    // Or simpler: If Particle hits anything with enough energy, it tries to convert.
+                    
+                    if (p1.type === 'A' && kineticEnergy > Ea_fwd) {
+                        p1.type = 'B'; p1.flash = 1.0;
+                    } else if (p1.type === 'B' && kineticEnergy > Ea_rev) {
+                        p1.type = 'A'; p1.flash = 1.0;
+                    }
+
+                    if (p2.type === 'A' && kineticEnergy > Ea_fwd) {
+                        p2.type = 'B'; p2.flash = 1.0;
+                    } else if (p2.type === 'B' && kineticEnergy > Ea_rev) {
+                        p2.type = 'A'; p2.flash = 1.0;
+                    }
+                }
+            }
+        }
+
+        // Update UI Stats
+        document.getElementById('valTotal').innerText = this.particles.length;
+        document.getElementById('valKE').innerText = this.temp < 300 ? "Düşük" : (this.temp > 600 ? "Çok Yüksek" : "Orta");
+        document.getElementById('valEa').innerText = this.isCatalyst ? "Düşük (Hızlı)" : "Yüksek (Yavaş)";
+
+        // Chart Data
+        this.historyA.push(countA);
+        this.historyB.push(countB);
+        if(this.historyA.length > this.maxHistory) {
+            this.historyA.shift();
+            this.historyB.shift();
+        }
+    },
+
+    // --- DRAWING ---
+    draw() {
+        // Clear Canvases
+        this.ctx.clearRect(0,0,this.width, this.height);
+        
+        // 1. Draw Particles
+        this.particles.forEach(p => {
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, this.radius, 0, Math.PI*2);
+            
+            if (p.flash > 0) {
+                // Flash Effect (White)
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${p.flash})`;
+                this.ctx.shadowBlur = 10;
+                this.ctx.shadowColor = "white";
+            } else {
+                // Normal Color
+                this.ctx.fillStyle = p.type === 'A' ? '#3b82f6' : '#ef4444';
+                this.ctx.shadowBlur = 0;
+            }
+            this.ctx.fill();
+        });
+
+        // 2. Draw Energy Graph
+        this.drawEnergyGraph();
+
+        // 3. Draw Time Graph
+        this.drawTimeGraph();
+    },
+
+    drawEnergyGraph() {
+        const ctx = this.ctxE;
+        const w = ctx.canvas.width;
+        const h = ctx.canvas.height;
+        ctx.clearRect(0,0,w,h);
+
+        // Grid Lines
+        ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(30, 20); ctx.lineTo(30, h-20); ctx.lineTo(w, h-20);
+        ctx.stroke();
+
+        // Values
+        const startY = h/2 + 20;
+        const currentEa = this.isCatalyst ? this.Ea_base - 30 : this.Ea_base;
+        const peakY = startY - currentEa * 1.5; // Scale for visual
+        const endY = startY - this.dH * 1.5;
+
+        // Curve
+        ctx.strokeStyle = this.isCatalyst ? "#10b981" : "#94a3b8";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(30, startY);
+        ctx.bezierCurveTo(w/3, startY, w/3, peakY, w/2, peakY);
+        ctx.bezierCurveTo(2*w/3, peakY, 2*w/3, endY, w-10, endY);
+        ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = "#3b82f6"; ctx.fillText("Girenler", 35, startY + 15);
+        ctx.fillStyle = "#ef4444"; ctx.fillText("Ürünler", w-50, endY + 15);
+        
+        // Ea Line
+        ctx.setLineDash([5,5]); ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(30, startY); ctx.lineTo(w, startY); ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = "#fff"; ctx.textAlign = "center";
+        ctx.fillText(this.isCatalyst ? "Ea (Düşük)" : "Ea (Yüksek)", w/2, peakY - 10);
+    },
+
+    drawTimeGraph() {
+        const ctx = this.ctxT;
+        const w = ctx.canvas.width;
+        const h = ctx.canvas.height;
+        ctx.clearRect(0,0,w,h);
+
+        // Background Grid
+        ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, h*0.5); ctx.lineTo(w, h*0.5);
+        ctx.stroke();
+
+        // Helper to draw line
+        const drawLine = (data, color) => {
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+            const step = w / this.maxHistory;
+            // Scale: Max particles approx 150 for view
+            const maxVal = 120; 
+            
+            data.forEach((val, i) => {
+                const x = i * step;
+                const y = h - (val / maxVal) * h;
+                if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+            });
+            ctx.stroke();
+        };
+
+        drawLine(this.historyA, '#3b82f6');
+        drawLine(this.historyB, '#ef4444');
+    },
+
+    loop() {
+        this.update();
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+sim.init();
+</script>
+</body>
+</html>
