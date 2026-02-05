@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlab - Asit Baz Laboratuvarı</title>
+    <style>
+        :root {
+            --bg-app: #f1f5f9;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --col-acid: #ef4444; /* Kırmızı */
+            --col-base: #3b82f6; /* Mavi */
+            --col-neutral: #10b981; /* Yeşil */
+            --border: #cbd5e1;
+            --font: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-main); font-family: var(--font); height: 100vh; display: flex; overflow: hidden; }
+
+        /* SOL PANEL */
+        aside { 
+            width: 320px; flex-shrink: 0; background: var(--bg-panel); border-right: 1px solid var(--border); 
+            padding: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 20; 
+            box-shadow: 2px 0 20px rgba(0,0,0,0.05); overflow-y: auto;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 800; color: #0f172a; letter-spacing: -1px; margin-bottom: 5px; }
+        .logo span { color: var(--col-base); font-weight: 300; }
+
+        /* pH Metre */
+        .ph-display {
+            background: #1e293b; color: white; padding: 15px; border-radius: 12px; text-align: center;
+            border: 3px solid #334155; position: relative;
+        }
+        .ph-val { font-size: 2.5rem; font-weight: bold; font-family: monospace; }
+        .ph-lbl { font-size: 0.8rem; color: #94a3b8; margin-top: 5px; }
+        .ph-scale { height: 10px; width: 100%; border-radius: 5px; margin-top: 10px; background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff); }
+
+        .control-group { background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 10px; }
+        .group-title { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .btn {
+            padding: 8px; border: 1px solid var(--border); background: white; border-radius: 6px;
+            cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.2s;
+        }
+        .btn:hover { background: #e2e8f0; }
+        .btn.active { background: var(--col-base); color: white; border-color: var(--col-base); }
+
+        /* Damlalık Kontrolü */
+        .drop-control {
+            display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px;
+        }
+        .drop-btn {
+            width: 100%; padding: 12px; border-radius: 8px; border: none; cursor: pointer;
+            font-weight: bold; color: white; font-size: 0.9rem; transition: 0.1s;
+        }
+        .btn-add-acid { background: var(--col-acid); }
+        .btn-add-base { background: var(--col-base); }
+
+        .edu-note {
+            margin-top: auto; background: #f0fdf4; border-left: 4px solid #10b981;
+            padding: 10px; font-size: 0.85rem; color: #166534; border-radius: 6px;
+        }
+
+        /* SAĞ PANEL */
+        main { flex: 1; position: relative; background: #e2e8f0; display: flex; align-items: center; justify-content: center; }
+        
+        #labContainer {
+            width: 90%; height: 90%; background: white; border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); position: relative; overflow: hidden;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px); background-size: 20px 20px;
+        }
+        
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .overlay-text {
+            position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.8);
+            padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="logo">Raporlab <span>İnteraktif</span></div>
+
+    <div class="ph-display">
+        <div class="ph-lbl">ÇÖZELTİ pH DEĞERİ</div>
+        <div class="ph-val" id="phVal">7.0</div>
+        <div class="ph-scale"></div>
+    </div>
+
+    <div class="control-group">
+        <div class="group-title">İndikatör Seçimi</div>
+        <div class="btn-grid">
+            <button class="btn active" onclick="app.setIndicator('none', this)">Yok</button>
+            <button class="btn" onclick="app.setIndicator('phenolphthalein', this)">Fenolftalein</button>
+            <button class="btn" onclick="app.setIndicator('bromothymol', this)">Bromtimol</button>
+            <button class="btn" onclick="app.setIndicator('methylorange', this)">Metil Oranj</button>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="group-title">Sıvı Ekle (Damlalık)</div>
+        <div class="drop-control">
+            <button class="drop-btn btn-add-acid" onmousedown="app.startDripping('acid')" onmouseup="app.stopDripping()">Asit Damlat (HCl)</button>
+            <button class="drop-btn btn-add-base" onmousedown="app.startDripping('base')" onmouseup="app.stopDripping()">Baz Damlat (NaOH)</button>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="group-title">İyon Görünümü</div>
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+            <label><input type="checkbox" id="chkIons" checked> İyonları Göster</label>
+        </div>
+    </div>
+
+    <div class="edu-note">
+        <b>Bilgi:</b> pH 7 nötrdür. Asit eklendikçe $H^{+}$ iyonları artar ve pH düşer. Baz eklendikçe $OH^{-}$ artar ve pH yükselir.
+    </div>
+
+    <button onclick="app.reset()" style="padding:10px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; font-weight:bold; cursor:pointer; color:#475569;">TEMİZLE</button>
+</aside>
+
+<main>
+    <div id="labContainer">
+        <canvas id="simCanvas"></canvas>
+        <div class="overlay-text" id="infoBox">
+            <b>Mevcut Durum:</b> Nötr Saf Su<br>
+            İyon Sayısı: 0
+        </div>
+    </div>
+</main>
+
+<script>
+const app = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    width: 0, height: 0,
+
+    // Kimyasal Durum
+    // Hidrojen iyonu konsantrasyonu (logaritmik simülasyon için)
+    h_conc: 1e-7, 
+    indicator: 'none',
+    
+    ions: [],
+    maxIons: 60,
+    
+    isDripping: false,
+    dripType: null,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.reset();
+        this.loop();
+    },
+
+    resize() {
+        const cont = document.getElementById('labContainer');
+        this.width = this.canvas.width = cont.clientWidth;
+        this.height = this.canvas.height = cont.clientHeight;
+    },
+
+    reset() {
+        this.h_conc = 1e-7;
+        this.ions = [];
+        this.updateUI();
+    },
+
+    setIndicator(type, btn) {
+        this.indicator = type;
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    },
+
+    startDripping(type) {
+        this.isDripping = true;
+        this.dripType = type;
+    },
+
+    stopDripping() {
+        this.isDripping = false;
+    },
+
+    updatePhysics() {
+        if (this.isDripping) {
+            if (this.dripType === 'acid') {
+                this.h_conc *= 1.15; // Logaritmik artış
+            } else {
+                this.h_conc /= 1.15; // Logaritmik azalış
+            }
+            // Sınırlar (pH 0-14)
+            if (this.h_conc > 1) this.h_conc = 1;
+            if (this.h_conc < 1e-14) this.h_conc = 1e-14;
+        }
+
+        this.updateIons();
+        this.updateUI();
+    },
+
+    updateIons() {
+        const ph = -Math.log10(this.h_conc);
+        
+        // İyon üretimi/yok oluşu
+        // pH < 7 ise H+ (Kırmızı), pH > 7 ise OH- (Mavi)
+        let targetType = ph < 6.8 ? 'h' : (ph > 7.2 ? 'oh' : null);
+        
+        // Eğer zıt iyonlar varsa nötrleşme yap (yok et)
+        if (this.ions.length > 0) {
+            const currentType = this.ions[0].type;
+            if (targetType && currentType !== targetType) {
+                this.ions.splice(0, 2); // İkişer ikişer yok et (Nötrleşme)
+            }
+        }
+
+        // İyon ekle
+        if (targetType && this.ions.length < this.maxIons) {
+            if (Math.random() < 0.2) {
+                this.ions.push({
+                    x: this.width/2 + (Math.random()-0.5)*200,
+                    y: this.height - 150 + (Math.random()-0.5)*150,
+                    vx: (Math.random()-0.5)*2,
+                    vy: (Math.random()-0.5)*2,
+                    type: targetType
+                });
+            }
+        } else if (!targetType && this.ions.length > 0) {
+            this.ions.pop(); // Nötr ortamda iyonları temizle
+        }
+
+        // İyon hareketi
+        const liquidTop = this.height - 350;
+        this.ions.forEach(ion => {
+            ion.x += ion.vx;
+            ion.y += ion.vy;
+            if(ion.x < this.width/2 - 140 || ion.x > this.width/2 + 140) ion.vx *= -1;
+            if(ion.y < liquidTop || ion.y > this.height - 50) ion.vy *= -1;
+        });
+    },
+
+    updateUI() {
+        const ph = -Math.log10(this.h_conc);
+        document.getElementById('phVal').innerText = ph.toFixed(1);
+        
+        let status = "Nötr Saf Su";
+        if(ph < 6.5) status = "Asidik Çözelti";
+        else if(ph > 7.5) status = "Bazik Çözelti";
+        
+        document.getElementById('infoBox').innerHTML = `
+            <b>Mevcut Durum:</b> ${status}<br>
+            İyon Sayısı: ${this.ions.length}<br>
+            [H+]: ${this.h_conc.toExponential(2)}
+        `;
+    },
+
+    getLiquidColor() {
+        const ph = -Math.log10(this.h_conc);
+        
+        if (this.indicator === 'none') {
+            return "rgba(224, 242, 254, 0.4)"; // Şeffaf su
+        }
+
+        if (this.indicator === 'phenolphthalein') {
+            // Asitte renksiz, bazda pembe (pH > 8.2)
+            if (ph > 8.2) {
+                const alpha = Math.min(0.7, (ph - 8.2) * 0.2);
+                return `rgba(219, 39, 119, ${alpha})`;
+            }
+            return "rgba(255, 255, 255, 0.2)";
+        }
+
+        if (this.indicator === 'bromothymol') {
+            // Asit sarı, nötr yeşil, baz mavi
+            if (ph < 6) return "rgba(250, 204, 21, 0.6)";
+            if (ph > 7.6) return "rgba(37, 99, 235, 0.6)";
+            return "rgba(34, 197, 94, 0.6)";
+        }
+
+        if (this.indicator === 'methylorange') {
+            // Asit kırmızı, baz sarı
+            if (ph < 3.1) return "rgba(220, 38, 38, 0.7)";
+            if (ph > 4.4) return "rgba(251, 191, 36, 0.7)";
+            return "rgba(249, 115, 22, 0.7)"; // Turuncu
+        }
+    },
+
+    draw() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.width, this.height);
+
+        const cx = this.width / 2;
+        const cy = this.height - 50;
+
+        // 1. Beher Çizimi
+        ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(cx - 150, cy - 400);
+        ctx.lineTo(cx - 150, cy);
+        ctx.lineTo(cx + 150, cy);
+        ctx.lineTo(cx + 150, cy - 400);
+        ctx.stroke();
+
+        // 2. Sıvı Çizimi
+        const liquidHeight = 350;
+        ctx.fillStyle = this.getLiquidColor();
+        ctx.fillRect(cx - 146, cy - liquidHeight, 292, liquidHeight);
+
+        // 3. Damlalık Efekti
+        if (this.isDripping) {
+            ctx.fillStyle = this.dripType === 'acid' ? "var(--col-acid)" : "var(--col-base)";
+            ctx.beginPath();
+            ctx.arc(cx, cy - 450 + (Date.now() % 500) * 0.2, 5, 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        // 4. İyonlar
+        if (document.getElementById('chkIons').checked) {
+            this.ions.forEach(ion => {
+                ctx.beginPath();
+                ctx.arc(ion.x, ion.y, 8, 0, Math.PI*2);
+                ctx.fillStyle = ion.type === 'h' ? "rgba(239, 68, 68, 0.8)" : "rgba(59, 130, 246, 0.8)";
+                ctx.fill();
+                ctx.fillStyle = "white"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+                ctx.fillText(ion.type === 'h' ? "H+" : "OH-", ion.x, ion.y + 4);
+            });
+        }
+    },
+
+    loop() {
+        this.updatePhysics();
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+app.init();
+</script>
+</body>
+</html>
